@@ -331,7 +331,7 @@
   .due-badge.mid { background: rgba(107,92,26,0.1); color: var(--due-mid); }
   .due-badge.track { background: rgba(42,74,53,0.1); color: var(--on-track); }
   .due-badge::before {
-    content: 'â—';
+    content: '●';
     font-size: 11px;
   }
   .priority-badge {
@@ -355,7 +355,7 @@
     flex-shrink: 0;
   }
   .complete-toggle.done { background: var(--sage); border-color: var(--sage); }
-  .complete-toggle.done::after { content: 'âœ“'; color: white; font-size: 12px; font-weight: bold; }
+  .complete-toggle.done::after { content: '✓'; color: white; font-size: 12px; font-weight: bold; }
 
   .update-preview {
     font-size: 13px;
@@ -1292,7 +1292,7 @@
     <table>
       <thead>
         <tr>
-          <th>âœ“</th>
+          <th>✓</th>
           <th id="col-restaurant" style="display:none">Restaurant</th>
           <th>Project</th>
           <th>Category</th>
@@ -1542,7 +1542,7 @@
   <div class="modal" style="max-width:480px">
     <div class="modal-header">
       <h2>Manage <em>Restaurants</em></h2>
-      <button class="modal-close" onclick="closeRestaurantModal()">âœ•</button>
+      <button class="modal-close" onclick="closeRestaurantModal()">✕</button>
     </div>
     <div class="modal-body">
       <div class="form-group" style="margin-bottom:20px">
@@ -1999,7 +1999,7 @@ function openDetail(id) {
     <div class="detail-row"><span class="key">Date Added</span><span class="val">${formatDate(p.dateAdded)}</span></div>
     <div class="detail-row"><span class="key">Weeks to Complete</span><span class="val">${p.weeks || '””'}</span></div>
     <div class="detail-row"><span class="key">Due By</span><span class="val">${due ? formatDate(due) : '””'}</span></div>
-    <div class="detail-row"><span class="key">Complete?</span><span class="val">${p.complete ? 'âœ“ Yes' : 'No'}</span></div>
+    <div class="detail-row"><span class="key">Complete?</span><span class="val">${p.complete ? '✓ Yes' : 'No'}</span></div>
   `;
   document.getElementById('dp-description').textContent = p.description || 'No description provided.';
 
@@ -2412,7 +2412,7 @@ function renderAdminList(listKey, listId, countId) {
       <div class="admin-save-row" id="admin-save-row-${listKey}-${i}" style="display:none">
         <input type="text" class="admin-add-input" id="admin-edit-input-${listKey}-${i}" value="${item}" style="padding:2px 6px;font-size:12px;width:160px" onkeydown="if(event.key==='Enter')saveAdminItem('${listKey}',${i});if(event.key==='Escape')cancelEditAdminItem('${listKey}',${i})">
         <button class="admin-item-btn save" onclick="saveAdminItem('${listKey}',${i})">Save</button>
-        <button class="admin-item-btn" onclick="cancelEditAdminItem('${listKey}',${i})">âœ•</button>
+        <button class="admin-item-btn" onclick="cancelEditAdminItem('${listKey}',${i})">✕</button>
       </div>
     </li>`
   ).join('');
