@@ -1413,7 +1413,7 @@
   <div class="modal">
     <div class="modal-header">
       <h2 id="modal-title">New <em>Project</em></h2>
-      <button class="modal-close" onclick="closeModal()">âœ•</button>
+      <button class="modal-close" onclick="closeModal()">&#10005;</button>
     </div>
     <div class="modal-body">
       <div class="form-grid">
@@ -1812,10 +1812,10 @@ function renderTabs() {
   }).join('');
 
   const ganttTab = `<button class="tab ${state.activeTab === '__gantt__' ? 'active' : ''}" onclick="switchTab('__gantt__')" style="border-left:1px solid rgba(255,255,255,0.08)">
-    â–¦ Gantt
+    &#9638; Gantt
   </button>`;
   const adminTab = `<button class="tab ${state.activeTab === '__admin__' ? 'active' : ''}" onclick="switchTab('__admin__')" style="margin-left:auto;border-left:1px solid rgba(255,255,255,0.08)">
-    âš™ Admin
+    &#9881; Admin
   </button>`;
 
   wrapper.innerHTML = restaurantTabs + ganttTab + adminTab;
