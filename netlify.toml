@@ -1,0 +1,6 @@
+[build]
+  command   = "node inject-env.js"
+  publish   = "dist"
+
+[build.environment]
+  NODE_VERSION = "18"
