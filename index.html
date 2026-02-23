@@ -1310,6 +1310,7 @@
 </main>
 
 <!-- GANTT VIEW -->
+<div id="recent-view" style="display:none;padding:32px 40px"></div>
 <div class="gantt-view" id="gantt-view" style="display:none; padding: 32px 40px;">
   <div id="gantt-content"></div>
 </div>
@@ -1640,6 +1641,7 @@ async function loadAll() {
     dateAdded:   p.date_added,
     complete:    p.complete   || false,
     link:        p.link       || '',
+    updatedAt:   p.updated_at  || null,
     notes:       notesByProject[p.id] || [],
   }));
 }
@@ -1812,11 +1814,14 @@ function renderTabs() {
   const ganttTab = `<button class="tab ${state.activeTab === '__gantt__' ? 'active' : ''}" onclick="switchTab('__gantt__')" style="border-left:1px solid rgba(255,255,255,0.08)">
     &#9638; Gantt
   </button>`;
-  const adminTab = `<button class="tab ${state.activeTab === '__admin__' ? 'active' : ''}" onclick="switchTab('__admin__')" style="margin-left:auto;border-left:1px solid rgba(255,255,255,0.08)">
+  const recentTab = `<button class="tab ${state.activeTab === '__recent__' ? 'active' : ''}" onclick="switchTab('__recent__')" style="border-left:1px solid rgba(255,255,255,0.08)">
+    &#128197; Recent
+  </button>`;
+  const adminTab = `<button class="tab ${state.activeTab === '__admin__'" ? 'active' : ''}" onclick="switchTab('__admin__')" style="margin-left:auto;border-left:1px solid rgba(255,255,255,0.08)">
     &#9881; Admin
   </button>`;
 
-  wrapper.innerHTML = restaurantTabs + ganttTab + adminTab;
+  wrapper.innerHTML = restaurantTabs + ganttTab + recentTab + adminTab;
 }
 
 function switchTab(tab) {
@@ -1835,7 +1840,9 @@ function switchTab(tab) {
   adminEl.style.display = 'none';
   ganttEl.style.display = 'none';
 
-  if (tab === '__admin__') {
+  if (tab === '__recent__') {
+    renderRecentView();
+  } else if (tab === '__admin__') {
     adminEl.style.display = 'block';
     renderAdminView();
   } else if (tab === '__gantt__') {
@@ -2723,6 +2730,94 @@ function setGanttWindow(days) {
 function setGanttGroup(val) {
   state.gantt.groupBy = val;
   renderGanttView();
+}
+
+// ============================================================
+// RECENT VIEW
+// ============================================================
+function renderRecentView() {
+  const projectsEl   = document.getElementById('projects-view');
+  const filterBar    = document.querySelector('.filter-bar');
+  const pageHeader   = document.querySelector('.page-header');
+  const adminEl      = document.getElementById('admin-view');
+  const ganttEl      = document.getElementById('gantt-view');
+  const recentEl     = document.getElementById('recent-view');
+
+  projectsEl.style.display = 'none';
+  if (filterBar)  filterBar.style.display  = 'none';
+  if (pageHeader) pageHeader.style.display = 'none';
+  adminEl.style.display  = 'none';
+  ganttEl.style.display  = 'none';
+  recentEl.style.display = 'block';
+
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 14);
+  cutoff.setHours(0, 0, 0, 0);
+
+  const recent = state.projects.filter(p => {
+    if (!p.complete) return false;
+    if (!p.updatedAt) return false;
+    return new Date(p.updatedAt) >= cutoff;
+  });
+
+  if (recent.length === 0) {
+    recentEl.innerHTML = `
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;margin-bottom:24px">Recently Completed</h2>
+      <div class="empty-state" style="padding:40px 0">
+        <h3>No completions in the last 14 days</h3>
+        <p>Projects marked complete will appear here for two weeks.</p>
+      </div>`;
+    return;
+  }
+
+  // Group by restaurant
+  const grouped = {};
+  recent.forEach(p => {
+    if (!grouped[p.restaurant]) grouped[p.restaurant] = [];
+    grouped[p.restaurant].push(p);
+  });
+
+  let html = `<h2 style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;margin-bottom:6px">Recently Completed</h2>
+    <p style="font-size:14px;color:var(--warm-gray);margin-bottom:28px;font-family:'DM Mono',monospace;letter-spacing:0.06em">Projects completed in the last 14 days &middot; ${recent.length} total</p>`;
+
+  Object.entries(grouped).forEach(([restaurant, projects]) => {
+    const colorIdx = state.restaurants.indexOf(restaurant) % 8;
+    html += `<div style="margin-bottom:32px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <span class="restaurant-pill" style="background:var(--r${colorIdx})">${restaurant}</span>
+        <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--warm-gray);letter-spacing:0.1em">${projects.length} project${projects.length !== 1 ? 's' : ''}</span>
+      </div>
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr style="border-bottom:2px solid var(--ink)">
+            <th style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--warm-gray);padding:8px 14px;text-align:left;font-weight:400">Project</th>
+            <th style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--warm-gray);padding:8px 14px;text-align:left;font-weight:400">Category</th>
+            <th style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--warm-gray);padding:8px 14px;text-align:left;font-weight:400">Owner</th>
+            <th style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--warm-gray);padding:8px 14px;text-align:left;font-weight:400">Completed</th>
+            <th style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--warm-gray);padding:8px 14px;text-align:left;font-weight:400">Latest Note</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${projects.map(p => {
+            const latestNote = p.notes && p.notes.length > 0 ? p.notes[p.notes.length - 1].text : '—';
+            const completedOn = p.updatedAt ? formatDate(p.updatedAt.split('T')[0]) : '—';
+            return `<tr style="border-bottom:1px solid var(--border);cursor:pointer" onclick="openDetail('${p.id}')">
+              <td style="padding:12px 14px">
+                <span style="font-family:'Cormorant Garamond',serif;font-size:17px;opacity:0.7;text-decoration:line-through">${p.title}</span>
+                ${p.description ? `<span style="display:block;font-size:12px;color:var(--warm-gray);font-style:italic;margin-top:2px">${p.description}</span>` : ''}
+              </td>
+              <td style="padding:12px 14px"><span class="category-tag ${categoryClass(p.category)}">${p.category || '—'}</span></td>
+              <td style="padding:12px 14px;font-size:14px;color:var(--ink-light)">${p.owner || '—'}</td>
+              <td style="padding:12px 14px;font-family:'DM Mono',monospace;font-size:12px;color:var(--sage)">${completedOn}</td>
+              <td style="padding:12px 14px"><div class="update-preview">${latestNote}</div></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+  });
+
+  recentEl.innerHTML = html;
 }
 
 // ============================================================
