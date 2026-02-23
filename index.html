@@ -331,7 +331,7 @@
   .due-badge.mid { background: rgba(107,92,26,0.1); color: var(--due-mid); }
   .due-badge.track { background: rgba(42,74,53,0.1); color: var(--on-track); }
   .due-badge::before {
-    content: '●';
+    content: '●';
     font-size: 11px;
   }
   .priority-badge {
@@ -1784,7 +1784,7 @@ function renderSummary() {
     <div class="summary-stat"><span class="label">Open Projects</span><span class="value">${open.length}</span></div>
     <div class="divider"></div>
     <div class="summary-stat"><span class="label">Overdue</span><span class="value red">${overdue}</span></div>
-    <div class="summary-stat"><span class="label">Due â‰¤ 7 days</span><span class="value orange">${soon}</span></div>
+    <div class="summary-stat"><span class="label">Due ≤ 7 days</span><span class="value orange">${soon}</span></div>
     <div class="divider"></div>
     <div class="summary-stat"><span class="label">High Priority</span><span class="value">${high}</span></div>
     <div class="divider"></div>
@@ -2032,7 +2032,7 @@ function renderPanelNotes(p) {
     indexed.reverse();
     notesContainer.innerHTML = indexed.map(n =>
       `<div class="note-item" data-note-index="${n.origIndex}">
-        <div class="note-date">${formatDate(n.date)}${n.author ? ` Â· <strong>${n.author}</strong>` : ''}</div>
+        <div class="note-date">${formatDate(n.date)}${n.author ? ` · <strong>${n.author}</strong>` : ''}</div>
         <div class="note-text" id="note-text-${n.origIndex}">${n.text}</div>
         <div class="note-actions">
           <button class="note-action-btn" onclick="openNoteEdit('${p.id}', ${n.origIndex})">Edit</button>
@@ -2203,7 +2203,7 @@ function openAddModal(editId = null) {
   if (isEdit && p?.notes && p.notes.length > 0) {
     notesLog.style.display = '';
     notesDisplay.innerHTML = [...p.notes].reverse().map(n =>
-      `<div class="note-item"><div class="note-date">${formatDate(n.date)}${n.author ? ` Â· <strong>${n.author}</strong>` : ''}</div><div class="note-text">${n.text}</div></div>`
+      `<div class="note-item"><div class="note-date">${formatDate(n.date)}${n.author ? ` · <strong>${n.author}</strong>` : ''}</div><div class="note-text">${n.text}</div></div>`
     ).join('');
   } else {
     notesLog.style.display = 'none';
@@ -2241,7 +2241,7 @@ function updateDuePreview() {
   if (weeks && dateVal) {
     const d = new Date(dateVal + 'T00:00:00');
     d.setDate(d.getDate() + weeks * 7);
-    preview.textContent = `â†’ Due by ${formatDate(d.toISOString().split('T')[0])}`;
+    preview.textContent = `→ Due by ${formatDate(d.toISOString().split('T')[0])}`;
   } else {
     preview.textContent = '';
   }
@@ -2330,7 +2330,7 @@ function closeRestaurantModal() {
 }
 function renderRestaurantChips() {
   document.getElementById('restaurant-chips').innerHTML = state.restaurants.map(r =>
-    `<div class="restaurant-chip">${r}<span class="remove-chip" onclick="removeRestaurant('${r}')">Ã—</span></div>`
+    `<div class="restaurant-chip">${r}<span class="remove-chip" onclick="removeRestaurant('${r}')">×</span></div>`
   ).join('');
 }
 async function addRestaurant() {
@@ -2375,12 +2375,12 @@ function renderAdminStats() {
     <div class="admin-stat-card">
       <div class="stat-label">Total Projects</div>
       <div class="stat-value">${state.projects.length}</div>
-      <div class="stat-sub">${open.length} open Â· ${complete.length} complete</div>
+      <div class="stat-sub">${open.length} open · ${complete.length} complete</div>
     </div>
     <div class="admin-stat-card">
       <div class="stat-label">Restaurants</div>
       <div class="stat-value">${state.restaurants.length}</div>
-      <div class="stat-sub">${state.categories.length} categories Â· ${state.types.length} types</div>
+      <div class="stat-sub">${state.categories.length} categories · ${state.types.length} types</div>
     </div>
     <div class="admin-stat-card">
       <div class="stat-label">Team Members</div>
@@ -2615,7 +2615,7 @@ function renderGanttView() {
       tableRows += `<tr class="gantt-row" data-id="${p.id}">
         <td class="gantt-label-cell ${p.complete?'complete':''}">
           <div class="gantt-label-name" title="${p.title}">${p.title}</div>
-          <div class="gantt-label-meta">${p.restaurant} Â· ${dueStr}</div>
+          <div class="gantt-label-meta">${p.restaurant} · ${dueStr}</div>
         </td>
         ${days.map(d => {
           const isToday   = d.toISOString().split('T')[0] === todayDate.toISOString().split('T')[0];
