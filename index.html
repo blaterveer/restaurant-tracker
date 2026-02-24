@@ -988,6 +988,7 @@
   .gantt-legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 16px; }
   .gantt-legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-light); }
   .gantt-legend-dot { width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0; }
+  .gantt-mobile-notice { display: none; }
 
   .admin-view { display: none; padding: 32px 40px; }
   .admin-view.active { display: block; }
@@ -1262,6 +1263,7 @@
     .gantt-controls { gap: 8px; }
     .gantt-window-btn { padding: 5px 10px; font-size: 11px; }
     .gantt-scroll-wrap { -webkit-overflow-scrolling: touch; }
+    .gantt-mobile-notice { display: block; background: #fff8e7; border: 1px solid #e8d9a0; border-radius: 6px; padding: 10px 14px; font-size: 13px; color: #7a6a3a; margin-bottom: 16px; }
 
     /* RECENT VIEW */
     #recent-view { padding: 16px !important; }
@@ -1381,6 +1383,7 @@
 <!-- GANTT VIEW -->
 <div id="recent-view" style="display:none;padding:32px 40px"></div>
 <div class="gantt-view" id="gantt-view" style="display:none; padding: 32px 40px;">
+  <div class="gantt-mobile-notice">&#9888; Gantt chart is best viewed on a desktop or larger screen.</div>
   <div id="gantt-content"></div>
 </div>
 
