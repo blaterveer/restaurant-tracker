@@ -1204,6 +1204,77 @@
     transition: all 0.2s;
   }
   .btn-danger:hover { background: var(--rust); color: white; }
+
+  /* ============================================================
+     MOBILE RESPONSIVE
+     ============================================================ */
+  @media (max-width: 768px) {
+
+    /* HEADER */
+    header { padding: 12px 16px; flex-wrap: wrap; gap: 10px; }
+    .header-logos img { height: 28px; }
+    .header-logos img:first-child { height: 34px; }
+    header h1 { font-size: 20px; }
+    .header-sub { display: none; }
+    .header-actions { margin-left: auto; gap: 8px; }
+    .btn-primary, .btn-ghost { padding: 7px 12px; font-size: 11px; }
+
+    /* SUMMARY BAR */
+    .summary-bar { padding: 12px 16px; gap: 16px; }
+    .summary-stat .value { font-size: 22px; }
+    .divider { display: none; }
+
+    /* TABS */
+    .tabs-wrapper { padding: 0 8px; }
+    .tab { padding: 10px 14px; font-size: 11px; }
+
+    /* MAIN */
+    main { padding: 16px; }
+
+    /* FILTER BAR */
+    .filter-bar { flex-direction: column; align-items: stretch; gap: 8px; }
+    .search-input { width: 100%; }
+    .filter-select { width: 100%; }
+
+    /* TABLE */
+    thead th:nth-child(5), tbody td:nth-child(5) { display: none; }
+    thead th:nth-child(8), tbody td:nth-child(8) { display: none; }
+    tbody td { padding: 10px 8px; font-size: 13px; }
+    .project-name { font-size: 15px; }
+    .project-desc { display: none; }
+
+    /* DETAIL PANEL */
+    .detail-panel { width: 100% !important; max-width: 100% !important; }
+
+    /* MODALS */
+    .modal { width: 100% !important; max-width: 100% !important; max-height: 95vh; overflow-y: auto; }
+    .modal-overlay { padding: 0; align-items: flex-end; }
+    .modal-body { padding: 16px; }
+    .modal-header { padding: 16px; }
+    .form-grid { grid-template-columns: 1fr !important; }
+
+    /* ADMIN */
+    .admin-view { padding: 16px; }
+    .admin-grid { grid-template-columns: 1fr; }
+    .admin-stats-grid { grid-template-columns: 1fr 1fr; }
+
+    /* GANTT */
+    .gantt-controls { gap: 8px; }
+    .gantt-window-btn { padding: 5px 10px; font-size: 11px; }
+    .gantt-label-cell { min-width: 120px !important; max-width: 140px !important; font-size: 11px; }
+    .gantt-label-name { font-size: 11px; }
+    .gantt-label-meta { font-size: 9px; }
+
+    /* RECENT VIEW */
+    #recent-view { padding: 16px !important; }
+  }
+
+  @media (max-width: 480px) {
+    header h1 { font-size: 17px; }
+    .summary-stat .value { font-size: 20px; }
+    .tab { padding: 8px 10px; font-size: 10px; }
+    tbody td { padding: 8px 6px; }
+  }
 </style>
 </head>
 <body>
