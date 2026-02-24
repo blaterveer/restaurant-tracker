@@ -1258,12 +1258,10 @@
     .admin-grid { grid-template-columns: 1fr; }
     .admin-stats-grid { grid-template-columns: 1fr 1fr; }
 
-    /* GANTT */
+    /* GANTT — scrolls horizontally on mobile; don't shrink sticky label column */
     .gantt-controls { gap: 8px; }
     .gantt-window-btn { padding: 5px 10px; font-size: 11px; }
-    .gantt-label-cell { min-width: 120px !important; max-width: 140px !important; font-size: 11px; }
-    .gantt-label-name { font-size: 11px; }
-    .gantt-label-meta { font-size: 9px; }
+    .gantt-scroll-wrap { -webkit-overflow-scrolling: touch; }
 
     /* RECENT VIEW */
     #recent-view { padding: 16px !important; }
