@@ -1208,6 +1208,39 @@
 
 
 
+
+  /* ============================================================
+     OVERDUE BADGE
+     ============================================================ */
+  .overdue-badge { display: inline-flex; align-items: center; background: var(--rust); color: white; font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 600; border-radius: 20px; padding: 3px 10px; letter-spacing: 0.04em; white-space: nowrap; }
+
+  /* ============================================================
+     PRINT / PDF REPORT
+     ============================================================ */
+  #print-view { display: none; }
+  @media print {
+    body > *:not(#print-view) { display: none !important; }
+    #print-view { display: block !important; font-family: 'Instrument Sans', Georgia, serif; color: #1a1612; font-size: 12pt; line-height: 1.5; padding: 0; margin: 0; }
+    .pr-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #1a1612; padding-bottom: 12pt; margin-bottom: 20pt; }
+    .pr-header-left h1 { font-size: 18pt; font-weight: 700; margin: 0 0 2pt; }
+    .pr-header-left p { font-size: 9pt; color: #6b6055; margin: 0; }
+    .pr-header img { height: 36pt; }
+    .pr-section { margin-bottom: 24pt; page-break-inside: avoid; }
+    .pr-section-title { font-size: 11pt; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #6b6055; border-bottom: 1px solid #d4cbb8; padding-bottom: 4pt; margin-bottom: 10pt; }
+    .pr-restaurant-group { margin-bottom: 14pt; }
+    .pr-restaurant-name { font-size: 10pt; font-weight: 700; color: #8b3a1e; margin: 0 0 6pt; letter-spacing: 0.04em; }
+    .pr-table { width: 100%; border-collapse: collapse; font-size: 10pt; }
+    .pr-table th { text-align: left; font-size: 8pt; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #6b6055; border-bottom: 1px solid #d4cbb8; padding: 3pt 6pt; }
+    .pr-table td { padding: 5pt 6pt; border-bottom: 1px solid #ede8df; vertical-align: top; }
+    .pr-table tr:last-child td { border-bottom: none; }
+    .pr-priority-high { color: #8b3a1e; font-weight: 600; }
+    .pr-priority-medium { color: #6b6055; }
+    .pr-priority-low { color: #a09585; }
+    .pr-overdue { color: #8b3a1e; font-weight: 600; }
+    .pr-complete { color: #4a7c59; }
+    .pr-empty { font-size: 10pt; color: #a09585; font-style: italic; padding: 6pt 0; }
+    .pr-footer { border-top: 1px solid #d4cbb8; padding-top: 8pt; margin-top: 20pt; font-size: 8pt; color: #a09585; display: flex; justify-content: space-between; }
+  }
   /* ============================================================
      LOGIN SCREEN
      ============================================================ */
@@ -1367,7 +1400,9 @@
   <div class="header-actions">
     <button class="btn-ghost" id="btn-add-restaurant" onclick="openRestaurantModal()">+ Restaurant</button>
     <button class="btn-primary" id="btn-new-project" onclick="openAddModal()">+ New Project</button>
-    <button class="btn-ghost" onclick="logout()" style="margin-left:8px;font-size:11px;opacity:0.7">Sign Out</button>
+    <span class="overdue-badge" id="overdue-badge" style="display:none" title="Overdue projects"></span>
+    <button class="btn-ghost" id="btn-print-report" onclick="printReport()" title="Print / Save as PDF">&#128438; Report</button>
+    <button class="btn-ghost" onclick="logout()" style="margin-left:4px;font-size:11px;opacity:0.7">Sign Out</button>
   </div>
 </header>
 
@@ -2248,6 +2283,145 @@ async function toggleComplete(id) {
   p.complete = !p.complete;
   await dbUpsertProject(p);
   render();
+}
+
+// ============================================================
+// PRINT / PDF REPORT
+// ============================================================
+function printReport() {
+  var session    = state.session;
+  var isAdmin    = session && session.role === 'admin';
+  var myRest     = session && session.role === 'restaurant' ? session.restaurant : null;
+  var todayStr   = today();
+  var cutoff14   = new Date(todayStr + 'T00:00:00');
+  cutoff14.setDate(cutoff14.getDate() - 14);
+  var cutoff7    = new Date(todayStr + 'T00:00:00');
+  cutoff7.setDate(cutoff7.getDate() + 7);
+
+  // Filter projects by role
+  var allProjects = myRest
+    ? state.projects.filter(function(p){ return p.restaurant === myRest; })
+    : state.projects;
+
+  // Bucket projects into three groups
+  var recentlyDone = allProjects.filter(function(p) {
+    if (!p.complete) return false;
+    var updated = p.updatedAt ? new Date(p.updatedAt) : null;
+    return updated && updated >= cutoff14;
+  });
+
+  var comingUp = allProjects.filter(function(p) {
+    if (p.complete) return false;
+    var d = dueDate(p);
+    if (!d) return false;
+    var due = new Date(d + 'T00:00:00');
+    var now = new Date(todayStr + 'T00:00:00');
+    return due >= now && due <= cutoff7;
+  });
+
+  var overduePr = allProjects.filter(function(p) {
+    if (p.complete) return false;
+    var d = daysUntil(dueDate(p));
+    return d !== null && d < 0;
+  });
+
+  var horizon = allProjects.filter(function(p) {
+    if (p.complete) return false;
+    var d = dueDate(p);
+    if (!d) return true; // no due date — show in horizon
+    var days = daysUntil(d);
+    return days > 7;
+  });
+
+  // Get logo src
+  var logoSrc = '';
+  var logoEl = document.querySelector('.header-logos img');
+  if (logoEl) logoSrc = logoEl.src;
+
+  // Group projects by restaurant (for admin)
+  function groupByRestaurant(projects) {
+    var groups = {};
+    projects.forEach(function(p) {
+      if (!groups[p.restaurant]) groups[p.restaurant] = [];
+      groups[p.restaurant].push(p);
+    });
+    return groups;
+  }
+
+  function projectRow(p, showDue) {
+    var due    = dueDate(p);
+    var days   = due ? daysUntil(due) : null;
+    var dueStr = due ? formatDate(due) : '\u2014';
+    var dueClass = days !== null && days < 0 ? ' class="pr-overdue"' : '';
+    var priClass = 'pr-priority-' + (p.priority || 'medium').toLowerCase();
+    var subStr  = p.subtasks && p.subtasks.length > 0
+      ? p.subtasks.filter(function(s){ return s.status === 'complete'; }).length + '/' + p.subtasks.length + ' subtasks'
+      : '';
+    return '<tr>' +
+      '<td>' + escHtml(p.title) + (p.description ? '<br><span style="font-size:9pt;color:#6b6055">' + escHtml(p.description) + '</span>' : '') + (subStr ? '<br><span style="font-size:8pt;color:#a09585">' + subStr + '</span>' : '') + '</td>' +
+      (isAdmin ? '<td>' + escHtml(p.restaurant) + '</td>' : '') +
+      '<td>' + (p.owner || '\u2014') + '</td>' +
+      '<td class="' + priClass + '">' + (p.priority || '\u2014') + '</td>' +
+      (showDue ? '<td' + dueClass + '>' + dueStr + (days !== null && days < 0 ? ' (' + Math.abs(days) + 'd)' : '') + '</td>' : '') +
+    '</tr>';
+  }
+
+  function tableHeader(showDue) {
+    return '<tr>' +
+      '<th>Project</th>' +
+      (isAdmin ? '<th>Restaurant</th>' : '') +
+      '<th>Owner</th>' +
+      '<th>Priority</th>' +
+      (showDue ? '<th>Due Date</th>' : '') +
+    '</tr>';
+  }
+
+  function renderSection(title, projects, showDue) {
+    var html = '<div class="pr-section">';
+    html += '<div class="pr-section-title">' + title + '</div>';
+    if (projects.length === 0) {
+      html += '<p class="pr-empty">None.</p>';
+    } else if (isAdmin) {
+      var groups = groupByRestaurant(projects);
+      Object.keys(groups).sort().forEach(function(rest) {
+        html += '<div class="pr-restaurant-group">';
+        html += '<div class="pr-restaurant-name">' + escHtml(rest) + '</div>';
+        html += '<table class="pr-table"><thead>' + tableHeader(showDue) + '</thead><tbody>';
+        groups[rest].forEach(function(p){ html += projectRow(p, showDue); });
+        html += '</tbody></table></div>';
+      });
+    } else {
+      html += '<table class="pr-table"><thead>' + tableHeader(showDue) + '</thead><tbody>';
+      projects.forEach(function(p){ html += projectRow(p, showDue); });
+      html += '</tbody></table>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  var reportTitle = myRest ? myRest + ' — Project Report' : 'SC Culinary — Project Report';
+  var dateLabel   = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+  var html = '';
+  html += '<div class="pr-header">';
+  html += '<div class="pr-header-left"><h1>' + reportTitle + '</h1><p>' + dateLabel + '</p></div>';
+  if (logoSrc) html += '<img src="' + logoSrc + '" alt="SC Culinary">';
+  html += '</div>';
+
+  if (overduePr.length > 0) {
+    html += renderSection('\u26a0\ufe0f Overdue (' + overduePr.length + ')', overduePr, true);
+  }
+  html += renderSection('\u2705 Recently Completed (last 14 days)', recentlyDone, false);
+  html += renderSection('\ud83d\udcc5 Coming Up — Next 7 Days', comingUp, true);
+  html += renderSection('\ud83d\udd2d On the Horizon', horizon, true);
+
+  html += '<div class="pr-footer">';
+  html += '<span>SC Culinary Project Dashboard</span>';
+  html += '<span>Generated ' + dateLabel + '</span>';
+  html += '</div>';
+
+  document.getElementById('print-view').innerHTML = html;
+  window.print();
 }
 
 // ============================================================
@@ -3458,11 +3632,24 @@ function render() {
 
 function applySessionGating() {
   var isAdmin = state.session && state.session.role === 'admin';
-  // Show/hide admin-only buttons
   var btnNew  = document.getElementById('btn-new-project');
   var btnRest = document.getElementById('btn-add-restaurant');
   if (btnNew)  btnNew.style.display  = isAdmin ? '' : 'none';
   if (btnRest) btnRest.style.display = isAdmin ? '' : 'none';
+  // Overdue badge — respects restaurant role filter
+  var visibleProjects = state.session && state.session.role === 'restaurant'
+    ? state.projects.filter(function(p){ return p.restaurant === state.session.restaurant; })
+    : state.projects;
+  var overdueCount = visibleProjects.filter(function(p) {
+    if (p.complete) return false;
+    var d = daysUntil(dueDate(p));
+    return d !== null && d < 0;
+  }).length;
+  var badge = document.getElementById('overdue-badge');
+  if (badge) {
+    badge.textContent = overdueCount + ' overdue';
+    badge.style.display = overdueCount > 0 ? '' : 'none';
+  }
 }
 
 function renderFilterDropdowns() {
@@ -3489,5 +3676,7 @@ async function init() {
 
 init();
 </script>
+<div id="print-view"></div>
+
 </body>
 </html>
