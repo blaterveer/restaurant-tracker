@@ -1206,6 +1206,40 @@
   }
   .btn-danger:hover { background: var(--rust); color: white; }
 
+
+  /* ============================================================
+     SUBTASKS
+     ============================================================ */
+  .subtask-badge { display: inline-block; font-family: 'DM Mono', monospace; font-size: 10px; background: var(--parchment); border: 1px solid var(--border); color: var(--ink-light); border-radius: 20px; padding: 1px 8px; margin-top: 4px; }
+  .subtask-badge.all-done { background: rgba(74,124,89,0.12); border-color: rgba(74,124,89,0.3); color: #3a7a52; }
+  .subtask-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .subtask-item:last-child { border-bottom: none; }
+  .subtask-check { width: 16px; height: 16px; border: 2px solid var(--border); border-radius: 3px; flex-shrink: 0; cursor: pointer; margin-top: 2px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+  .subtask-check.done { background: var(--sage); border-color: var(--sage); }
+  .subtask-check.done::after { content: '✓'; color: white; font-size: 10px; font-weight: 700; }
+  .subtask-body { flex: 1; min-width: 0; }
+  .subtask-name { font-size: 13px; color: var(--ink); line-height: 1.3; }
+  .subtask-name.done { text-decoration: line-through; color: var(--warm-gray); }
+  .subtask-desc { font-size: 11px; color: var(--warm-gray); margin-top: 2px; }
+  .subtask-meta { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--warm-gray); margin-top: 3px; }
+  .subtask-actions { display: flex; gap: 6px; opacity: 0; transition: opacity 0.15s; }
+  .subtask-item:hover .subtask-actions { opacity: 1; }
+  .subtask-action-btn { font-size: 11px; color: var(--warm-gray); background: none; border: none; cursor: pointer; padding: 0; font-family: 'DM Mono', monospace; }
+  .subtask-action-btn:hover { color: var(--rust); }
+  .subtask-add-btn { margin-top: 10px; font-size: 12px; color: var(--rust); background: none; border: 1px dashed var(--border); border-radius: 4px; padding: 6px 12px; cursor: pointer; width: 100%; text-align: center; transition: all 0.15s; font-family: 'Instrument Sans', sans-serif; }
+  .subtask-add-btn:hover { border-color: var(--rust); background: rgba(139,58,30,0.04); }
+  .subtask-form { background: var(--parchment); border: 1px solid var(--border); border-radius: 6px; padding: 12px; margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+  .subtask-form .form-input, .subtask-form .form-textarea, .subtask-form .form-select { font-size: 12px; padding: 6px 8px; }
+  .subtask-form .form-textarea { min-height: 48px; resize: vertical; }
+  .subtask-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .subtask-form-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
+  .subtask-form-actions .btn-primary { font-size: 12px; padding: 6px 14px; }
+  .subtask-form-actions .btn-cancel { font-size: 12px; padding: 6px 14px; }
+  .subtask-rollup-toast { background: rgba(74,124,89,0.12); border: 1px solid rgba(74,124,89,0.3); color: #2d6b42; border-radius: 6px; padding: 8px 12px; font-size: 12px; margin-bottom: 10px; display: none; }
+  .complex-toggle-row { display: flex; align-items: center; padding: 4px 0 8px; }
+  .complex-toggle-row label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: var(--ink); }
+  .complex-toggle-row input[type=checkbox] { width: 15px; height: 15px; cursor: pointer; accent-color: var(--rust); }
+  .complex-toggle-hint { font-size: 11px; color: var(--warm-gray); font-style: italic; margin-left: 4px; }
   /* ============================================================
      MOBILE RESPONSIVE
      ============================================================ */
@@ -1538,6 +1572,13 @@
           <input type="date" class="form-input" id="f-date-added">
           <div class="weeks-display" id="due-preview"></div>
         </div>
+        <div class="form-group full complex-toggle-row">
+          <label>
+            <input type="checkbox" id="f-is-complex">
+            <span>Complex task</span>
+          </label>
+          <span class="complex-toggle-hint">&#8212; enables subtask tracking (manage subtasks in the detail panel)</span>
+        </div>
         <hr class="section-divider">
         <div class="section-label">Progress Note</div>
         <div class="form-group full">
@@ -1578,6 +1619,24 @@
     <div class="detail-section">
       <div class="detail-section-title">Description</div>
       <p class="detail-description" id="dp-description"></p>
+    </div>
+    <div class="detail-section" id="dp-subtasks-section" style="display:none">
+      <div class="detail-section-title">Subtasks</div>
+      <div class="subtask-rollup-toast" id="dp-rollup-toast"></div>
+      <div id="dp-subtasks-list"></div>
+      <button class="subtask-add-btn" id="dp-subtask-add-btn" onclick="showSubtaskForm()">+ Add Subtask</button>
+      <div class="subtask-form" id="dp-subtask-form" style="display:none">
+        <input type="text" class="form-input" id="st-name" placeholder="Subtask name...">
+        <textarea class="form-textarea" id="st-description" placeholder="Description (optional)..."></textarea>
+        <div class="subtask-form-row">
+          <select class="form-select" id="st-owner"><option value="">Assign owner...</option></select>
+          <input type="date" class="form-input" id="st-due-date">
+        </div>
+        <div class="subtask-form-actions">
+          <button class="btn-cancel" onclick="hideSubtaskForm()">Cancel</button>
+          <button class="btn-primary" onclick="saveSubtask()">Add Subtask</button>
+        </div>
+      </div>
     </div>
     <div class="detail-section" id="dp-notes-section">
       <div class="detail-section-title">Progress Notes</div>
@@ -1674,6 +1733,7 @@ async function loadAll() {
     { data: owners      },
     { data: projects    },
     { data: notes       },
+    { data: subtasks    },
   ] = await Promise.all([
     db.from('restaurants').select('name').order('sort_order'),
     db.from('categories' ).select('name').order('sort_order'),
@@ -1681,6 +1741,7 @@ async function loadAll() {
     db.from('owners'     ).select('name').order('sort_order'),
     db.from('projects'   ).select('*'),
     db.from('notes'      ).select('*').order('created_at'),
+    db.from('subtasks'   ).select('*').order('sort_order'),
   ]);
 
   state.restaurants = (restaurants || []).map(r => r.name);
@@ -1714,8 +1775,26 @@ async function loadAll() {
     complete:    p.complete   || false,
     link:        p.link       || '',
     updatedAt:   p.updated_at  || null,
+    isComplex:   p.is_complex  || false,
     notes:       notesByProject[p.id] || [],
+    subtasks:    [],
   }));
+
+  // Merge subtasks into projects
+  const subtasksByProject = {};
+  (subtasks || []).forEach(s => {
+    if (!subtasksByProject[s.project_id]) subtasksByProject[s.project_id] = [];
+    subtasksByProject[s.project_id].push({
+      id:          s.id,
+      name:        s.name,
+      description: s.description || '',
+      status:      s.status || 'incomplete',
+      owner:       s.owner || '',
+      dueDate:     s.due_date || null,
+      sortOrder:   s.sort_order || 0,
+    });
+  });
+  state.projects.forEach(p => { p.subtasks = subtasksByProject[p.id] || []; });
 }
 
 async function dbUpsertProject(p) {
@@ -1732,6 +1811,7 @@ async function dbUpsertProject(p) {
     date_added:  p.dateAdded  || null,
     complete:    p.complete,
     link:        p.link       || null,
+    is_complex:  p.isComplex  || false,
   });
   if (error) console.error('upsertProject error:', error);
 }
@@ -1760,6 +1840,26 @@ async function dbUpdateNote(noteId, text) {
 async function dbDeleteNote(noteId) {
   const { error } = await db.from('notes').delete().eq('id', noteId);
   if (error) console.error('deleteNote error:', error);
+}
+
+async function dbUpsertSubtask(projectId, st) {
+  const { data, error } = await db.from('subtasks').upsert({
+    id:          st.id,
+    project_id:  projectId,
+    name:        st.name,
+    description: st.description || null,
+    status:      st.status || 'incomplete',
+    owner:       st.owner || null,
+    due_date:    st.dueDate || null,
+    sort_order:  st.sortOrder || 0,
+  }).select().single();
+  if (error) { console.error('upsertSubtask error:', error); return null; }
+  return data ? data.id : st.id;
+}
+
+async function dbDeleteSubtask(id) {
+  const { error } = await db.from('subtasks').delete().eq('id', id);
+  if (error) console.error('deleteSubtask error:', error);
 }
 
 async function dbAddLookup(table, name) {
@@ -2035,6 +2135,7 @@ function renderTable() {
       <td style="${p.complete ? 'opacity:0.5' : ''}">
         <span class="project-name">${p.title}</span>
         ${p.description ? `<span class="project-desc">${p.description}</span>` : ''}
+        ${p.isComplex ? subtaskBadge(p) : ''}
       </td>
       <td><span class="category-tag ${categoryClass(p.category)}">${p.category || '””'}</span></td>
       <td class="owner-cell">${p.owner || '””'}</td>
@@ -2051,6 +2152,128 @@ async function toggleComplete(id) {
   p.complete = !p.complete;
   await dbUpsertProject(p);
   render();
+}
+
+// ============================================================
+// SUBTASK HELPERS
+// ============================================================
+function subtaskBadge(p) {
+  var done  = p.subtasks.filter(function(s){ return s.status === 'complete'; }).length;
+  var total = p.subtasks.length;
+  if (total === 0) return '<span class="subtask-badge">subtasks</span>';
+  var cls = done === total ? ' all-done' : '';
+  return '<span class="subtask-badge' + cls + '">' + done + '/' + total + ' subtasks</span>';
+}
+
+function renderSubtasksPanel(p) {
+  var section = document.getElementById('dp-subtasks-section');
+  var list    = document.getElementById('dp-subtasks-list');
+  if (!p.isComplex) { section.style.display = 'none'; return; }
+  section.style.display = '';
+  hideSubtaskForm();
+  var ownerSel = document.getElementById('st-owner');
+  ownerSel.innerHTML = '<option value="">Assign owner...</option>' +
+    state.owners.map(function(o){ return '<option value="' + o + '">' + o + '</option>'; }).join('');
+  if (!p.subtasks || p.subtasks.length === 0) {
+    list.innerHTML = '<p style="font-size:12px;color:var(--warm-gray);font-style:italic">No subtasks yet.</p>';
+    return;
+  }
+  list.innerHTML = p.subtasks.map(function(st) {
+    var isDone = st.status === 'complete';
+    var meta   = [];
+    if (st.owner)   meta.push(st.owner);
+    if (st.dueDate) meta.push('Due ' + formatDate(st.dueDate));
+    var checkCls = isDone ? ' done' : '';
+    var nameCls  = isDone ? ' done' : '';
+    return '<div class="subtask-item">' +
+      '<div class="subtask-check' + checkCls + '" onclick="toggleSubtask(\'' + p.id + '\', \'' + st.id + '\')"></div>' +
+      '<div class="subtask-body">' +
+        '<div class="subtask-name' + nameCls + '">' + st.name + '</div>' +
+        (st.description ? '<div class="subtask-desc">' + st.description + '</div>' : '') +
+        (meta.length ? '<div class="subtask-meta">' + meta.join(' · ') + '</div>' : '') +
+      '</div>' +
+      '<div class="subtask-actions">' +
+        '<button class="subtask-action-btn" onclick="deleteSubtask(\'' + p.id + '\', \'' + st.id + '\')">Delete</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function showSubtaskForm() {
+  document.getElementById('dp-subtask-form').style.display = '';
+  document.getElementById('dp-subtask-add-btn').style.display = 'none';
+  document.getElementById('st-name').focus();
+}
+
+function hideSubtaskForm() {
+  document.getElementById('dp-subtask-form').style.display = 'none';
+  document.getElementById('dp-subtask-add-btn').style.display = '';
+  document.getElementById('st-name').value = '';
+  document.getElementById('st-description').value = '';
+  document.getElementById('st-owner').value = '';
+  document.getElementById('st-due-date').value = '';
+}
+
+async function saveSubtask() {
+  var name = document.getElementById('st-name').value.trim();
+  if (!name) { alert('Subtask name is required.'); return; }
+  var p = state.projects.find(function(x){ return x.id === state.detailProjectId; });
+  if (!p) return;
+  var st = {
+    id:          (Date.now().toString(36) + Math.random().toString(36).slice(2)),
+    name:        name,
+    description: document.getElementById('st-description').value.trim(),
+    status:      'incomplete',
+    owner:       document.getElementById('st-owner').value,
+    dueDate:     document.getElementById('st-due-date').value || null,
+    sortOrder:   p.subtasks.length,
+  };
+  var savedId = await dbUpsertSubtask(p.id, st);
+  if (savedId) st.id = savedId;
+  p.subtasks.push(st);
+  renderSubtasksPanel(p);
+  renderTable();
+}
+
+async function toggleSubtask(projectId, subtaskId) {
+  var p  = state.projects.find(function(x){ return x.id === projectId; });
+  if (!p) return;
+  var st = p.subtasks.find(function(s){ return s.id === subtaskId; });
+  if (!st) return;
+  st.status = st.status === 'complete' ? 'incomplete' : 'complete';
+  await dbUpsertSubtask(p.id, st);
+  renderSubtasksPanel(p);
+  renderTable();
+  checkSubtaskRollup(p);
+}
+
+async function deleteSubtask(projectId, subtaskId) {
+  if (!confirm('Delete this subtask?')) return;
+  var p = state.projects.find(function(x){ return x.id === projectId; });
+  if (!p) return;
+  await dbDeleteSubtask(subtaskId);
+  p.subtasks = p.subtasks.filter(function(s){ return s.id !== subtaskId; });
+  renderSubtasksPanel(p);
+  renderTable();
+}
+
+async function checkSubtaskRollup(p) {
+  if (!p.subtasks || p.subtasks.length === 0) return;
+  var allDone = p.subtasks.every(function(s){ return s.status === 'complete'; });
+  if (allDone && !p.complete) {
+    p.complete = true;
+    await dbUpsertProject(p);
+    var completeBtn = document.getElementById('dp-complete-btn');
+    if (completeBtn) completeBtn.textContent = 'Mark Incomplete';
+    var toast = document.getElementById('dp-rollup-toast');
+    if (toast) {
+      toast.textContent = 'All subtasks complete — project marked as done!';
+      toast.style.display = 'block';
+      setTimeout(function(){ toast.style.display = 'none'; }, 4000);
+    }
+    renderTable();
+    renderSummary();
+  }
 }
 
 // ============================================================
@@ -2081,6 +2304,7 @@ function openDetail(id) {
   document.getElementById('dp-description').textContent = p.description || 'No description provided.';
 
   renderPanelNotes(p);
+  renderSubtasksPanel(p);
 
   const authorSel = document.getElementById('dp-note-author');
   authorSel.innerHTML = `<option value="">”” Who's adding this? ””</option>` +
@@ -2270,6 +2494,7 @@ function openAddModal(editId = null) {
   document.getElementById('f-weeks').value       = isEdit ? (p?.weeks       || '') : '';
   document.getElementById('f-date-added').value  = isEdit ? (p?.dateAdded   || today()) : today();
   document.getElementById('f-note').value        = '';
+  document.getElementById('f-is-complex').checked = isEdit ? (p ? (p.isComplex || false) : false) : false;
 
   ['new-category-input', 'new-type-input', 'new-owner-input'].forEach(id => {
     const el = document.getElementById(id);
@@ -2363,6 +2588,7 @@ async function saveProject() {
     p.title = title; p.restaurant = restaurant; p.category = category;
     p.type = type; p.description = description; p.owner = owner;
     p.priority = priority; p.weeks = weeks; p.dateAdded = dateAdded;
+    p.isComplex = document.getElementById('f-is-complex').checked;
     await dbUpsertProject(p);
     if (noteText) {
       const newNote = { date: today(), text: noteText, author: '' };
@@ -2374,7 +2600,8 @@ async function saveProject() {
     const newProject = {
       id: uid(), restaurant, title, category, type, description,
       owner, priority, weeks, dateAdded,
-      complete: false, link: '', notes: []
+      isComplex: document.getElementById('f-is-complex').checked,
+      complete: false, link: '', notes: [], subtasks: []
     };
     await dbUpsertProject(newProject);
     if (noteText) {
