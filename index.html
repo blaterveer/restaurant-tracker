@@ -1558,10 +1558,10 @@
         </div>
         <div class="form-group">
           <label>Owner</label>
-          <select class="form-select" id="f-owner" onchange="checkNewOption(this, 'new-owner-input')">
+          <select class="form-select" id="f-owner" onchange="handleOwnerSelect('f-owner')">
             <option value="">Select or add…</option>
           </select>
-          <input type="text" class="form-input new-option-input" id="new-owner-input" placeholder="Full name…">
+          <input style="display:none" type="text" class="form-input new-option-input" id="new-owner-input" placeholder="Full name…">
         </div>
         <div class="form-group">
           <label>Weeks to Complete</label>
@@ -1629,7 +1629,7 @@
         <input type="text" class="form-input" id="st-name" placeholder="Subtask name...">
         <textarea class="form-textarea" id="st-description" placeholder="Description (optional)..."></textarea>
         <div class="subtask-form-row">
-          <select class="form-select" id="st-owner"><option value="">Assign owner...</option></select>
+          <select class="form-select" id="st-owner" onchange="handleOwnerSelect('st-owner')"><option value="">Assign owner...</option></select>
           <input type="date" class="form-input" id="st-due-date">
         </div>
         <div class="subtask-form-actions">
@@ -1693,6 +1693,39 @@
   </div>
 </div>
 
+<!-- ADD OWNER MODAL -->
+<div class="modal-overlay" id="add-owner-modal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <h2>Add <em>Team Member</em></h2>
+      <button class="modal-close" onclick="closeAddOwnerModal()">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>First Name <span class="required">*</span></label>
+          <input type="text" class="form-input" id="f-owner-first" placeholder="First name">
+        </div>
+        <div class="form-group">
+          <label>Last Name <span class="required">*</span></label>
+          <input type="text" class="form-input" id="f-owner-last" placeholder="Last name">
+        </div>
+        <div class="form-group full">
+          <label>Team <span class="required">*</span></label>
+          <select class="form-select" id="f-owner-team">
+            <option value="LTH">LTH</option>
+            <option value="Property">Property</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeAddOwnerModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveNewOwner()">Add Team Member</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 // ============================================================
@@ -1719,6 +1752,7 @@ let state = {
   detailProjectId: null,
   editProjectId: null,
   gantt: { windowDays: 90, groupBy: 'restaurant', showComplete: true },
+  editingSubtaskId: null,
 };
 
 // ============================================================
@@ -2155,6 +2189,67 @@ async function toggleComplete(id) {
 }
 
 // ============================================================
+// OWNER HELPERS
+// ============================================================
+var _ownerReturnSelectId = null;
+
+function escHtml(str) {
+  return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function populateOwnerSelect(sel, selected) {
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Select or add...</option>' +
+    state.owners.map(function(o) {
+      return '<option value="' + o + '"' + (o === selected ? ' selected' : '') + '>' + o + '</option>';
+    }).join('') +
+    '<option value="__new__">+ Add new owner...</option>';
+  if (selected && state.owners.includes(selected)) sel.value = selected;
+}
+
+function handleOwnerSelect(selectId) {
+  var sel = document.getElementById(selectId);
+  if (!sel) return;
+  if (sel.value === '__new__') {
+    sel.value = '';
+    openAddOwnerModal(selectId);
+  }
+}
+
+function openAddOwnerModal(returnSelectId) {
+  _ownerReturnSelectId = returnSelectId;
+  document.getElementById('f-owner-first').value = '';
+  document.getElementById('f-owner-last').value  = '';
+  document.getElementById('f-owner-team').value  = 'LTH';
+  document.getElementById('add-owner-modal').classList.add('open');
+}
+
+function closeAddOwnerModal() {
+  document.getElementById('add-owner-modal').classList.remove('open');
+}
+
+async function saveNewOwner() {
+  var first = document.getElementById('f-owner-first').value.trim();
+  var last  = document.getElementById('f-owner-last').value.trim();
+  var team  = document.getElementById('f-owner-team').value;
+  if (!first || !last) { alert('First and last name are required.'); return; }
+  var displayName = first + ' ' + last + ' (' + team + ')';
+  if (!state.owners.includes(displayName)) {
+    await dbAddLookup('owners', displayName);
+    state.owners.push(displayName);
+  }
+  // Update all owner selects that are currently in the DOM
+  var selectIds = ['f-owner', 'st-owner', 'st-edit-owner'];
+  selectIds.forEach(function(id) {
+    var sel = document.getElementById(id);
+    if (!sel) return;
+    var prevVal = sel.value;
+    populateOwnerSelect(sel, id === _ownerReturnSelectId ? displayName : (prevVal || null));
+  });
+  closeAddOwnerModal();
+}
+
+// ============================================================
 // SUBTASK HELPERS
 // ============================================================
 function subtaskBadge(p) {
@@ -2171,16 +2266,39 @@ function renderSubtasksPanel(p) {
   if (!p.isComplex) { section.style.display = 'none'; return; }
   section.style.display = '';
   hideSubtaskForm();
-  var ownerSel = document.getElementById('st-owner');
-  ownerSel.innerHTML = '<option value="">Assign owner...</option>' +
-    state.owners.map(function(o){ return '<option value="' + o + '">' + o + '</option>'; }).join('');
+
+  // Populate add-form owner select
+  populateOwnerSelect(document.getElementById('st-owner'), null);
+
   if (!p.subtasks || p.subtasks.length === 0) {
     list.innerHTML = '<p style="font-size:12px;color:var(--warm-gray);font-style:italic">No subtasks yet.</p>';
     return;
   }
+
+  var editingId = state.editingSubtaskId;
   list.innerHTML = p.subtasks.map(function(st) {
     var isDone = st.status === 'complete';
-    var meta   = [];
+
+    // EDIT MODE for this subtask
+    if (st.id === editingId) {
+      return '<div class="subtask-item">' +
+        '<div class="subtask-form" style="flex:1;margin-top:0">' +
+          '<input type="text" class="form-input" id="st-edit-name" value="' + escHtml(st.name) + '" placeholder="Subtask name...">' +
+          '<textarea class="form-textarea" id="st-edit-description" placeholder="Description (optional)...">' + escHtml(st.description) + '</textarea>' +
+          '<div class="subtask-form-row">' +
+            '<select class="form-select" id="st-edit-owner" onchange="handleOwnerSelect(\'st-edit-owner\')"><option value="">Assign owner...</option></select>' +
+            '<input type="date" class="form-input" id="st-edit-due-date" value="' + (st.dueDate || '') + '">' +
+          '</div>' +
+          '<div class="subtask-form-actions">' +
+            '<button class="btn-cancel" onclick="cancelSubtaskEdit()">Cancel</button>' +
+            '<button class="btn-primary" onclick="saveSubtaskEdit(\'' + p.id + '\', \'' + st.id + '\')">Save</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }
+
+    // NORMAL VIEW
+    var meta = [];
     if (st.owner)   meta.push(st.owner);
     if (st.dueDate) meta.push('Due ' + formatDate(st.dueDate));
     var checkCls = isDone ? ' done' : '';
@@ -2188,16 +2306,27 @@ function renderSubtasksPanel(p) {
     return '<div class="subtask-item">' +
       '<div class="subtask-check' + checkCls + '" onclick="toggleSubtask(\'' + p.id + '\', \'' + st.id + '\')"></div>' +
       '<div class="subtask-body">' +
-        '<div class="subtask-name' + nameCls + '">' + st.name + '</div>' +
-        (st.description ? '<div class="subtask-desc">' + st.description + '</div>' : '') +
-        (meta.length ? '<div class="subtask-meta">' + meta.join(' · ') + '</div>' : '') +
+        '<div class="subtask-name' + nameCls + '">' + escHtml(st.name) + '</div>' +
+        (st.description ? '<div class="subtask-desc">' + escHtml(st.description) + '</div>' : '') +
+        (meta.length ? '<div class="subtask-meta">' + meta.join(' \u00b7 ') + '</div>' : '') +
       '</div>' +
       '<div class="subtask-actions">' +
+        '<button class="subtask-action-btn" onclick="editSubtask(\'' + p.id + '\', \'' + st.id + '\')">Edit</button>' +
         '<button class="subtask-action-btn" onclick="deleteSubtask(\'' + p.id + '\', \'' + st.id + '\')">Delete</button>' +
       '</div>' +
     '</div>';
   }).join('');
+
+  // After rendering, populate the edit owner select if in edit mode
+  if (editingId) {
+    var editSt = p.subtasks.find(function(s){ return s.id === editingId; });
+    var editOwnerSel = document.getElementById('st-edit-owner');
+    if (editOwnerSel && editSt) {
+      populateOwnerSelect(editOwnerSel, editSt.owner || null);
+    }
+  }
 }
+
 
 function showSubtaskForm() {
   document.getElementById('dp-subtask-form').style.display = '';
@@ -2274,6 +2403,35 @@ async function checkSubtaskRollup(p) {
     renderTable();
     renderSummary();
   }
+}
+
+function editSubtask(projectId, subtaskId) {
+  state.editingSubtaskId = subtaskId;
+  var p = state.projects.find(function(x){ return x.id === projectId; });
+  if (p) renderSubtasksPanel(p);
+}
+
+function cancelSubtaskEdit() {
+  state.editingSubtaskId = null;
+  var p = state.projects.find(function(x){ return x.id === state.detailProjectId; });
+  if (p) renderSubtasksPanel(p);
+}
+
+async function saveSubtaskEdit(projectId, subtaskId) {
+  var p  = state.projects.find(function(x){ return x.id === projectId; });
+  if (!p) return;
+  var st = p.subtasks.find(function(s){ return s.id === subtaskId; });
+  if (!st) return;
+  var name = document.getElementById('st-edit-name').value.trim();
+  if (!name) { alert('Subtask name is required.'); return; }
+  st.name        = name;
+  st.description = document.getElementById('st-edit-description').value.trim();
+  st.owner       = document.getElementById('st-edit-owner').value;
+  st.dueDate     = document.getElementById('st-edit-due-date').value || null;
+  await dbUpsertSubtask(p.id, st);
+  state.editingSubtaskId = null;
+  renderSubtasksPanel(p);
+  renderTable();
 }
 
 // ============================================================
@@ -2486,7 +2644,7 @@ function openAddModal(editId = null) {
 
   populateDynamicSelect('f-category', state.categories, isEdit ? p?.category : null);
   populateDynamicSelect('f-type',     state.types,      isEdit ? p?.type     : null);
-  populateDynamicSelect('f-owner',    state.owners,     isEdit ? p?.owner    : null);
+  populateOwnerSelect(document.getElementById('f-owner'), isEdit ? (p ? p.owner : null) : null);
 
   document.getElementById('f-title').value       = isEdit ? (p?.title       || '') : '';
   document.getElementById('f-description').value = isEdit ? (p?.description || '') : '';
@@ -2496,7 +2654,7 @@ function openAddModal(editId = null) {
   document.getElementById('f-note').value        = '';
   document.getElementById('f-is-complex').checked = isEdit ? (p ? (p.isComplex || false) : false) : false;
 
-  ['new-category-input', 'new-type-input', 'new-owner-input'].forEach(id => {
+  ['new-category-input', 'new-type-input'].forEach(id => {
     const el = document.getElementById(id);
     el.value = '';
     el.style.display = 'none';
