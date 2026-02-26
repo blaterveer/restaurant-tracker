@@ -3173,7 +3173,10 @@ function renderGanttView() {
   const days = [];
   for (let d = new Date(todayDate); d <= endDate; d.setDate(d.getDate()+1)) days.push(new Date(d));
 
-  let projects = state.projects.filter(p => {
+  const ganttBase = state.session && state.session.role === 'restaurant'
+    ? state.projects.filter(p => p.restaurant === state.session.restaurant)
+    : state.projects;
+  let projects = ganttBase.filter(p => {
     if (!p.dateAdded) return false;
     const due = getDueDate(p);
     if (!due) return false;
