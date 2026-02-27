@@ -1401,7 +1401,7 @@
     <button class="btn-ghost" id="btn-add-restaurant" onclick="openRestaurantModal()">+ Restaurant</button>
     <button class="btn-primary" id="btn-new-project" onclick="openAddModal()">+ New Project</button>
     <span class="overdue-badge" id="overdue-badge" style="display:none" title="Overdue projects"></span>
-    <button class="btn-ghost" id="btn-print-report" onclick="printReport()" title="Print / Save as PDF">&#128438; Report</button>
+    <button class="btn-ghost" id="btn-print-report" onclick="printReport()" title="Print / Save as PDF">&#128438; Weekly Report</button>
     <button class="btn-ghost" onclick="logout()" style="margin-left:4px;font-size:11px;opacity:0.7">Sign Out</button>
   </div>
 </header>
@@ -2286,139 +2286,156 @@ async function toggleComplete(id) {
 }
 
 // ============================================================
-// PRINT / PDF REPORT
+// PRINT / PDF REPORT — Weekly Summary
 // ============================================================
 function printReport() {
-  var session    = state.session;
-  var isAdmin    = session && session.role === 'admin';
-  var myRest     = session && session.role === 'restaurant' ? session.restaurant : null;
-  var todayStr   = today();
-  var cutoff14   = new Date(todayStr + 'T00:00:00');
-  cutoff14.setDate(cutoff14.getDate() - 14);
-  var cutoff7    = new Date(todayStr + 'T00:00:00');
-  cutoff7.setDate(cutoff7.getDate() + 7);
+  var session  = state.session;
+  var isAdmin  = session && session.role === 'admin';
+  var myRest   = session && session.role === 'restaurant' ? session.restaurant : null;
+  var todayStr = today();
+  var now      = new Date(todayStr + 'T00:00:00');
+  var cutoff8  = new Date(now); cutoff8.setDate(cutoff8.getDate() - 8);
 
-  // Filter projects by role
   var allProjects = myRest
     ? state.projects.filter(function(p){ return p.restaurant === myRest; })
     : state.projects;
 
-  // Bucket projects into three groups
-  var recentlyDone = allProjects.filter(function(p) {
+  // 1. Completed in past 8 days
+  var recentDone = allProjects.filter(function(p) {
     if (!p.complete) return false;
-    var updated = p.updatedAt ? new Date(p.updatedAt) : null;
-    return updated && updated >= cutoff14;
+    var u = p.updatedAt ? new Date(p.updatedAt) : null;
+    return u && u >= cutoff8;
   });
 
-  var comingUp = allProjects.filter(function(p) {
-    if (p.complete) return false;
-    var d = dueDate(p);
-    if (!d) return false;
-    var due = new Date(d + 'T00:00:00');
-    var now = new Date(todayStr + 'T00:00:00');
-    return due >= now && due <= cutoff7;
+  // 2. Notes added in past 8 days
+  var recentNotes = [];
+  allProjects.forEach(function(p) {
+    (p.notes || []).forEach(function(n) {
+      if (!n.date) return;
+      if (new Date(n.date + 'T00:00:00') >= cutoff8) recentNotes.push({ project: p, note: n });
+    });
   });
+  recentNotes.sort(function(a, b) { return new Date(b.note.date) - new Date(a.note.date); });
 
-  var overduePr = allProjects.filter(function(p) {
+  // 3. Overdue
+  var overdueList = allProjects.filter(function(p) {
     if (p.complete) return false;
     var d = daysUntil(dueDate(p));
     return d !== null && d < 0;
   });
 
-  var horizon = allProjects.filter(function(p) {
-    if (p.complete) return false;
-    var d = dueDate(p);
-    if (!d) return true; // no due date — show in horizon
-    var days = daysUntil(d);
-    return days > 7;
-  });
-
-  // Get logo src
-  var logoSrc = '';
-  var logoEl = document.querySelector('.header-logos img');
-  if (logoEl) logoSrc = logoEl.src;
-
-  // Group projects by restaurant (for admin)
-  function groupByRestaurant(projects) {
-    var groups = {};
-    projects.forEach(function(p) {
-      if (!groups[p.restaurant]) groups[p.restaurant] = [];
-      groups[p.restaurant].push(p);
-    });
-    return groups;
-  }
-
-  function projectRow(p, showDue) {
-    var due    = dueDate(p);
-    var days   = due ? daysUntil(due) : null;
-    var dueStr = due ? formatDate(due) : '\u2014';
-    var dueClass = days !== null && days < 0 ? ' class="pr-overdue"' : '';
-    var priClass = 'pr-priority-' + (p.priority || 'medium').toLowerCase();
-    var subStr  = p.subtasks && p.subtasks.length > 0
-      ? p.subtasks.filter(function(s){ return s.status === 'complete'; }).length + '/' + p.subtasks.length + ' subtasks'
-      : '';
-    return '<tr>' +
-      '<td>' + escHtml(p.title) + (p.description ? '<br><span style="font-size:9pt;color:#6b6055">' + escHtml(p.description) + '</span>' : '') + (subStr ? '<br><span style="font-size:8pt;color:#a09585">' + subStr + '</span>' : '') + '</td>' +
-      (isAdmin ? '<td>' + escHtml(p.restaurant) + '</td>' : '') +
-      '<td>' + (p.owner || '\u2014') + '</td>' +
-      '<td class="' + priClass + '">' + (p.priority || '\u2014') + '</td>' +
-      (showDue ? '<td' + dueClass + '>' + dueStr + (days !== null && days < 0 ? ' (' + Math.abs(days) + 'd)' : '') + '</td>' : '') +
-    '</tr>';
-  }
-
-  function tableHeader(showDue) {
-    return '<tr>' +
-      '<th>Project</th>' +
-      (isAdmin ? '<th>Restaurant</th>' : '') +
-      '<th>Owner</th>' +
-      '<th>Priority</th>' +
-      (showDue ? '<th>Due Date</th>' : '') +
-    '</tr>';
-  }
-
-  function renderSection(title, projects, showDue) {
-    var html = '<div class="pr-section">';
-    html += '<div class="pr-section-title">' + title + '</div>';
-    if (projects.length === 0) {
-      html += '<p class="pr-empty">None.</p>';
-    } else if (isAdmin) {
-      var groups = groupByRestaurant(projects);
-      Object.keys(groups).sort().forEach(function(rest) {
-        html += '<div class="pr-restaurant-group">';
-        html += '<div class="pr-restaurant-name">' + escHtml(rest) + '</div>';
-        html += '<table class="pr-table"><thead>' + tableHeader(showDue) + '</thead><tbody>';
-        groups[rest].forEach(function(p){ html += projectRow(p, showDue); });
-        html += '</tbody></table></div>';
-      });
-    } else {
-      html += '<table class="pr-table"><thead>' + tableHeader(showDue) + '</thead><tbody>';
-      projects.forEach(function(p){ html += projectRow(p, showDue); });
-      html += '</tbody></table>';
+  // 4. Due in next 14 days — projects AND subtasks
+  var upcoming = [];
+  allProjects.forEach(function(p) {
+    if (p.complete) return;
+    var pd = dueDate(p);
+    if (pd) {
+      var days = daysUntil(pd);
+      if (days !== null && days >= 0 && days <= 14)
+        upcoming.push({ type: 'project', label: p.title, sub: null, restaurant: p.restaurant, owner: p.owner, priority: p.priority, dueDate: pd, days: days });
     }
-    html += '</div>';
-    return html;
-  }
+    (p.subtasks || []).forEach(function(st) {
+      if (st.status === 'complete' || !st.dueDate) return;
+      var sd = daysUntil(st.dueDate);
+      if (sd !== null && sd >= 0 && sd <= 14)
+        upcoming.push({ type: 'subtask', label: st.name, sub: p.title, restaurant: p.restaurant, owner: st.owner || p.owner, priority: p.priority, dueDate: st.dueDate, days: sd });
+    });
+  });
+  upcoming.sort(function(a, b) { return a.days - b.days; });
 
-  var reportTitle = myRest ? myRest + ' — Project Report' : 'SC Culinary — Project Report';
+  // Logo + header strings
+  var logoSrc  = '';
+  var logoEl   = document.querySelector('.header-logos img');
+  if (logoEl) logoSrc = logoEl.src;
   var dateLabel   = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  var reportTitle = myRest ? myRest + ' — Weekly Summary' : 'SC Culinary — Weekly Summary';
 
-  var html = '';
-  html += '<div class="pr-header">';
-  html += '<div class="pr-header-left"><h1>' + reportTitle + '</h1><p>' + dateLabel + '</p></div>';
-  if (logoSrc) html += '<img src="' + logoSrc + '" alt="SC Culinary">';
-  html += '</div>';
+  function rCol(r) { return isAdmin ? '<td>' + escHtml(r || '') + '</td>' : ''; }
+  function rTh()   { return isAdmin ? '<th>Restaurant</th>' : ''; }
 
-  if (overduePr.length > 0) {
-    html += renderSection('\u26a0\ufe0f Overdue (' + overduePr.length + ')', overduePr, true);
+  // ── Completed section ─────────────────────────────────────────────────────
+  var secDone = '<div class="pr-section">'
+    + '<div class="pr-section-title">✅ Completed — Past 8 Days (' + recentDone.length + ')</div>'
+    + '<table class="pr-table"><thead><tr><th>Project</th>' + rTh() + '<th>Owner</th><th>Completed</th></tr></thead><tbody>';
+  if (!recentDone.length) {
+    secDone += '<tr><td colspan="' + (isAdmin ? 4 : 3) + '" class="pr-empty">No projects completed in the past 8 days.</td></tr>';
+  } else {
+    recentDone.forEach(function(p) {
+      var cd = p.updatedAt ? new Date(p.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
+      secDone += '<tr><td>' + escHtml(p.title)
+        + (p.description ? '<br><span style="font-size:9pt;color:#6b6055">' + escHtml(p.description) + '</span>' : '')
+        + '</td>' + rCol(p.restaurant) + '<td>' + (p.owner || '—') + '</td>'
+        + '<td class="pr-complete">' + cd + '</td></tr>';
+    });
   }
-  html += renderSection('\u2705 Recently Completed (last 14 days)', recentlyDone, false);
-  html += renderSection('\ud83d\udcc5 Coming Up — Next 7 Days', comingUp, true);
-  html += renderSection('\ud83d\udd2d On the Horizon', horizon, true);
+  secDone += '</tbody></table></div>';
 
-  html += '<div class="pr-footer">';
-  html += '<span>SC Culinary Project Dashboard</span>';
-  html += '<span>Generated ' + dateLabel + '</span>';
-  html += '</div>';
+  // ── Notes section ─────────────────────────────────────────────────────────
+  var secNotes = '<div class="pr-section">'
+    + '<div class="pr-section-title">📝 Recent Notes — Past 8 Days (' + recentNotes.length + ')</div>'
+    + '<table class="pr-table"><thead><tr><th>Date</th><th>Project</th>' + rTh() + '<th>Note</th><th>Author</th></tr></thead><tbody>';
+  if (!recentNotes.length) {
+    secNotes += '<tr><td colspan="' + (isAdmin ? 5 : 4) + '" class="pr-empty">No notes added in the past 8 days.</td></tr>';
+  } else {
+    recentNotes.forEach(function(item) {
+      secNotes += '<tr>'
+        + '<td style="white-space:nowrap">' + formatDate(item.note.date) + '</td>'
+        + '<td>' + escHtml(item.project.title) + '</td>'
+        + rCol(item.project.restaurant)
+        + '<td>' + escHtml(item.note.text) + '</td>'
+        + '<td style="white-space:nowrap">' + escHtml(item.note.author || '—') + '</td>'
+        + '</tr>';
+    });
+  }
+  secNotes += '</tbody></table></div>';
+
+  // ── Overdue section ───────────────────────────────────────────────────────
+  var secOverdue = '';
+  if (overdueList.length) {
+    secOverdue = '<div class="pr-section">'
+      + '<div class="pr-section-title">⚠️ Overdue (' + overdueList.length + ')</div>'
+      + '<table class="pr-table"><thead><tr><th>Project</th>' + rTh() + '<th>Owner</th><th>Was Due</th></tr></thead><tbody>';
+    overdueList.forEach(function(p) {
+      var due = dueDate(p);
+      var ago = Math.abs(daysUntil(due));
+      secOverdue += '<tr><td>' + escHtml(p.title) + '</td>' + rCol(p.restaurant)
+        + '<td>' + (p.owner || '—') + '</td>'
+        + '<td class="pr-overdue">' + formatDate(due) + ' (' + ago + 'd ago)</td></tr>';
+    });
+    secOverdue += '</tbody></table></div>';
+  }
+
+  // ── Upcoming 14 days section ──────────────────────────────────────────────
+  var secUpcoming = '<div class="pr-section">'
+    + '<div class="pr-section-title">📅 Due in the Next 14 Days (' + upcoming.length + ')</div>'
+    + '<table class="pr-table"><thead><tr><th>Due</th><th>Project / Subtask</th>' + rTh() + '<th>Owner</th><th>Priority</th></tr></thead><tbody>';
+  if (!upcoming.length) {
+    secUpcoming += '<tr><td colspan="' + (isAdmin ? 5 : 4) + '" class="pr-empty">Nothing due in the next 14 days.</td></tr>';
+  } else {
+    upcoming.forEach(function(item) {
+      var dl = item.days === 0 ? '<strong>Today</strong>' : item.days === 1 ? 'Tomorrow' : formatDate(item.dueDate);
+      var dc = item.days <= 3 ? ' class="pr-overdue"' : '';
+      var nm = item.type === 'subtask'
+        ? escHtml(item.label) + '<br><span style="font-size:9pt;color:#6b6055">↳ ' + escHtml(item.sub) + '</span>'
+        : escHtml(item.label);
+      secUpcoming += '<tr>'
+        + '<td' + dc + ' style="white-space:nowrap">' + dl + '</td>'
+        + '<td>' + nm + '</td>'
+        + rCol(item.restaurant)
+        + '<td>' + (item.owner || '—') + '</td>'
+        + '<td class="pr-priority-' + (item.priority || 'medium').toLowerCase() + '">' + (item.priority || '—') + '</td>'
+        + '</tr>';
+    });
+  }
+  secUpcoming += '</tbody></table></div>';
+
+  // ── Assemble ──────────────────────────────────────────────────────────────
+  var html = '<div class="pr-header">'
+    + '<div class="pr-header-left"><h1>' + reportTitle + '</h1><p>' + dateLabel + '</p></div>'
+    + (logoSrc ? '<img src="' + logoSrc + '" alt="SC Culinary">' : '')
+    + '</div>';
+  html += secOverdue + secDone + secNotes + secUpcoming;
+  html += '<div class="pr-footer"><span>SC Culinary Project Dashboard</span><span>Generated ' + dateLabel + '</span></div>';
 
   document.getElementById('print-view').innerHTML = html;
   window.print();
