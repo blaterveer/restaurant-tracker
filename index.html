@@ -1289,6 +1289,38 @@
   .complex-toggle-row label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: var(--ink); }
   .complex-toggle-row input[type=checkbox] { width: 15px; height: 15px; cursor: pointer; accent-color: var(--rust); }
   .complex-toggle-hint { font-size: 11px; color: var(--warm-gray); font-style: italic; margin-left: 4px; }
+
+  /* ============================================================
+     SORTABLE COLUMN HEADERS
+     ============================================================ */
+  .sortable-th { cursor: pointer; user-select: none; white-space: nowrap; }
+  .sortable-th:hover { background: rgba(255,255,255,0.08); }
+  .sort-icon { font-size: 10px; opacity: 0.8; }
+
+  /* ============================================================
+     RESTAURANT CARD VIEW
+     ============================================================ */
+  #restaurant-cards { padding: 0 40px 40px; }
+  .rc-section-label { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm-gray); margin: 24px 0 12px; }
+  .rc-section-done { opacity: 0.6; }
+  .rc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .rc-card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 18px; cursor: pointer; transition: box-shadow 0.15s, transform 0.15s; }
+  .rc-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); transform: translateY(-1px); }
+  .rc-card-done { opacity: 0.55; }
+  .rc-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .rc-badge { font-family: 'DM Mono', monospace; font-size: 10px; border-radius: 20px; padding: 2px 8px; font-weight: 500; }
+  .rc-badge.rc-overdue { background: rgba(139,58,30,0.12); color: var(--rust); }
+  .rc-badge.rc-soon { background: rgba(210,140,40,0.12); color: #a07020; }
+  .rc-badge.rc-upcoming { background: var(--parchment); color: var(--ink-light); border: 1px solid var(--border); }
+  .rc-badge.rc-complete { background: rgba(74,124,89,0.12); color: #3a7a52; }
+  .rc-badge.rc-pri-high { background: rgba(139,58,30,0.1); color: var(--rust); }
+  .rc-badge.rc-pri-medium { background: var(--parchment); color: var(--ink-light); border: 1px solid var(--border); }
+  .rc-badge.rc-pri-low { background: var(--parchment); color: var(--warm-gray); }
+  .rc-subtasks { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--warm-gray); background: var(--parchment); border-radius: 20px; padding: 2px 8px; }
+  .rc-title { font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 4px; line-height: 1.3; }
+  .rc-desc { font-size: 12px; color: var(--ink-light); margin-bottom: 8px; line-height: 1.4; }
+  .rc-owner { font-size: 12px; color: var(--warm-gray); margin-top: 8px; }
+  .rc-note { font-size: 11px; color: var(--warm-gray); margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   /* ============================================================
      MOBILE RESPONSIVE
      ============================================================ */
@@ -1341,6 +1373,9 @@
     .admin-view { padding: 16px; }
     .admin-grid { grid-template-columns: 1fr; }
     .admin-stats-grid { grid-template-columns: 1fr 1fr; }
+
+    #restaurant-cards { padding: 0 16px 24px; }
+    .rc-grid { grid-template-columns: 1fr; }
 
     /* GANTT — scrolls horizontally on mobile; don't shrink sticky label column */
     .gantt-controls { gap: 8px; }
@@ -1478,12 +1513,12 @@
       <thead>
         <tr>
           <th>✓</th>
-          <th id="col-restaurant" style="display:none">Restaurant</th>
-          <th>Project</th>
-          <th>Category</th>
-          <th>Owner</th>
-          <th>Due By</th>
-          <th>Priority</th>
+          <th id="col-restaurant" class="sortable-th" style="display:none" onclick="sortBy('restaurant')">Restaurant <span class="sort-icon" id="sort-restaurant"></span></th>
+          <th class="sortable-th" onclick="sortBy('title')">Project <span class="sort-icon" id="sort-title"></span></th>
+          <th class="sortable-th" onclick="sortBy('category')">Category <span class="sort-icon" id="sort-category"></span></th>
+          <th class="sortable-th" onclick="sortBy('owner')">Owner <span class="sort-icon" id="sort-owner"></span></th>
+          <th class="sortable-th" onclick="sortBy('due')">Due By <span class="sort-icon" id="sort-due"></span></th>
+          <th class="sortable-th" onclick="sortBy('priority')">Priority <span class="sort-icon" id="sort-priority"></span></th>
           <th>Latest Update</th>
         </tr>
       </thead>
@@ -1744,7 +1779,7 @@
   <div class="detail-panel-footer">
     <button class="btn-sm success" onclick="toggleCompleteFromPanel()" id="dp-complete-btn" style="display:none">Mark Complete</button>
     <button class="btn-sm" id="dp-edit-btn" onclick="editFromPanel()">Edit</button>
-    <button class="btn-sm danger" id="dp-delete-btn" onclick="deleteFromPanel()">Delete</button>
+    <button class="btn-sm danger" id="dp-delete-btn" onclick="archiveFromPanel()">Archive</button>
     <button class="btn-sm" onclick="closeDetail()" style="margin-left:auto">Close</button>
   </div>
 </div>
@@ -1836,6 +1871,7 @@ let state = {
   gantt: { windowDays: 90, groupBy: 'restaurant', showComplete: true },
   editingSubtaskId: null,
   session: null,
+  sort: { col: null, dir: 'asc' },
 };
 
 // ============================================================
@@ -1892,6 +1928,7 @@ async function loadAll() {
     complete:    p.complete   || false,
     link:        p.link       || '',
     updatedAt:   p.updated_at  || null,
+    archived:    p.archived    || false,
     isComplex:   p.is_complex  || false,
     notes:       notesByProject[p.id] || [],
     subtasks:    [],
@@ -1929,6 +1966,7 @@ async function dbUpsertProject(p) {
     complete:    p.complete,
     link:        p.link       || null,
     is_complex:  p.isComplex  || false,
+    archived:    p.archived   || false,
   });
   if (error) console.error('upsertProject error:', error);
 }
@@ -2176,9 +2214,10 @@ function restaurantColorIndex(name) {
 function getFilteredProjects() {
   // Restrict to own restaurant for restaurant role
   const ownRest = state.session && state.session.role === 'restaurant' ? state.session.restaurant : null;
-  let projects = state.activeTab === 'all'
-    ? (ownRest ? state.projects.filter(p => p.restaurant === ownRest) : state.projects)
-    : state.projects.filter(p => p.restaurant === state.activeTab);
+  let projects = state.projects.filter(p => !p.archived);
+  projects = state.activeTab === 'all'
+    ? (ownRest ? projects.filter(p => p.restaurant === ownRest) : projects)
+    : projects.filter(p => p.restaurant === state.activeTab);
 
   const search = document.getElementById('search-input').value.toLowerCase();
   const cat    = document.getElementById('filter-category').value;
@@ -2220,14 +2259,7 @@ function getFilteredProjects() {
     if (el) el.classList.toggle('active', !!el.value);
   });
 
-  return projects.sort((a, b) => {
-    if (a.complete !== b.complete) return a.complete ? 1 : -1;
-    const da = dueDate(a), db = dueDate(b);
-    if (!da && !db) return 0;
-    if (!da) return 1;
-    if (!db) return -1;
-    return da.localeCompare(db);
-  });
+  return sortProjects(projects);
 }
 
 function clearFilters() {
@@ -2242,7 +2274,124 @@ function clearFilters() {
   renderTable();
 }
 
+function renderRestaurantCards() {
+  var projects = getFilteredProjects();
+  var tableWrap = document.querySelector('.table-wrapper');
+  var empty     = document.getElementById('empty-state');
+  var container = document.getElementById('restaurant-cards');
+
+  // Create card container if it doesn't exist
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'restaurant-cards';
+    if (tableWrap) tableWrap.parentNode.insertBefore(container, tableWrap);
+  }
+  if (tableWrap) tableWrap.style.display = 'none';
+
+  if (projects.length === 0) {
+    container.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  var active    = projects.filter(function(p){ return !p.complete; });
+  var completed = projects.filter(function(p){ return p.complete; });
+
+  function cardHTML(p) {
+    var due    = dueDate(p);
+    var days   = due ? daysUntil(due) : null;
+    var dueStr = '';
+    if (p.complete) {
+      dueStr = '<span class="rc-badge rc-complete">Complete</span>';
+    } else if (due) {
+      if (days < 0)       dueStr = '<span class="rc-badge rc-overdue">Overdue</span>';
+      else if (days === 0) dueStr = '<span class="rc-badge rc-soon">Due Today</span>';
+      else if (days <= 7) dueStr = '<span class="rc-badge rc-soon">Due ' + formatDate(due) + '</span>';
+      else                dueStr = '<span class="rc-badge rc-upcoming">Due ' + formatDate(due) + '</span>';
+    }
+    var priStr = p.priority ? '<span class="rc-badge rc-pri-' + p.priority.toLowerCase() + '">' + p.priority + '</span>' : '';
+    var subStr = p.isComplex && p.subtasks && p.subtasks.length > 0
+      ? '<span class="rc-subtasks">' + p.subtasks.filter(function(s){ return s.status === 'complete'; }).length + '/' + p.subtasks.length + ' subtasks</span>'
+      : '';
+    var noteStr = p.notes && p.notes.length > 0
+      ? '<div class="rc-note">&#128203; ' + escHtml(p.notes[p.notes.length-1].text) + '</div>'
+      : '';
+    return '<div class="rc-card' + (p.complete ? ' rc-card-done' : '') + '" onclick="openDetail('' + p.id + '')">'
+      + '<div class="rc-badges">' + priStr + dueStr + subStr + '</div>'
+      + '<div class="rc-title">' + escHtml(p.title) + '</div>'
+      + (p.description ? '<div class="rc-desc">' + escHtml(p.description) + '</div>' : '')
+      + (p.owner ? '<div class="rc-owner">&#128100; ' + escHtml(p.owner) + '</div>' : '')
+      + noteStr
+      + '</div>';
+  }
+
+  var html = '';
+  if (active.length) {
+    html += '<div class="rc-section-label">Active (' + active.length + ')</div>';
+    html += '<div class="rc-grid">' + active.map(cardHTML).join('') + '</div>';
+  }
+  if (completed.length) {
+    html += '<div class="rc-section-label rc-section-done">Completed (' + completed.length + ')</div>';
+    html += '<div class="rc-grid">' + completed.map(cardHTML).join('') + '</div>';
+  }
+  container.innerHTML = html;
+}
+
+function sortBy(col) {
+  if (state.sort.col === col) {
+    state.sort.dir = state.sort.dir === 'asc' ? 'desc' : 'asc';
+  } else {
+    state.sort.col = col;
+    state.sort.dir = 'asc';
+  }
+  renderTable();
+  updateSortIcons();
+}
+
+function updateSortIcons() {
+  ['restaurant','title','category','owner','due','priority'].forEach(function(c) {
+    var el = document.getElementById('sort-' + c);
+    if (!el) return;
+    if (state.sort.col !== c) { el.textContent = ''; return; }
+    el.textContent = state.sort.dir === 'asc' ? ' ▲' : ' ▼';
+  });
+}
+
+function sortProjects(projects) {
+  var col = state.sort.col;
+  var dir = state.sort.dir;
+  var sorted = projects.slice().sort(function(a, b) {
+    // Always push completed to bottom unless sorting explicitly
+    if (!col && a.complete !== b.complete) return a.complete ? 1 : -1;
+    var va, vb;
+    if (col === 'due') {
+      va = dueDate(a) || 'z'; vb = dueDate(b) || 'z';
+    } else if (col === 'priority') {
+      var pOrder = { High: 0, Medium: 1, Low: 2 };
+      va = pOrder[a.priority] !== undefined ? pOrder[a.priority] : 3;
+      vb = pOrder[b.priority] !== undefined ? pOrder[b.priority] : 3;
+      return dir === 'asc' ? va - vb : vb - va;
+    } else if (col === 'title')      { va = (a.title      || '').toLowerCase(); vb = (b.title      || '').toLowerCase(); }
+    else if (col === 'category')     { va = (a.category   || '').toLowerCase(); vb = (b.category   || '').toLowerCase(); }
+    else if (col === 'owner')        { va = (a.owner      || '').toLowerCase(); vb = (b.owner      || '').toLowerCase(); }
+    else if (col === 'restaurant')   { va = (a.restaurant || '').toLowerCase(); vb = (b.restaurant || '').toLowerCase(); }
+    else {
+      // default: incomplete first, then by due date
+      if (a.complete !== b.complete) return a.complete ? 1 : -1;
+      var da = dueDate(a), db2 = dueDate(b);
+      if (!da && !db2) return 0; if (!da) return 1; if (!db2) return -1;
+      return da.localeCompare(db2);
+    }
+    if (va < vb) return dir === 'asc' ? -1 : 1;
+    if (va > vb) return dir === 'asc' ? 1 : -1;
+    return 0;
+  });
+  return sorted;
+}
+
 function renderTable() {
+  if (state.session && state.session.role === 'restaurant') { renderRestaurantCards(); return; }
   const projects = getFilteredProjects();
   const tbody    = document.getElementById('project-table-body');
   const empty    = document.getElementById('empty-state');
@@ -2960,11 +3109,13 @@ function editFromPanel() {
   }
 }
 
-async function deleteFromPanel() {
+async function archiveFromPanel() {
   if (!state.detailProjectId) return;
-  if (!confirm('Delete this project?')) return;
-  await dbDeleteProject(state.detailProjectId);
-  state.projects = state.projects.filter(p => p.id !== state.detailProjectId);
+  if (!confirm('Archive this project? It will be hidden but can be restored from the Admin panel.')) return;
+  const p = state.projects.find(x => x.id === state.detailProjectId);
+  if (!p) return;
+  p.archived = true;
+  await dbUpsertProject(p);
   closeDetail();
   render();
 }
