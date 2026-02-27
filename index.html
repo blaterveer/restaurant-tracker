@@ -1239,6 +1239,7 @@
     .pr-overdue { color: #8b3a1e; font-weight: 600; }
     .pr-complete { color: #4a7c59; }
     .pr-empty { font-size: 10pt; color: #a09585; font-style: italic; padding: 6pt 0; }
+    .pr-page-break { page-break-before: always; padding-top: 8pt; }
     .pr-footer { border-top: 1px solid #d4cbb8; padding-top: 8pt; margin-top: 20pt; font-size: 8pt; color: #a09585; display: flex; justify-content: space-between; }
   }
   /* ============================================================
@@ -2371,7 +2372,7 @@ function printReport() {
   secDone += '</tbody></table></div>';
 
   // ── Notes section ─────────────────────────────────────────────────────────
-  var secNotes = '<div class="pr-section">'
+  var secNotes = '<div class="pr-section pr-page-break">'
     + '<div class="pr-section-title">📝 Recent Notes — Past 8 Days (' + recentNotes.length + ')</div>'
     + '<table class="pr-table"><thead><tr><th>Date</th><th>Project</th>' + rTh() + '<th>Note</th><th>Author</th></tr></thead><tbody>';
   if (!recentNotes.length) {
@@ -2434,7 +2435,7 @@ function printReport() {
     + '<div class="pr-header-left"><h1>' + reportTitle + '</h1><p>' + dateLabel + '</p></div>'
     + (logoSrc ? '<img src="' + logoSrc + '" alt="SC Culinary">' : '')
     + '</div>';
-  html += secOverdue + secDone + secNotes + secUpcoming;
+  html += secOverdue + secDone + secUpcoming + secNotes;
   html += '<div class="pr-footer"><span>SC Culinary Project Dashboard</span><span>Generated ' + dateLabel + '</span></div>';
 
   document.getElementById('print-view').innerHTML = html;
