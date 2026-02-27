@@ -2294,17 +2294,17 @@ function clearFilters() {
 
 function renderRestaurantCards() {
   var projects = getFilteredProjects();
-  var tableWrap = document.querySelector('.table-wrapper');
-  var empty     = document.getElementById('empty-state');
-  var container = document.getElementById('restaurant-cards');
+  var projectsView = document.getElementById('projects-view');
+  var empty        = document.getElementById('empty-state');
+  var container    = document.getElementById('restaurant-cards');
 
-  // Create card container if it doesn't exist
+  // Create card container if it doesn't exist, insert before the table
   if (!container) {
     container = document.createElement('div');
     container.id = 'restaurant-cards';
-    if (tableWrap) tableWrap.parentNode.insertBefore(container, tableWrap);
+    if (projectsView) projectsView.insertBefore(container, projectsView.firstChild);
   }
-  if (tableWrap) tableWrap.style.display = 'none';
+  container.style.display = '';
 
   if (projects.length === 0) {
     container.innerHTML = '';
@@ -2409,7 +2409,17 @@ function sortProjects(projects) {
 }
 
 function renderTable() {
-  if (state.session && state.session.role === 'restaurant') { renderRestaurantCards(); return; }
+  var _pv   = document.getElementById('projects-view');
+  var _tbl  = _pv ? _pv.querySelector('table') : null;
+  var _cards = document.getElementById('restaurant-cards');
+  if (state.session && state.session.role === 'restaurant') {
+    if (_tbl) _tbl.style.display = 'none';
+    renderRestaurantCards();
+    return;
+  }
+  // Admin: ensure table visible, hide cards
+  if (_tbl)   _tbl.style.display   = '';
+  if (_cards) _cards.style.display = 'none';
   const projects = getFilteredProjects();
   const tbody    = document.getElementById('project-table-body');
   const empty    = document.getElementById('empty-state');
