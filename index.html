@@ -2317,7 +2317,7 @@ function renderRestaurantCards() {
     var noteStr = p.notes && p.notes.length > 0
       ? '<div class="rc-note">&#128203; ' + escHtml(p.notes[p.notes.length-1].text) + '</div>'
       : '';
-    return '<div class="rc-card' + (p.complete ? ' rc-card-done' : '') + '" onclick="openDetail('' + p.id + '')">'
+    return '<div class="rc-card' + (p.complete ? ' rc-card-done' : '') + '" onclick="openDetail(\'' + p.id + '\')">'
       + '<div class="rc-badges">' + priStr + dueStr + subStr + '</div>'
       + '<div class="rc-title">' + escHtml(p.title) + '</div>'
       + (p.description ? '<div class="rc-desc">' + escHtml(p.description) + '</div>' : '')
