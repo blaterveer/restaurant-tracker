@@ -1878,6 +1878,21 @@ let state = {
 // SUPABASE DATA LAYER
 // ============================================================
 
+async function autoArchiveOldCompleted() {
+  var cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 30);
+  var toArchive = state.projects.filter(function(p) {
+    return p.complete && !p.archived && p.updatedAt && new Date(p.updatedAt) < cutoff;
+  });
+  if (toArchive.length === 0) return;
+  for (var i = 0; i < toArchive.length; i++) {
+    toArchive[i].archived = true;
+    await dbUpsertProject(toArchive[i]);
+  }
+  // Remove newly archived from state so they don't show
+  state.projects = state.projects.filter(function(p) { return !p.archived; });
+}
+
 async function loadAll() {
   const [
     { data: restaurants },
@@ -1949,6 +1964,7 @@ async function loadAll() {
     });
   });
   state.projects.forEach(p => { p.subtasks = subtasksByProject[p.id] || []; });
+  await autoArchiveOldCompleted();
 }
 
 async function dbUpsertProject(p) {
@@ -2362,8 +2378,8 @@ function sortProjects(projects) {
   var col = state.sort.col;
   var dir = state.sort.dir;
   var sorted = projects.slice().sort(function(a, b) {
-    // Always push completed to bottom unless sorting explicitly
-    if (!col && a.complete !== b.complete) return a.complete ? 1 : -1;
+    // Always push completed to bottom
+    if (a.complete !== b.complete) return a.complete ? 1 : -1;
     var va, vb;
     if (col === 'due') {
       va = dueDate(a) || 'z'; vb = dueDate(b) || 'z';
