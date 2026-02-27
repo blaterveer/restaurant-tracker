@@ -2293,7 +2293,10 @@ function clearFilters() {
 }
 
 function renderRestaurantCards() {
-  var projects = getFilteredProjects();
+  var ownRest   = state.session && state.session.restaurant;
+  var projects  = getFilteredProjects();
+  // Belt-and-suspenders: always restrict to this restaurant only
+  if (ownRest) projects = projects.filter(function(p) { return p.restaurant === ownRest; });
   var projectsView = document.getElementById('projects-view');
   var empty        = document.getElementById('empty-state');
   var container    = document.getElementById('restaurant-cards');
