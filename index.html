@@ -2119,10 +2119,12 @@ function hideLoading() {
 // SUMMARY BAR
 // ============================================================
 function renderSummary() {
-  const open    = state.projects.filter(p => !p.complete);
+  const ownRest = state.session && state.session.role === 'restaurant' ? state.session.restaurant : null;
+  const baseProjects = ownRest ? state.projects.filter(p => p.restaurant === ownRest) : state.projects;
+  const open    = baseProjects.filter(p => !p.complete);
   const overdue = open.filter(p => { const d = daysUntil(dueDate(p)); return d !== null && d < 0; }).length;
   const soon    = open.filter(p => { const d = daysUntil(dueDate(p)); return d !== null && d >= 0 && d <= 7; }).length;
-  const complete= state.projects.filter(p => p.complete).length;
+  const complete= baseProjects.filter(p => p.complete).length;
   const high    = open.filter(p => p.priority === 'High').length;
 
   document.getElementById('summary-bar').innerHTML = `
