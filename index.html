@@ -2559,7 +2559,7 @@ function printReport() {
   secDone += '</tbody></table></div>';
 
   // ── New Projects section ──────────────────────────────────────────────────
-  var secNew = '<div class="pr-section" style="page-break-before:avoid">'
+  var secNew = '<div class="pr-section" style="page-break-inside:auto">'
     + '<div class="pr-section-title">🆕 New Projects — Past 8 Days (' + recentNew.length + ')</div>'
     + '<table class="pr-table"><thead><tr><th>Project</th>' + rTh() + '<th>Owner</th><th>Category</th><th>Added</th></tr></thead><tbody>';
   if (!recentNew.length) {
