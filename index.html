@@ -1943,6 +1943,7 @@ async function loadAll() {
     complete:    p.complete   || false,
     link:        p.link       || '',
     updatedAt:   p.updated_at  || null,
+    createdAt:   p.created_at  || null,
     archived:    p.archived    || false,
     isComplex:   p.is_complex  || false,
     notes:       notesByProject[p.id] || [],
@@ -2488,7 +2489,13 @@ function printReport() {
     return u && u >= cutoff8;
   });
 
-  // 2. Notes added in past 8 days
+  // 2. New projects added in past 8 days
+  var recentNew = allProjects.filter(function(p) {
+    var c = p.createdAt ? new Date(p.createdAt) : null;
+    return c && c >= cutoff8;
+  });
+
+  // 3. Notes added in past 8 days
   var recentNotes = [];
   allProjects.forEach(function(p) {
     (p.notes || []).forEach(function(n) {
@@ -2550,6 +2557,24 @@ function printReport() {
     });
   }
   secDone += '</tbody></table></div>';
+
+  // ── New Projects section ──────────────────────────────────────────────────
+  var secNew = '<div class="pr-section">'
+    + '<div class="pr-section-title">🆕 New Projects — Past 8 Days (' + recentNew.length + ')</div>'
+    + '<table class="pr-table"><thead><tr><th>Project</th>' + rTh() + '<th>Owner</th><th>Category</th><th>Added</th></tr></thead><tbody>';
+  if (!recentNew.length) {
+    secNew += '<tr><td colspan="' + (isAdmin ? 5 : 4) + '" class="pr-empty">No new projects added in the past 8 days.</td></tr>';
+  } else {
+    recentNew.forEach(function(p) {
+      var ad = p.createdAt ? new Date(p.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
+      secNew += '<tr><td>' + escHtml(p.title)
+        + (p.description ? '<br><span style="font-size:9pt;color:#6b6055">' + escHtml(p.description) + '</span>' : '')
+        + '</td>' + rCol(p.restaurant) + '<td>' + (p.owner || '—') + '</td>'
+        + '<td>' + escHtml(p.category || '—') + '</td>'
+        + '<td style="white-space:nowrap">' + ad + '</td></tr>';
+    });
+  }
+  secNew += '</tbody></table></div>';
 
   // ── Notes section ─────────────────────────────────────────────────────────
   var secNotes = '<div class="pr-section pr-page-break">'
@@ -2615,7 +2640,7 @@ function printReport() {
     + '<div class="pr-header-left"><h1>' + reportTitle + '</h1><p>' + dateLabel + '</p></div>'
     + (logoSrc ? '<img src="' + logoSrc + '" alt="SC Culinary">' : '')
     + '</div>';
-  html += secOverdue + secDone + secUpcoming + secNotes;
+  html += secOverdue + secDone + secNew + secUpcoming + secNotes;
   html += '<div class="pr-footer"><span>SC Culinary Project Dashboard</span><span>Generated ' + dateLabel + '</span></div>';
 
   document.getElementById('print-view').innerHTML = html;
