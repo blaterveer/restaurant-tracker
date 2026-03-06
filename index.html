@@ -2463,6 +2463,12 @@ function sortProjects(projects) {
   var sorted = projects.slice().sort(function(a, b) {
     // Always push completed to bottom
     if (a.complete !== b.complete) return a.complete ? 1 : -1;
+    // Within completed items, sort most recently completed first
+    if (a.complete && b.complete) {
+      var ua = a.updatedAt ? new Date(a.updatedAt) : new Date(0);
+      var ub = b.updatedAt ? new Date(b.updatedAt) : new Date(0);
+      return ub - ua;
+    }
     var va, vb;
     if (col === 'due') {
       va = dueDate(a) || 'z'; vb = dueDate(b) || 'z';
