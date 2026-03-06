@@ -660,9 +660,10 @@
   .detail-row .key { color: var(--warm-gray); font-size: 14px; }
   .detail-row .val { color: var(--ink); font-weight: 500; text-align: right; max-width: 60%; }
   .detail-description { font-size: 15px; color: var(--ink-light); line-height: 1.6; font-style: italic; }
-  .detail-panel-footer { padding: 12px 20px; border-top: 1px solid var(--border); display: flex; gap: 6px; flex-shrink: 0; flex-wrap: wrap; }
+  .detail-panel-footer { padding: 12px 20px; border-top: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; gap: 8px; flex-shrink: 0; }
+  .detail-panel-footer-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
   .btn-sm {
-    padding: 7px 12px;
+    padding: 7px 14px;
     font-family: 'DM Mono', monospace;
     font-size: 12px;
     letter-spacing: 0.08em;
@@ -890,10 +891,11 @@
   .note-composer-footer {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     padding: 8px 12px;
     border-top: 1px solid var(--border);
     background: var(--parchment);
+    flex-wrap: wrap;
   }
   .note-composer-footer select {
     flex: 1;
@@ -1841,11 +1843,15 @@
     </div>
   </div>
   <div class="detail-panel-footer">
-    <button class="btn-sm success" onclick="toggleCompleteFromPanel()" id="dp-complete-btn" style="display:none">Mark Complete</button>
-    <button class="btn-sm" id="dp-edit-btn" onclick="editFromPanel()">Edit</button>
-    <button class="btn-sm" id="dp-duplicate-btn" onclick="duplicateFromPanel()">&#x2398; Duplicate</button>
-    <button class="btn-sm danger" id="dp-delete-btn" onclick="archiveFromPanel()">Archive</button>
-    <button class="btn-sm" onclick="closeDetail()" style="margin-left:auto">Close</button>
+    <div class="detail-panel-footer-row">
+      <button class="btn-sm success" onclick="toggleCompleteFromPanel()" id="dp-complete-btn" style="display:none">Mark Complete</button>
+      <button class="btn-sm" id="dp-edit-btn" onclick="editFromPanel()">Edit</button>
+      <button class="btn-sm" id="dp-duplicate-btn" onclick="duplicateFromPanel()">&#x2398; Duplicate</button>
+    </div>
+    <div class="detail-panel-footer-row">
+      <button class="btn-sm danger" id="dp-delete-btn" onclick="archiveFromPanel()">Archive</button>
+      <button class="btn-sm" onclick="closeDetail()">Close</button>
+    </div>
   </div>
 </div>
 
