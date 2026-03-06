@@ -1393,7 +1393,29 @@
     .tab { padding: 8px 10px; font-size: 10px; }
     tbody td { padding: 8px 6px; }
   }
+
+  /* ============================================================
+     ANALYTICS VIEW
+     ============================================================ */
+  .analytics-view { display: none; padding: 32px 40px; }
+  .analytics-section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 300; color: var(--ink); margin: 0 0 4px; }
+  .analytics-section-subtitle { font-size: 13px; color: var(--warm-gray); letter-spacing: 0.06em; margin-bottom: 28px; }
+  .analytics-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+  .analytics-stat-card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 20px 16px; text-align: center; }
+  .analytics-stat-value { font-family: 'Cormorant Garamond', serif; font-size: 40px; font-weight: 600; color: var(--ink); line-height: 1; }
+  .analytics-stat-value.danger { color: var(--rust); }
+  .analytics-stat-value.success { color: #4a7c59; }
+  .analytics-stat-label { font-size: 11px; color: var(--warm-gray); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 6px; }
+  .analytics-charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .analytics-chart-card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 24px; }
+  .analytics-chart-title { font-size: 12px; font-weight: 600; color: var(--ink-light); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px; }
+  @media (max-width: 900px) {
+    .analytics-stats-grid { grid-template-columns: 1fr 1fr; }
+    .analytics-charts-grid { grid-template-columns: 1fr; }
+    .analytics-view { padding: 16px; }
+  }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -1530,6 +1552,48 @@
     </div>
   </div>
 </main>
+
+<!-- ANALYTICS VIEW -->
+<div class="analytics-view" id="analytics-view">
+  <div class="analytics-section-title">Analytics</div>
+  <div class="analytics-section-subtitle">Project health overview across all restaurants</div>
+  <div class="analytics-stats-grid">
+    <div class="analytics-stat-card">
+      <div class="analytics-stat-value" id="an-total">—</div>
+      <div class="analytics-stat-label">Total Projects</div>
+    </div>
+    <div class="analytics-stat-card">
+      <div class="analytics-stat-value" id="an-active">—</div>
+      <div class="analytics-stat-label">Active</div>
+    </div>
+    <div class="analytics-stat-card">
+      <div class="analytics-stat-value danger" id="an-overdue">—</div>
+      <div class="analytics-stat-label">Overdue</div>
+    </div>
+    <div class="analytics-stat-card">
+      <div class="analytics-stat-value success" id="an-rate">—</div>
+      <div class="analytics-stat-label">Completion Rate</div>
+    </div>
+  </div>
+  <div class="analytics-charts-grid">
+    <div class="analytics-chart-card">
+      <div class="analytics-chart-title">Project Health by Restaurant</div>
+      <canvas id="chart-health"></canvas>
+    </div>
+    <div class="analytics-chart-card">
+      <div class="analytics-chart-title">Completions — Past 6 Months</div>
+      <canvas id="chart-completions"></canvas>
+    </div>
+    <div class="analytics-chart-card">
+      <div class="analytics-chart-title">Projects by Owner</div>
+      <canvas id="chart-owners"></canvas>
+    </div>
+    <div class="analytics-chart-card">
+      <div class="analytics-chart-title">Active Projects by Category</div>
+      <canvas id="chart-categories"></canvas>
+    </div>
+  </div>
+</div>
 
 <!-- GANTT VIEW -->
 <div id="recent-view" style="display:none;padding:32px 40px"></div>
@@ -1779,6 +1843,7 @@
   <div class="detail-panel-footer">
     <button class="btn-sm success" onclick="toggleCompleteFromPanel()" id="dp-complete-btn" style="display:none">Mark Complete</button>
     <button class="btn-sm" id="dp-edit-btn" onclick="editFromPanel()">Edit</button>
+    <button class="btn-sm" id="dp-duplicate-btn" onclick="duplicateFromPanel()">&#x2398; Duplicate</button>
     <button class="btn-sm danger" id="dp-delete-btn" onclick="archiveFromPanel()">Archive</button>
     <button class="btn-sm" onclick="closeDetail()" style="margin-left:auto">Close</button>
   </div>
@@ -2164,6 +2229,7 @@ function renderTabs() {
     &#128197; Recent
   </button>`;
   const isAdmin = state.session && state.session.role === 'admin';
+  const analyticsTab = isAdmin ? `<button class="tab ${state.activeTab === '__analytics__' ? 'active' : ''}" onclick="switchTab('__analytics__')" style="border-left:1px solid rgba(255,255,255,0.08)">&#128200; Analytics</button>` : '';
   const adminTab = isAdmin ? `<button class="tab ${state.activeTab === '__admin__' ? 'active' : ''}" onclick="switchTab('__admin__')" style="margin-left:auto;border-left:1px solid rgba(255,255,255,0.08)">&#9881; Admin</button>` : '';
 
   // For restaurant role: only show their own restaurant tab
@@ -2180,7 +2246,7 @@ function renderTabs() {
     }).join('');
   }
 
-  wrapper.innerHTML = visibleRestaurantTabs + ganttTab + recentTab + (isAdmin ? adminTab : '');
+  wrapper.innerHTML = visibleRestaurantTabs + ganttTab + recentTab + (isAdmin ? analyticsTab : '') + (isAdmin ? adminTab : '');
 }
 
 function switchTab(tab) {
@@ -2192,12 +2258,14 @@ function switchTab(tab) {
   const pageHeader    = document.querySelector('.page-header');
   const adminEl       = document.getElementById('admin-view');
   const ganttEl       = document.getElementById('gantt-view');
+  const analyticsEl   = document.getElementById('analytics-view');
 
   projectsEl.style.display = 'none';
   if (filterBar)   filterBar.style.display   = 'none';
   if (pageHeader)  pageHeader.style.display  = 'none';
   adminEl.style.display = 'none';
   ganttEl.style.display = 'none';
+  analyticsEl.style.display = 'none';
 
   if (tab === '__recent__') {
     renderRecentView();
@@ -2207,6 +2275,9 @@ function switchTab(tab) {
   } else if (tab === '__gantt__') {
     ganttEl.style.display = 'block';
     renderGanttView();
+  } else if (tab === '__analytics__') {
+    analyticsEl.style.display = 'block';
+    renderAnalyticsView();
   } else {
     projectsEl.style.display = '';
     if (filterBar)  filterBar.style.display  = '';
@@ -2645,6 +2716,166 @@ function printReport() {
 
   document.getElementById('print-view').innerHTML = html;
   window.print();
+}
+
+// ============================================================
+// ANALYTICS VIEW
+// ============================================================
+function renderAnalyticsView() {
+  const all = state.projects;
+
+  // ── Summary stats ─────────────────────────────────────────
+  const total     = all.length;
+  const completed = all.filter(p => p.complete).length;
+  const active    = all.filter(p => !p.complete).length;
+  const overdue   = all.filter(p => {
+    if (p.complete) return false;
+    const d = daysUntil(dueDate(p));
+    return d !== null && d < 0;
+  }).length;
+  const rate = total > 0 ? Math.round(completed / total * 100) : 0;
+
+  document.getElementById('an-total').textContent   = total;
+  document.getElementById('an-active').textContent  = active;
+  document.getElementById('an-overdue').textContent = overdue;
+  document.getElementById('an-rate').textContent    = rate + '%';
+
+  // ── Destroy previous chart instances ──────────────────────
+  if (window._analyticsCharts) {
+    Object.values(window._analyticsCharts).forEach(c => { try { c.destroy(); } catch(e){} });
+  }
+  window._analyticsCharts = {};
+
+  const chartDefaults = {
+    font: { family: "'Instrument Sans', sans-serif", size: 12 },
+    color: '#6b6055',
+  };
+  Chart.defaults.font.family = chartDefaults.font.family;
+  Chart.defaults.font.size   = chartDefaults.font.size;
+  Chart.defaults.color       = chartDefaults.color;
+
+  // ── Chart 1: Health by Restaurant ─────────────────────────
+  const restaurants = state.restaurants;
+  const healthData = restaurants.map(r => {
+    const rp        = all.filter(p => p.restaurant === r);
+    const rComplete = rp.filter(p => p.complete).length;
+    const rOverdue  = rp.filter(p => {
+      if (p.complete) return false;
+      const d = daysUntil(dueDate(p));
+      return d !== null && d < 0;
+    }).length;
+    const rActive   = Math.max(0, rp.filter(p => !p.complete).length - rOverdue);
+    return { active: rActive, overdue: rOverdue, completed: rComplete };
+  });
+
+  window._analyticsCharts.health = new Chart(
+    document.getElementById('chart-health').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: restaurants,
+      datasets: [
+        { label: 'Active',    data: healthData.map(d => d.active),    backgroundColor: '#4a7c9e' },
+        { label: 'Overdue',   data: healthData.map(d => d.overdue),   backgroundColor: '#c0392b' },
+        { label: 'Completed', data: healthData.map(d => d.completed), backgroundColor: '#4a7c59' },
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'bottom' } },
+      scales: { x: { stacked: false }, y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+  });
+
+  // ── Chart 2: Completions over past 6 months ───────────────
+  const now    = new Date();
+  const months = [];
+  const byMonth = {};
+  for (let i = 5; i >= 0; i--) {
+    const d   = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const key = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+    months.push(key);
+    byMonth[key] = 0;
+  }
+  all.filter(p => p.complete && p.updatedAt).forEach(p => {
+    const key = new Date(p.updatedAt).toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+    if (key in byMonth) byMonth[key]++;
+  });
+
+  window._analyticsCharts.completions = new Chart(
+    document.getElementById('chart-completions').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: months,
+      datasets: [{
+        label: 'Completed',
+        data: months.map(m => byMonth[m]),
+        borderColor: '#4a7c59',
+        backgroundColor: 'rgba(74,124,89,0.1)',
+        tension: 0.3,
+        fill: true,
+        pointRadius: 5,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+  });
+
+  // ── Chart 3: Projects by Owner (horizontal stacked bar) ───
+  const ownerMap = {};
+  all.forEach(p => {
+    const o = p.owner || 'Unassigned';
+    if (!ownerMap[o]) ownerMap[o] = { active: 0, completed: 0 };
+    if (p.complete) ownerMap[o].completed++;
+    else            ownerMap[o].active++;
+  });
+  const ownersSorted = Object.entries(ownerMap)
+    .sort((a, b) => (b[1].active + b[1].completed) - (a[1].active + a[1].completed));
+
+  window._analyticsCharts.owners = new Chart(
+    document.getElementById('chart-owners').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: ownersSorted.map(e => e[0]),
+      datasets: [
+        { label: 'Active',    data: ownersSorted.map(e => e[1].active),    backgroundColor: '#4a7c9e' },
+        { label: 'Completed', data: ownersSorted.map(e => e[1].completed), backgroundColor: '#4a7c59' },
+      ]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: { legend: { position: 'bottom' } },
+      scales: { x: { stacked: true, beginAtZero: true, ticks: { stepSize: 1 } }, y: { stacked: true } }
+    }
+  });
+
+  // ── Chart 4: Active Projects by Category (doughnut) ───────
+  const catMap = {};
+  all.filter(p => !p.complete).forEach(p => {
+    const c = p.category || 'Uncategorized';
+    catMap[c] = (catMap[c] || 0) + 1;
+  });
+  const catEntries = Object.entries(catMap).sort((a, b) => b[1] - a[1]);
+  const palette    = ['#4a7c9e','#8b3a1e','#4a7c59','#c0892b','#7a4a9e','#6b6055','#2c7a7a','#9e4a6b'];
+
+  window._analyticsCharts.categories = new Chart(
+    document.getElementById('chart-categories').getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: catEntries.map(e => e[0]),
+      datasets: [{
+        data: catEntries.map(e => e[1]),
+        backgroundColor: palette.slice(0, catEntries.length),
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'right' } }
+    }
+  });
 }
 
 // ============================================================
@@ -3163,6 +3394,68 @@ function editFromPanel() {
     closeDetail();
     openAddModal(idToEdit);
   }
+}
+
+function duplicateFromPanel() {
+  if (state.detailProjectId) {
+    const idToCopy = state.detailProjectId;
+    closeDetail();
+    duplicateProject(idToCopy);
+  }
+}
+
+async function duplicateProject(sourceId) {
+  const src = state.projects.find(x => x.id === sourceId);
+  if (!src) return;
+
+  showLoading('Duplicating…');
+
+  // Build new project — copy all fields, fresh ID, not complete, no notes
+  const newId = uid();
+  const newProject = {
+    id:          newId,
+    restaurant:  src.restaurant,
+    title:       'Copy of ' + src.title,
+    category:    src.category,
+    type:        src.type,
+    description: src.description,
+    owner:       src.owner,
+    priority:    src.priority,
+    weeks:       src.weeks,
+    dateAdded:   src.dateAdded,
+    isComplex:   src.isComplex,
+    complete:    false,
+    link:        src.link || '',
+    archived:    false,
+    notes:       [],
+    subtasks:    [],
+    createdAt:   null,
+    updatedAt:   null,
+  };
+
+  // Save project to DB first
+  await dbUpsertProject(newProject);
+
+  // Duplicate subtasks with new IDs
+  for (const st of (src.subtasks || [])) {
+    const newSt = {
+      id:          uid(),
+      name:        st.name,
+      description: st.description || '',
+      status:      'incomplete',
+      owner:       st.owner || '',
+      dueDate:     st.dueDate || null,
+      sortOrder:   st.sortOrder || 0,
+    };
+    await dbUpsertSubtask(newId, newSt);
+    newProject.subtasks.push(newSt);
+  }
+
+  state.projects.push(newProject);
+  hideLoading();
+
+  // Open the duplicate in the edit modal so user can adjust fields
+  openAddModal(newId);
 }
 
 async function archiveFromPanel() {
