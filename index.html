@@ -1919,8 +1919,8 @@
   <span class="header-sub" id="today-display"></span>
   <div class="header-actions">
     <button class="btn-ghost" id="btn-add-restaurant" onclick="openRestaurantModal()">+ Restaurant</button>
-    <button class="btn-primary" id="btn-new-project" onclick="openAddModal()">+ New Project</button>
-    <span class="overdue-badge" id="overdue-badge" style="display:none" title="Overdue projects"></span>
+    <button class="btn-primary" id="btn-new-project" onclick="openAddModal()">+ New Task</button>
+    <span class="overdue-badge" id="overdue-badge" style="display:none" title="Overdue tasks"></span>
     <button class="btn-ghost" id="btn-print-report" onclick="printReport()" title="Print / Save as PDF">&#128438; Weekly Report</button>
     <button class="btn-ghost" onclick="logout()" style="margin-left:4px;font-size:11px;opacity:0.7">Sign Out</button>
   </div>
@@ -1940,7 +1940,7 @@
   <div class="filter-bar">
     <div class="filter-row">
       <div class="filter-group">
-        <input type="text" class="search-input" placeholder="Search projects…" id="search-input" oninput="renderTable()">
+        <input type="text" class="search-input" placeholder="Search tasks…" id="search-input" oninput="renderTable()">
       </div>
       <div class="filter-group">
         <span class="filter-group-label">Category</span>
@@ -2009,8 +2009,8 @@
       <tbody id="project-table-body"></tbody>
     </table>
     <div id="empty-state" class="empty-state" style="display:none">
-      <h3>No projects yet</h3>
-      <p>Add a new project to get started.</p>
+      <h3>No tasks yet</h3>
+      <p>Add a new task to get started.</p>
     </div>
   </div>
 </main>
@@ -2200,7 +2200,7 @@
 <div class="modal-overlay" id="project-modal">
   <div class="modal">
     <div class="modal-header">
-      <h2 id="modal-title">New <em>Project</em></h2>
+      <h2 id="modal-title">New <em>Task</em></h2>
       <button class="modal-close" onclick="closeModal()">&#10005;</button>
     </div>
     <div class="modal-body">
@@ -2218,7 +2218,7 @@
           </select>
         </div>
         <div class="form-group full">
-          <label>Project Title <span class="required">*</span></label>
+          <label>Task Title <span class="required">*</span></label>
           <input type="text" class="form-input" id="f-title" placeholder="e.g. Easter Menu, Wine Training…">
         </div>
         <div class="form-group full">
@@ -2284,7 +2284,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-primary" onclick="saveProject()">Save Project</button>
+      <button class="btn-primary" onclick="saveProject()">Save Task</button>
     </div>
   </div>
 </div>
@@ -2707,7 +2707,7 @@ function renderSummary() {
   const high    = open.filter(p => p.priority === 'High').length;
 
   document.getElementById('summary-bar').innerHTML = `
-    <div class="summary-stat"><span class="label">Open Projects</span><span class="value">${open.length}</span></div>
+    <div class="summary-stat"><span class="label">Open Tasks</span><span class="value">${open.length}</span></div>
     <div class="divider"></div>
     <div class="summary-stat"><span class="label">Overdue</span><span class="value red">${overdue}</span></div>
     <div class="summary-stat"><span class="label">Due ≤ 7 days</span><span class="value orange">${soon}</span></div>
@@ -2752,7 +2752,7 @@ function renderTabs() {
     const tabs2 = ['all', myRest];
     visibleRestaurantTabs = tabs2.map(t => {
       const isAll2 = t === 'all';
-      const label2 = isAll2 ? 'All Projects' : t;
+      const label2 = isAll2 ? 'All Tasks' : t;
       const count2 = state.projects.filter(p => p.restaurant === myRest && !p.complete).length;
       const cnt = isAll2 ? count2 : count2;
       return `<button class="tab ${state.activeTab === t ? 'active' : ''}" onclick="switchTab('${t}')">${label2} <span class="badge">${cnt}</span></button>`;
@@ -4002,7 +4002,7 @@ function openAddModal(editId = null) {
   const isEdit = !!editId;
   const p = isEdit ? state.projects.find(x => x.id === editId) : null;
 
-  document.getElementById('modal-title').innerHTML = isEdit ? 'Edit <em>Project</em>' : 'New <em>Project</em>';
+  document.getElementById('modal-title').innerHTML = isEdit ? 'Edit <em>Task</em>' : 'New <em>Task</em>';
 
   const rSel = document.getElementById('f-restaurant');
   rSel.innerHTML = state.restaurants.map(r => `<option value="${r}">${r}</option>`).join('');
@@ -4109,7 +4109,7 @@ async function resolveSelectValue(selectId, inputId, table, stateKey) {
 async function saveProject() {
   const title      = document.getElementById('f-title').value.trim();
   const restaurant = document.getElementById('f-restaurant').value;
-  if (!title)      { alert('Project title is required.'); return; }
+  if (!title)      { alert('Task title is required.'); return; }
   if (!restaurant) { alert('Please select a restaurant.'); return; }
 
   showLoading('Saving…');
