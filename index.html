@@ -1214,7 +1214,8 @@
   /* ============================================================
      OVERDUE BADGE
      ============================================================ */
-  .overdue-badge { display: inline-flex; align-items: center; background: var(--rust); color: white; font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 600; border-radius: 20px; padding: 3px 10px; letter-spacing: 0.04em; white-space: nowrap; }
+  .overdue-badge { display: inline-flex; align-items: center; background: var(--rust); color: white; font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 600; border-radius: 20px; padding: 3px 10px; letter-spacing: 0.04em; white-space: nowrap; cursor: pointer; }
+  .overdue-badge:hover { opacity: 0.85; }
 
   /* ============================================================
      PRINT / PDF REPORT
@@ -1920,7 +1921,7 @@
   <div class="header-actions">
     <button class="btn-ghost" id="btn-add-restaurant" onclick="openRestaurantModal()">+ Restaurant</button>
     <button class="btn-primary" id="btn-new-project" onclick="openAddModal()">+ New Task</button>
-    <span class="overdue-badge" id="overdue-badge" style="display:none" title="Overdue tasks"></span>
+    <span class="overdue-badge" id="overdue-badge" style="display:none" title="Show overdue tasks" onclick="showOverdueTasks()"></span>
     <button class="btn-ghost" id="btn-print-report" onclick="printReport()" title="Print / Save as PDF">&#128438; Weekly Report</button>
     <button class="btn-ghost" onclick="logout()" style="margin-left:4px;font-size:11px;opacity:0.7">Sign Out</button>
   </div>
@@ -2446,6 +2447,7 @@ let state = {
   editingSubtaskId: null,
   session: null,
   sort: { col: null, dir: 'asc' },
+  showOverdue: false,
 };
 
 // ============================================================
@@ -2764,6 +2766,7 @@ function renderTabs() {
 }
 
 function switchTab(tab) {
+  if (tab !== state.activeTab) state.showOverdue = false;
   state.activeTab = tab;
   renderTabs();
 
@@ -2859,7 +2862,14 @@ function getFilteredProjects() {
     });
   }
 
-  const anyActive = search || cat || pri || owner || status || d7 || d14 || d30;
+  if (state.showOverdue) {
+    projects = projects.filter(p => {
+      const days = daysUntil(dueDate(p));
+      return days !== null && days < 0 && !p.complete;
+    });
+  }
+
+  const anyActive = search || cat || pri || owner || status || d7 || d14 || d30 || state.showOverdue;
   const clearBtn = document.getElementById('filter-clear-btn');
   if (clearBtn) clearBtn.style.display = anyActive ? '' : 'none';
 
@@ -2871,6 +2881,11 @@ function getFilteredProjects() {
   return sortProjects(projects);
 }
 
+function showOverdueTasks() {
+  state.showOverdue = true;
+  switchTab('all');
+}
+
 function clearFilters() {
   document.getElementById('search-input').value   = '';
   document.getElementById('filter-category').value= '';
@@ -2880,6 +2895,7 @@ function clearFilters() {
   document.getElementById('due-7').checked  = false;
   document.getElementById('due-14').checked = false;
   document.getElementById('due-30').checked = false;
+  state.showOverdue = false;
   renderTable();
 }
 
