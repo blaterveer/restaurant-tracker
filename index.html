@@ -2250,10 +2250,13 @@
           <label>Weeks to Complete</label>
           <input type="number" class="form-input" id="f-weeks" min="1" max="52" placeholder="e.g. 4" oninput="updateDuePreview()">
         </div>
+        <div class="form-group">
+          <label>Due Date</label>
+          <input type="date" class="form-input" id="f-due-date" oninput="onDueDateInput()">
+        </div>
         <div class="form-group full">
           <label>Date Added</label>
-          <input type="date" class="form-input" id="f-date-added">
-          <div class="weeks-display" id="due-preview"></div>
+          <input type="date" class="form-input" id="f-date-added" oninput="updateDuePreview()">
         </div>
         <div class="form-group full complex-toggle-row">
           <label>
@@ -2513,6 +2516,7 @@ async function loadAll() {
     dateAdded:   p.date_added,
     complete:    p.complete   || false,
     link:        p.link       || '',
+    dueDate:     p.due_date   || null,
     updatedAt:   p.updated_at  || null,
     createdAt:   p.created_at  || null,
     archived:    p.archived    || false,
@@ -2552,6 +2556,7 @@ async function dbUpsertProject(p) {
     priority:    p.priority   || null,
     weeks:       p.weeks      || null,
     date_added:  p.dateAdded  || null,
+    due_date:    p.dueDate    || null,
     complete:    p.complete,
     link:        p.link       || null,
     is_complex:  p.isComplex  || false,
@@ -2637,6 +2642,7 @@ function formatDate(d) {
   return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 function dueDate(project) {
+  if (project.dueDate) return project.dueDate;
   if (!project.dateAdded || !project.weeks) return null;
   const d = new Date(project.dateAdded + 'T00:00:00');
   d.setDate(d.getDate() + project.weeks * 7);
@@ -4014,6 +4020,7 @@ function openAddModal(editId = null) {
   document.getElementById('f-description').value = isEdit ? (p?.description || '') : '';
   document.getElementById('f-priority').value    = isEdit ? (p?.priority    || 'Medium') : 'Medium';
   document.getElementById('f-weeks').value       = isEdit ? (p?.weeks       || '') : '';
+  document.getElementById('f-due-date').value    = isEdit ? (p?.dueDate     || '') : '';
   document.getElementById('f-date-added').value  = isEdit ? (p?.dateAdded   || today()) : today();
   document.getElementById('f-note').value        = '';
   document.getElementById('f-is-complex').checked = isEdit ? (p ? (p.isComplex || false) : false) : false;
@@ -4063,13 +4070,25 @@ function checkNewOption(selectEl, inputId) {
 function updateDuePreview() {
   const weeks   = parseInt(document.getElementById('f-weeks').value);
   const dateVal = document.getElementById('f-date-added').value;
-  const preview = document.getElementById('due-preview');
+  const dueDateEl = document.getElementById('f-due-date');
   if (weeks && dateVal) {
     const d = new Date(dateVal + 'T00:00:00');
     d.setDate(d.getDate() + weeks * 7);
-    preview.textContent = `→ Due by ${formatDate(d.toISOString().split('T')[0])}`;
-  } else {
-    preview.textContent = '';
+    dueDateEl.value = d.toISOString().split('T')[0];
+  }
+}
+
+function onDueDateInput() {
+  const dueDateEl = document.getElementById('f-due-date');
+  const weeksEl   = document.getElementById('f-weeks');
+  const dateVal   = document.getElementById('f-date-added').value;
+  if (dueDateEl.value && dateVal) {
+    // Recalculate weeks from the manually set due date
+    const start = new Date(dateVal + 'T00:00:00');
+    const end   = new Date(dueDateEl.value + 'T00:00:00');
+    const diffWeeks = Math.round((end - start) / (7 * 24 * 60 * 60 * 1000));
+    if (diffWeeks > 0) weeksEl.value = diffWeeks;
+    else weeksEl.value = '';
   }
 }
 
@@ -4103,13 +4122,14 @@ async function saveProject() {
   const description = document.getElementById('f-description').value.trim();
   const priority    = document.getElementById('f-priority').value;
   const dateAdded   = document.getElementById('f-date-added').value;
+  const dueDate     = document.getElementById('f-due-date').value || null;
 
   if (state.editProjectId) {
     const p = state.projects.find(x => x.id === state.editProjectId);
     if (!p) { alert('Could not find project to update.'); hideLoading(); return; }
     p.title = title; p.restaurant = restaurant; p.category = category;
     p.type = type; p.description = description; p.owner = owner;
-    p.priority = priority; p.weeks = weeks; p.dateAdded = dateAdded;
+    p.priority = priority; p.weeks = weeks; p.dateAdded = dateAdded; p.dueDate = dueDate;
     p.isComplex = document.getElementById('f-is-complex').checked;
     await dbUpsertProject(p);
     if (noteText) {
@@ -4121,7 +4141,7 @@ async function saveProject() {
   } else {
     const newProject = {
       id: uid(), restaurant, title, category, type, description,
-      owner, priority, weeks, dateAdded,
+      owner, priority, weeks, dateAdded, dueDate,
       isComplex: document.getElementById('f-is-complex').checked,
       complete: false, link: '', notes: [], subtasks: []
     };
@@ -4541,6 +4561,7 @@ function renderGanttLegend() {
 }
 
 function getDueDate(p) {
+  if (p.dueDate) return new Date(p.dueDate + 'T00:00:00');
   if (!p.dateAdded || !p.weeks) return null;
   const d = new Date(p.dateAdded + 'T00:00:00');
   d.setDate(d.getDate() + (p.weeks * 7));
