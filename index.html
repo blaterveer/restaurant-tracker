@@ -1416,6 +1416,466 @@
     .analytics-charts-grid { grid-template-columns: 1fr; }
     .analytics-view { padding: 16px; }
   }
+
+  /* ============================================================
+     TRAVEL CALENDAR
+     ============================================================ */
+  .travel-view { display: none; padding: 32px 40px; }
+  .travel-view.active { display: block; }
+
+  /* Travel header */
+  .travel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .travel-header-left { display: flex; align-items: center; gap: 16px; }
+  .travel-month-nav {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .travel-month-nav h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 300;
+    min-width: 220px;
+    text-align: center;
+    color: var(--ink);
+  }
+  .travel-nav-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--ink-light);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .travel-nav-btn:hover { border-color: var(--ink); background: var(--ink); color: var(--cream); }
+  .travel-header-actions { display: flex; align-items: center; gap: 8px; }
+  .travel-view-toggle {
+    display: flex;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .travel-view-btn {
+    background: transparent;
+    border: none;
+    padding: 7px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    color: var(--warm-gray);
+    transition: all 0.15s;
+    border-right: 1px solid var(--border);
+  }
+  .travel-view-btn:last-child { border-right: none; }
+  .travel-view-btn.active { background: var(--ink); color: var(--cream); }
+  .travel-view-btn:not(.active):hover { background: var(--parchment); color: var(--ink); }
+  .travel-people-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--warm-gray);
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s;
+  }
+  .travel-people-btn:hover { border-color: var(--ink); color: var(--ink); }
+
+  /* Calendar grid */
+  .travel-calendar-grid {
+    background: white;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .travel-cal-days-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: var(--ink);
+  }
+  .travel-cal-day-label {
+    padding: 8px 0;
+    text-align: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--warm-gray);
+  }
+  .travel-cal-body {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+  }
+  .travel-cal-cell {
+    min-height: 120px;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 6px 4px 4px;
+    vertical-align: top;
+    position: relative;
+    background: white;
+  }
+  .travel-cal-cell:nth-child(7n) { border-right: none; }
+  .travel-cal-cell.other-month { background: #faf8f5; }
+  .travel-cal-cell.today { background: rgba(196,154,60,0.05); }
+  .travel-cal-date-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--warm-gray);
+    margin-bottom: 4px;
+    padding-left: 2px;
+    line-height: 1;
+  }
+  .travel-cal-cell.today .travel-cal-date-num {
+    color: var(--rust);
+    font-weight: 700;
+  }
+  .travel-cal-cell.other-month .travel-cal-date-num { opacity: 0.4; }
+
+  /* Trip bars */
+  .trip-bar {
+    display: flex;
+    align-items: center;
+    height: 22px;
+    margin-bottom: 2px;
+    padding: 0 6px;
+    cursor: pointer;
+    overflow: hidden;
+    border-radius: 2px;
+    transition: opacity 0.15s;
+    position: relative;
+  }
+  .trip-bar:hover { opacity: 0.85; }
+  .trip-bar-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+  .trip-bar-initials {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: rgba(255,255,255,0.85);
+    flex-shrink: 0;
+    margin-left: 4px;
+  }
+  /* First day of trip: left-rounded */
+  .trip-bar.trip-start { border-radius: 2px 0 0 2px; }
+  /* Last day of trip: right-rounded */
+  .trip-bar.trip-end   { border-radius: 0 2px 2px 0; }
+  /* Both start and end */
+  .trip-bar.trip-start.trip-end { border-radius: 2px; }
+  /* Mid days: no rounding */
+  .trip-bar.trip-mid   { border-radius: 0; }
+
+  /* List view */
+  .travel-list { display: flex; flex-direction: column; gap: 12px; }
+  .trip-card {
+    background: white;
+    border: 1px solid var(--border);
+    padding: 18px 20px;
+    cursor: pointer;
+    transition: box-shadow 0.15s, border-color 0.15s;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .trip-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.07); border-color: var(--ink-light); }
+  .trip-card.trip-past { opacity: 0.55; }
+  .trip-card-travelers { display: flex; flex-direction: column; gap: 3px; flex-shrink: 0; padding-top: 2px; }
+  .trip-traveler-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .trip-card-body { flex: 1; min-width: 0; }
+  .trip-card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 300;
+    color: var(--ink);
+    line-height: 1.2;
+    margin-bottom: 4px;
+  }
+  .trip-card-dest {
+    font-size: 14px;
+    color: var(--warm-gray);
+    margin-bottom: 6px;
+  }
+  .trip-card-meta {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .trip-card-dates {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-light);
+    letter-spacing: 0.04em;
+  }
+  .trip-card-restaurant {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--rust);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .trip-card-traveler-pills { display: flex; gap: 4px; flex-wrap: wrap; }
+  .trip-traveler-pill {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 2px;
+    color: white;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+
+  /* Trip detail modal (wide) */
+  .trip-modal .modal { max-width: 780px; }
+  .trip-modal-body { padding: 0; }
+  .trip-modal-section {
+    padding: 24px 32px;
+    border-bottom: 1px solid var(--border);
+  }
+  .trip-modal-section:last-child { border-bottom: none; }
+  .trip-modal-section-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--warm-gray);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .traveler-checkboxes {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .traveler-checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 6px 10px;
+    border: 1px solid transparent;
+    transition: border-color 0.15s, background 0.15s;
+    user-select: none;
+  }
+  .traveler-checkbox-row:hover { border-color: var(--border); background: var(--parchment); }
+  .traveler-checkbox-row.selected { border-color: var(--border); background: var(--parchment); }
+  .traveler-color-swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .traveler-checkbox-row input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    accent-color: var(--rust);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .traveler-checkbox-label { font-size: 15px; color: var(--ink); }
+
+  /* Itinerary */
+  .itinerary-list { display: flex; flex-direction: column; gap: 0; }
+  .itinerary-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .itinerary-item:last-child { border-bottom: none; }
+  .itinerary-item-check {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--border);
+    border-radius: 3px;
+    flex-shrink: 0;
+    cursor: pointer;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+  .itinerary-item-check.done { background: var(--sage); border-color: var(--sage); }
+  .itinerary-item-check.done::after { content: '✓'; color: white; font-size: 10px; font-weight: 700; }
+  .itinerary-item-type { font-size: 16px; flex-shrink: 0; line-height: 1.2; }
+  .itinerary-item-body { flex: 1; min-width: 0; }
+  .itinerary-item-title {
+    font-size: 15px;
+    color: var(--ink);
+    line-height: 1.3;
+    font-weight: 500;
+  }
+  .itinerary-item-title.done { text-decoration: line-through; color: var(--warm-gray); font-weight: 400; }
+  .itinerary-item-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--warm-gray);
+    margin-top: 2px;
+  }
+  .itinerary-item-desc {
+    font-size: 13px;
+    color: var(--ink-light);
+    margin-top: 3px;
+    line-height: 1.4;
+    font-style: italic;
+  }
+  .itinerary-item-project {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--rust);
+    margin-top: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .itinerary-item-actions {
+    display: none;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .itinerary-item:hover .itinerary-item-actions { display: flex; }
+  .itin-action-btn {
+    background: none;
+    border: 1px solid var(--border);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--warm-gray);
+    padding: 2px 7px;
+    cursor: pointer;
+    transition: all 0.15s;
+    line-height: 1.6;
+  }
+  .itin-action-btn:hover { border-color: var(--ink); color: var(--ink); }
+  .itin-action-btn.del:hover { border-color: var(--rust); color: var(--rust); }
+
+  /* Itinerary add form */
+  .itin-add-form {
+    background: var(--parchment);
+    border: 1px solid var(--border);
+    padding: 16px;
+    margin-top: 12px;
+    display: none;
+  }
+  .itin-add-form.open { display: block; }
+  .itin-add-form .form-grid { grid-template-columns: 1fr 1fr; }
+  .itin-form-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+
+  /* People manager modal */
+  .people-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+  .people-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    background: white;
+    transition: border-color 0.15s;
+  }
+  .people-item:hover { border-color: var(--ink-light); }
+  .people-color-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .people-initials-badge {
+    width: 32px;
+    height: 32px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: white;
+    font-weight: 500;
+    flex-shrink: 0;
+    letter-spacing: 0.04em;
+  }
+  .people-name { flex: 1; font-size: 15px; color: var(--ink); }
+  .people-active-toggle {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--warm-gray);
+    cursor: pointer;
+    border: 1px solid var(--border);
+    padding: 2px 8px;
+    transition: all 0.15s;
+  }
+  .people-active-toggle:hover { border-color: var(--ink); color: var(--ink); }
+  .people-active-toggle.active { border-color: var(--sage); color: var(--sage); }
+  .people-delete-btn {
+    background: none;
+    border: 1px solid var(--border);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--warm-gray);
+    padding: 2px 7px;
+    cursor: pointer;
+    transition: all 0.15s;
+    line-height: 1.6;
+  }
+  .people-delete-btn:hover { border-color: var(--rust); color: var(--rust); }
+
+  /* Color picker palette */
+  .color-palette {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+  .color-swatch-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    border: 3px solid transparent;
+    cursor: pointer;
+    transition: border-color 0.15s, transform 0.1s;
+  }
+  .color-swatch-btn:hover { transform: scale(1.1); }
+  .color-swatch-btn.selected { border-color: var(--ink); }
+
+  @media (max-width: 768px) {
+    .travel-view { padding: 16px; }
+    .travel-header { flex-direction: column; align-items: flex-start; }
+    .travel-cal-cell { min-height: 72px; }
+    .trip-modal .modal { max-width: 100%; }
+  }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
 </head>
@@ -1602,6 +2062,46 @@
 <div class="gantt-view" id="gantt-view" style="display:none; padding: 32px 40px;">
   <div class="gantt-mobile-notice">&#9888; Gantt chart is best viewed on a desktop or larger screen.</div>
   <div id="gantt-content"></div>
+</div>
+
+<!-- TRAVEL CALENDAR VIEW -->
+<div class="travel-view" id="travel-view">
+  <div id="travel-content"></div>
+</div>
+
+<!-- TRIP DETAIL MODAL -->
+<div class="modal-overlay trip-modal" id="trip-modal-overlay">
+  <div class="modal" style="max-width:780px">
+    <div class="modal-header">
+      <h2 id="trip-modal-title">New Trip</h2>
+      <button class="modal-close" onclick="closeTripModal()">&#215;</button>
+    </div>
+    <div class="trip-modal-body" id="trip-modal-body"></div>
+    <div class="modal-footer" id="trip-modal-footer"></div>
+  </div>
+</div>
+
+<!-- ITINERARY ITEM MODAL -->
+<div class="modal-overlay" id="itin-modal-overlay">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header">
+      <h2 id="itin-modal-title">Add Item</h2>
+      <button class="modal-close" onclick="closeItinModal()">&#215;</button>
+    </div>
+    <div class="modal-body" id="itin-modal-body"></div>
+    <div class="modal-footer" id="itin-modal-footer"></div>
+  </div>
+</div>
+
+<!-- PEOPLE MANAGER MODAL -->
+<div class="modal-overlay" id="people-modal-overlay">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header">
+      <h2>Travel People</h2>
+      <button class="modal-close" onclick="closePeopleModal()">&#215;</button>
+    </div>
+    <div class="modal-body" id="people-modal-body"></div>
+  </div>
 </div>
 
 <!-- ADMIN VIEW -->
@@ -2037,6 +2537,7 @@ async function loadAll() {
   });
   state.projects.forEach(p => { p.subtasks = subtasksByProject[p.id] || []; });
   await autoArchiveOldCompleted();
+  await Promise.all([loadRestaurantMap(), loadTravelData()]);
 }
 
 async function dbUpsertProject(p) {
@@ -2252,7 +2753,8 @@ function renderTabs() {
     }).join('');
   }
 
-  wrapper.innerHTML = visibleRestaurantTabs + ganttTab + recentTab + (isAdmin ? analyticsTab : '') + (isAdmin ? adminTab : '');
+  const travelTab = `<button class="tab ${state.activeTab === '__travel__' ? 'active' : ''}" onclick="switchTab('__travel__')" style="border-left:1px solid rgba(255,255,255,0.08)">&#9992; Travel</button>`;
+  wrapper.innerHTML = visibleRestaurantTabs + ganttTab + recentTab + travelTab + (isAdmin ? analyticsTab : '') + (isAdmin ? adminTab : '');
 }
 
 function switchTab(tab) {
@@ -2265,6 +2767,7 @@ function switchTab(tab) {
   const adminEl       = document.getElementById('admin-view');
   const ganttEl       = document.getElementById('gantt-view');
   const analyticsEl   = document.getElementById('analytics-view');
+  const travelEl      = document.getElementById('travel-view');
 
   projectsEl.style.display = 'none';
   if (filterBar)   filterBar.style.display   = 'none';
@@ -2272,6 +2775,7 @@ function switchTab(tab) {
   adminEl.style.display = 'none';
   ganttEl.style.display = 'none';
   analyticsEl.style.display = 'none';
+  if (travelEl) travelEl.style.display = 'none';
 
   if (tab === '__recent__') {
     renderRecentView();
@@ -2284,6 +2788,9 @@ function switchTab(tab) {
   } else if (tab === '__analytics__') {
     analyticsEl.style.display = 'block';
     renderAnalyticsView();
+  } else if (tab === '__travel__') {
+    if (travelEl) travelEl.style.display = 'block';
+    renderTravelView();
   } else {
     projectsEl.style.display = '';
     if (filterBar)  filterBar.style.display  = '';
@@ -4148,6 +4655,808 @@ function renderRecentView() {
   recentEl.innerHTML = out;
 }
 
+
+// ============================================================
+// TRAVEL CALENDAR
+// ============================================================
+
+// Travel state
+const travelState = {
+  view: 'calendar',          // 'calendar' | 'list'
+  calYear: new Date().getFullYear(),
+  calMonth: new Date().getMonth(),  // 0-indexed
+  trips: [],
+  travelers: [],
+  itineraryItems: [],
+  editTripId: null,
+  editItinId: null,
+  editItinTripId: null,
+  newTravelerColor: '#4F86C6',
+};
+
+const TRAVELER_PALETTE = [
+  '#4F86C6','#52A775','#E07B4F','#9B59B6','#E74C3C',
+  '#1ABC9C','#F39C12','#8E44AD',
+];
+
+// ---- Data layer ----
+
+async function loadTravelData() {
+  const [
+    { data: travelers },
+    { data: trips },
+    { data: tripTravelers },
+    { data: itinItems },
+  ] = await Promise.all([
+    db.from('travelers').select('*').order('created_at'),
+    db.from('trips').select('*, restaurants(name)').order('start_date'),
+    db.from('trip_travelers').select('*'),
+    db.from('itinerary_items').select('*').order('date').order('time', { nullsFirst: true }),
+  ]);
+
+  travelState.travelers = (travelers || []);
+
+  const ttByTrip = {};
+  (tripTravelers || []).forEach(tt => {
+    if (!ttByTrip[tt.trip_id]) ttByTrip[tt.trip_id] = [];
+    ttByTrip[tt.trip_id].push(tt.traveler_id);
+  });
+
+  travelState.trips = (trips || []).map(t => ({
+    ...t,
+    restaurantName: t.restaurants ? t.restaurants.name : null,
+    travelerIds: ttByTrip[t.id] || [],
+  }));
+
+  travelState.itineraryItems = (itinItems || []);
+}
+
+async function dbSaveTrip(trip, travelerIds) {
+  let id = trip.id;
+  if (!id) {
+    const { data, error } = await db.from('trips').insert({
+      title:         trip.title,
+      destination:   trip.destination,
+      restaurant_id: trip.restaurant_id || null,
+      start_date:    trip.start_date,
+      end_date:      trip.end_date,
+      notes:         trip.notes || null,
+    }).select('id').single();
+    if (error) { console.error(error); return; }
+    id = data.id;
+  } else {
+    const { error } = await db.from('trips').update({
+      title:         trip.title,
+      destination:   trip.destination,
+      restaurant_id: trip.restaurant_id || null,
+      start_date:    trip.start_date,
+      end_date:      trip.end_date,
+      notes:         trip.notes || null,
+    }).eq('id', id);
+    if (error) { console.error(error); return; }
+    // Delete existing traveler links
+    await db.from('trip_travelers').delete().eq('trip_id', id);
+  }
+  // Insert traveler links
+  if (travelerIds.length > 0) {
+    await db.from('trip_travelers').insert(
+      travelerIds.map(tid => ({ trip_id: id, traveler_id: tid }))
+    );
+  }
+  await loadTravelData();
+  renderTravelView();
+}
+
+async function dbDeleteTrip(id) {
+  await db.from('trips').delete().eq('id', id);
+  await loadTravelData();
+  closeTripModal();
+  renderTravelView();
+}
+
+async function dbSaveItinItem(item) {
+  if (item.id) {
+    await db.from('itinerary_items').update({
+      date:        item.date,
+      time:        item.time || null,
+      title:       item.title,
+      description: item.description || null,
+      type:        item.type,
+      project_id:  item.project_id || null,
+      completed:   item.completed,
+    }).eq('id', item.id);
+  } else {
+    await db.from('itinerary_items').insert({
+      trip_id:     item.trip_id,
+      date:        item.date,
+      time:        item.time || null,
+      title:       item.title,
+      description: item.description || null,
+      type:        item.type,
+      project_id:  item.project_id || null,
+      completed:   item.completed || false,
+    });
+  }
+  await loadTravelData();
+  reopenTripModal(item.trip_id);
+}
+
+async function dbDeleteItinItem(id, tripId) {
+  await db.from('itinerary_items').delete().eq('id', id);
+  await loadTravelData();
+  reopenTripModal(tripId);
+}
+
+async function dbToggleItinComplete(id, tripId, completed) {
+  await db.from('itinerary_items').update({ completed: !completed }).eq('id', id);
+  await loadTravelData();
+  reopenTripModal(tripId);
+}
+
+async function dbSaveTraveler(t) {
+  if (t.id) {
+    await db.from('travelers').update({
+      name: t.name, initials: t.initials, color: t.color, active: t.active,
+    }).eq('id', t.id);
+  } else {
+    await db.from('travelers').insert({
+      name: t.name, initials: t.initials, color: t.color, active: true,
+    });
+  }
+  await loadTravelData();
+  renderPeopleModal();
+  renderTravelView();
+}
+
+async function dbDeleteTraveler(id) {
+  const usedInTrips = travelState.trips.some(t => t.travelerIds.includes(id));
+  if (usedInTrips && !confirm('This traveler is assigned to existing trips. Remove them anyway?')) return;
+  await db.from('travelers').delete().eq('id', id);
+  await loadTravelData();
+  renderPeopleModal();
+  renderTravelView();
+}
+
+async function dbToggleTravelerActive(id, current) {
+  await db.from('travelers').update({ active: !current }).eq('id', id);
+  await loadTravelData();
+  renderPeopleModal();
+  renderTravelView();
+}
+
+// ---- Helpers ----
+
+function fmtDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function fmtDateShort(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function parseLocalDate(str) {
+  // Returns a Date at local midnight
+  const [y, m, d] = str.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+function dateStr(d) {
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${mm}-${dd}`;
+}
+
+function itinTypeIcon(type) {
+  const icons = { flight: '✈️', hotel: '🏨', meeting: '🤝', 'site-visit': '👁️', meal: '🍽️', other: '📝' };
+  return icons[type] || '📝';
+}
+
+function travelerById(id) {
+  return travelState.travelers.find(t => t.id === id);
+}
+
+function autoInitials(name) {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+// ---- Main render ----
+
+function renderTravelView() {
+  const el = document.getElementById('travel-content');
+  if (!el) return;
+
+  if (travelState.view === 'calendar') {
+    el.innerHTML = buildCalendarHTML();
+  } else {
+    el.innerHTML = buildListHTML();
+  }
+  el.innerHTML = buildTravelHeaderHTML() + el.innerHTML;
+}
+
+function buildTravelHeaderHTML() {
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const label = months[travelState.calMonth] + ' ' + travelState.calYear;
+  const calActive  = travelState.view === 'calendar' ? 'active' : '';
+  const listActive = travelState.view === 'list'     ? 'active' : '';
+
+  const calendarNav = travelState.view === 'calendar' ? `
+    <div class="travel-month-nav">
+      <button class="travel-nav-btn" onclick="travelPrevMonth()">&#8249;</button>
+      <h2>${label}</h2>
+      <button class="travel-nav-btn" onclick="travelNextMonth()">&#8250;</button>
+    </div>` : `<div></div>`;
+
+  return `
+  <div class="travel-header">
+    <div class="travel-header-left">
+      ${calendarNav}
+    </div>
+    <div class="travel-header-actions">
+      <div class="travel-view-toggle">
+        <button class="travel-view-btn ${calActive}" onclick="travelSetView('calendar')">&#128197; Calendar</button>
+        <button class="travel-view-btn ${listActive}" onclick="travelSetView('list')">&#9776; List</button>
+      </div>
+      <button class="travel-people-btn" title="Manage travelers" onclick="openPeopleModal()">&#9881;</button>
+      <button class="btn-primary" onclick="openTripModal(null)">+ Add Trip</button>
+    </div>
+  </div>`;
+}
+
+function travelPrevMonth() {
+  if (travelState.calMonth === 0) { travelState.calMonth = 11; travelState.calYear--; }
+  else travelState.calMonth--;
+  renderTravelView();
+}
+
+function travelNextMonth() {
+  if (travelState.calMonth === 11) { travelState.calMonth = 0; travelState.calYear++; }
+  else travelState.calMonth++;
+  renderTravelView();
+}
+
+function travelSetView(v) {
+  travelState.view = v;
+  renderTravelView();
+}
+
+// ---- Calendar build ----
+
+function buildCalendarHTML() {
+  const year = travelState.calYear;
+  const month = travelState.calMonth;
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  // First day of the month, last day
+  const firstDay = new Date(year, month, 1);
+  const lastDay  = new Date(year, month + 1, 0);
+
+  // Grid starts on Sunday
+  const startOffset = firstDay.getDay(); // 0=Sun
+  const gridStart   = new Date(firstDay);
+  gridStart.setDate(gridStart.getDate() - startOffset);
+
+  // Always 6 rows × 7 cols = 42 cells
+  const cells = [];
+  const cur = new Date(gridStart);
+  for (let i = 0; i < 42; i++) {
+    cells.push(new Date(cur));
+    cur.setDate(cur.getDate() + 1);
+  }
+
+  const dayLabels = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  // Build trip-day index: date-string → [{trip, traveler, barClass}]
+  const tripDayMap = {};
+  travelState.trips.forEach(trip => {
+    const start = parseLocalDate(trip.start_date);
+    const end   = parseLocalDate(trip.end_date);
+    trip.travelerIds.forEach(tid => {
+      const traveler = travelerById(tid);
+      if (!traveler) return;
+      const d = new Date(start);
+      while (d <= end) {
+        const ds = dateStr(d);
+        if (!tripDayMap[ds]) tripDayMap[ds] = [];
+        const isStart = ds === trip.start_date;
+        const isEnd   = ds === trip.end_date;
+        let barClass = 'trip-mid';
+        if (isStart && isEnd) barClass = 'trip-start trip-end';
+        else if (isStart)      barClass = 'trip-start';
+        else if (isEnd)        barClass = 'trip-end';
+        tripDayMap[ds].push({ trip, traveler, barClass });
+        d.setDate(d.getDate() + 1);
+      }
+    });
+  });
+
+  const cellsHTML = cells.map(d => {
+    const ds = dateStr(d);
+    const isOther = d.getMonth() !== month;
+    const isToday = d.getTime() === today.getTime();
+    let cls = 'travel-cal-cell';
+    if (isOther) cls += ' other-month';
+    if (isToday) cls += ' today';
+
+    const bars = (tripDayMap[ds] || []).map(({ trip, traveler, barClass }) => {
+      const showLabel = trip.start_date === ds;
+      const tripTitle = trip.title.length > 22 ? trip.title.slice(0,20)+'…' : trip.title;
+      return `<div class="trip-bar ${barClass}" style="background:${traveler.color}"
+        onclick="openTripModal('${trip.id}')" title="${trip.title} — ${traveler.name}">
+        ${showLabel ? `<span class="trip-bar-label">${tripTitle}</span>` : ''}
+        <span class="trip-bar-initials">${traveler.initials}</span>
+      </div>`;
+    }).join('');
+
+    return `<div class="${cls}">
+      <div class="travel-cal-date-num">${d.getDate()}</div>
+      ${bars}
+    </div>`;
+  }).join('');
+
+  return `
+  <div class="travel-calendar-grid">
+    <div class="travel-cal-days-header">
+      ${dayLabels.map(l => `<div class="travel-cal-day-label">${l}</div>`).join('')}
+    </div>
+    <div class="travel-cal-body">
+      ${cellsHTML}
+    </div>
+  </div>`;
+}
+
+// ---- List build ----
+
+function buildListHTML() {
+  const today = dateStr(new Date());
+  const sorted = [...travelState.trips].sort((a, b) => a.start_date.localeCompare(b.start_date));
+
+  if (sorted.length === 0) {
+    return `<div class="empty-state"><h3>No trips yet</h3><p>Click <strong>+ Add Trip</strong> to plan your first trip.</p></div>`;
+  }
+
+  const cards = sorted.map(trip => {
+    const isPast = trip.end_date < today;
+    const pills = trip.travelerIds.map(tid => {
+      const t = travelerById(tid);
+      if (!t) return '';
+      return `<span class="trip-traveler-pill" style="background:${t.color}">${t.initials}</span>`;
+    }).join('');
+    const restBadge = trip.restaurantName ? `<span class="trip-card-restaurant">${trip.restaurantName}</span>` : '';
+    return `<div class="trip-card ${isPast ? 'trip-past' : ''}" onclick="openTripModal('${trip.id}')">
+      <div class="trip-card-travelers">
+        ${trip.travelerIds.map(tid => {
+          const t = travelerById(tid);
+          return t ? `<div class="trip-traveler-dot" style="background:${t.color}" title="${t.name}"></div>` : '';
+        }).join('')}
+      </div>
+      <div class="trip-card-body">
+        <div class="trip-card-title">${trip.title}</div>
+        <div class="trip-card-dest">${trip.destination}</div>
+        <div class="trip-card-meta">
+          <span class="trip-card-dates">${fmtDateShort(trip.start_date)} – ${fmtDateShort(trip.end_date)}</span>
+          ${restBadge}
+          <div class="trip-card-traveler-pills">${pills}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  return `<div class="travel-list">${cards}</div>`;
+}
+
+// ---- Trip Modal ----
+
+function openTripModal(tripId) {
+  travelState.editTripId = tripId;
+  document.getElementById('trip-modal-overlay').classList.add('open');
+  renderTripModal();
+}
+
+function closeTripModal() {
+  travelState.editTripId = null;
+  document.getElementById('trip-modal-overlay').classList.remove('open');
+}
+
+function reopenTripModal(tripId) {
+  travelState.editTripId = tripId;
+  renderTripModal();
+}
+
+function renderTripModal() {
+  const tripId = travelState.editTripId;
+  const trip   = tripId ? travelState.trips.find(t => t.id === tripId) : null;
+  const isEdit = !!trip;
+
+  document.getElementById('trip-modal-title').textContent = isEdit ? trip.title : 'New Trip';
+
+  // Restaurant options
+  const restOpts = state.restaurants.map(r => {
+    const rObj = (travelState.trips.length > 0 ? [] : []).concat([]); // just need names
+    const selected = trip && trip.restaurantName === r ? 'selected' : '';
+    return `<option value="${r}" ${selected}>${r}</option>`;
+  }).join('');
+
+  // Need restaurant_id — look it up from restaurant name
+  // We store restaurant_id in trip, but display name from join
+  // Build restaurant select with IDs — we need to fetch from state
+  // Actually the trips table uses restaurant_id (UUID FK to restaurants.id)
+  // But our restaurants state only has names. Let's do a lookup of restaurant rows.
+  // We'll use the name-to-ID map we build at load time from travelState.
+  // For simplicity, build options from state.restaurants (names) but we need IDs.
+  // Let's fetch that mapping now.
+
+  // We need restaurants with IDs; state.restaurants only has names
+  // We'll need to load them. For now use a separate approach:
+  // Store restaurants with IDs in travelState.restaurantMap
+  const restOptsHTML = buildRestaurantOptsHTML(trip);
+
+  // Traveler checkboxes
+  const activeTravelers = travelState.travelers.filter(t => t.active);
+  const checkboxes = activeTravelers.map(t => {
+    const checked = trip && trip.travelerIds.includes(t.id) ? 'checked' : '';
+    return `<label class="traveler-checkbox-row ${checked ? 'selected' : ''}" onclick="">
+      <input type="checkbox" name="trip-traveler" value="${t.id}" ${checked} onchange="this.closest('.traveler-checkbox-row').classList.toggle('selected',this.checked)">
+      <span class="traveler-color-swatch" style="background:${t.color}"></span>
+      <span class="traveler-checkbox-label">${t.name}</span>
+    </label>`;
+  }).join('');
+
+  const body = `
+  <div class="trip-modal-section">
+    <div class="trip-modal-section-title">Trip Information</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Trip Title <span class="required">*</span></label>
+        <input type="text" class="form-input" id="trip-title" value="${trip ? trip.title.replace(/"/g,'&quot;') : ''}" placeholder="e.g. New York Culinary Tour">
+      </div>
+      <div class="form-group">
+        <label>Destination <span class="required">*</span></label>
+        <input type="text" class="form-input" id="trip-destination" value="${trip ? trip.destination.replace(/"/g,'&quot;') : ''}" placeholder="City, Country">
+      </div>
+      <div class="form-group">
+        <label>Start Date <span class="required">*</span></label>
+        <input type="date" class="form-input" id="trip-start" value="${trip ? trip.start_date : ''}">
+      </div>
+      <div class="form-group">
+        <label>End Date <span class="required">*</span></label>
+        <input type="date" class="form-input" id="trip-end" value="${trip ? trip.end_date : ''}">
+      </div>
+      <div class="form-group">
+        <label>Restaurant (optional)</label>
+        <select class="form-select" id="trip-restaurant">
+          <option value="">None</option>
+          ${restOptsHTML}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Notes (optional)</label>
+        <textarea class="form-textarea" id="trip-notes" rows="2" style="min-height:60px">${trip ? (trip.notes || '') : ''}</textarea>
+      </div>
+    </div>
+    <div class="form-group" style="margin-top:16px">
+      <label>Travelers</label>
+      <div class="traveler-checkboxes">${checkboxes || '<span style="color:var(--warm-gray);font-size:14px">No active travelers. Add travelers via the ⚙ button.</span>'}</div>
+    </div>
+  </div>
+  ${isEdit ? buildItinerarySection(tripId) : ''}`;
+
+  document.getElementById('trip-modal-body').innerHTML = body;
+
+  // Footer
+  const footerHTML = `
+    ${isEdit ? `<button class="btn-cancel" style="color:var(--rust);border-color:rgba(139,58,30,0.35)" onclick="confirmDeleteTrip('${tripId}')">Delete Trip</button>` : ''}
+    <button class="btn-cancel" onclick="closeTripModal()">Cancel</button>
+    <button class="btn-primary" onclick="saveTripModal()">Save Trip</button>`;
+  document.getElementById('trip-modal-footer').innerHTML = footerHTML;
+}
+
+function buildRestaurantOptsHTML(trip) {
+  // travelState.restaurantMap maps name→id
+  const map = travelState.restaurantMap || {};
+  return state.restaurants.map(name => {
+    const id = map[name] || '';
+    const selected = trip && trip.restaurant_id === id ? 'selected' : '';
+    return `<option value="${id}" ${selected}>${name}</option>`;
+  }).join('');
+}
+
+async function saveTripModal() {
+  const title  = document.getElementById('trip-title').value.trim();
+  const dest   = document.getElementById('trip-destination').value.trim();
+  const start  = document.getElementById('trip-start').value;
+  const end    = document.getElementById('trip-end').value;
+  const restId = document.getElementById('trip-restaurant').value;
+  const notes  = document.getElementById('trip-notes').value.trim();
+
+  if (!title || !dest || !start || !end) {
+    alert('Please fill in Title, Destination, Start Date, and End Date.');
+    return;
+  }
+  if (end < start) {
+    alert('End date must be on or after start date.');
+    return;
+  }
+
+  const checkedBoxes = document.querySelectorAll('input[name="trip-traveler"]:checked');
+  const travelerIds  = Array.from(checkedBoxes).map(cb => cb.value);
+
+  const tripData = {
+    id:            travelState.editTripId || null,
+    title,
+    destination:   dest,
+    restaurant_id: restId || null,
+    start_date:    start,
+    end_date:      end,
+    notes:         notes || null,
+  };
+
+  showLoading('Saving trip…');
+  await dbSaveTrip(tripData, travelerIds);
+  hideLoading();
+  closeTripModal();
+  renderTravelView();
+}
+
+function confirmDeleteTrip(tripId) {
+  if (!confirm('Delete this trip and all its itinerary items? This cannot be undone.')) return;
+  showLoading('Deleting…');
+  dbDeleteTrip(tripId).then(() => { hideLoading(); });
+}
+
+// ---- Itinerary section ----
+
+function buildItinerarySection(tripId) {
+  const items = travelState.itineraryItems.filter(i => i.trip_id === tripId)
+    .sort((a, b) => {
+      if (a.date !== b.date) return a.date.localeCompare(b.date);
+      if (!a.time && !b.time) return 0;
+      if (!a.time) return 1;
+      if (!b.time) return -1;
+      return a.time.localeCompare(b.time);
+    });
+
+  const itemsHTML = items.map(item => {
+    const timeStr = item.time ? item.time.slice(0,5) : '';
+    const meta    = [fmtDate(item.date), timeStr].filter(Boolean).join(' · ');
+    const projText = item.project_id ? (() => {
+      const p = state.projects.find(p => p.id === item.project_id);
+      return p ? `<div class="itinerary-item-project">📌 ${p.title}</div>` : '';
+    })() : '';
+    return `<div class="itinerary-item">
+      <div class="itinerary-item-check ${item.completed ? 'done' : ''}"
+        onclick="dbToggleItinComplete('${item.id}','${tripId}',${item.completed})"></div>
+      <div class="itinerary-item-type">${itinTypeIcon(item.type)}</div>
+      <div class="itinerary-item-body">
+        <div class="itinerary-item-title ${item.completed ? 'done' : ''}">${item.title}</div>
+        <div class="itinerary-item-meta">${meta}</div>
+        ${item.description ? `<div class="itinerary-item-desc">${item.description}</div>` : ''}
+        ${projText}
+      </div>
+      <div class="itinerary-item-actions">
+        <button class="itin-action-btn" onclick="openItinModal('${item.id}','${tripId}')">Edit</button>
+        <button class="itin-action-btn del" onclick="dbDeleteItinItem('${item.id}','${tripId}')">Del</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  return `
+  <div class="trip-modal-section">
+    <div class="trip-modal-section-title">Itinerary</div>
+    <div class="itinerary-list">
+      ${items.length === 0 ? '<p style="color:var(--warm-gray);font-size:14px;padding:8px 0">No items yet.</p>' : itemsHTML}
+    </div>
+    <button class="btn-sm" style="margin-top:12px" onclick="openItinModal(null,'${tripId}')">+ Add Item</button>
+  </div>`;
+}
+
+// ---- Itinerary Item Modal ----
+
+function openItinModal(itinId, tripId) {
+  travelState.editItinId    = itinId;
+  travelState.editItinTripId = tripId;
+  document.getElementById('itin-modal-overlay').classList.add('open');
+  renderItinModal();
+}
+
+function closeItinModal() {
+  document.getElementById('itin-modal-overlay').classList.remove('open');
+  travelState.editItinId    = null;
+  travelState.editItinTripId = null;
+}
+
+function renderItinModal() {
+  const itinId = travelState.editItinId;
+  const tripId = travelState.editItinTripId;
+  const item   = itinId ? travelState.itineraryItems.find(i => i.id === itinId) : null;
+  const trip   = travelState.trips.find(t => t.id === tripId);
+
+  document.getElementById('itin-modal-title').textContent = item ? 'Edit Item' : 'Add Itinerary Item';
+
+  const typeOpts = [
+    ['flight','✈️ Flight'],['hotel','🏨 Hotel'],['meeting','🤝 Meeting'],
+    ['site-visit','👁️ Site Visit'],['meal','🍽️ Meal'],['other','📝 Other'],
+  ].map(([v,l]) => `<option value="${v}" ${item && item.type===v ? 'selected':''}>${l}</option>`).join('');
+
+  // Project options — filtered to trip's restaurant if set
+  const projPool = trip && trip.restaurant_id
+    ? state.projects.filter(p => {
+        const rObj = travelState.restaurantMap || {};
+        const matchName = Object.entries(rObj).find(([name,id]) => id === trip.restaurant_id);
+        return matchName ? p.restaurant === matchName[0] : true;
+      })
+    : state.projects;
+  const projOpts = projPool.filter(p => !p.complete).map(p =>
+    `<option value="${p.id}" ${item && item.project_id===p.id ? 'selected':''}>${p.restaurant} – ${p.title}</option>`
+  ).join('');
+
+  document.getElementById('itin-modal-body').innerHTML = `
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Type <span class="required">*</span></label>
+        <select class="form-select" id="itin-type">${typeOpts}</select>
+      </div>
+      <div class="form-group">
+        <label>Date <span class="required">*</span></label>
+        <input type="date" class="form-input" id="itin-date" value="${item ? item.date : (trip ? trip.start_date : '')}">
+      </div>
+      <div class="form-group full">
+        <label>Title <span class="required">*</span></label>
+        <input type="text" class="form-input" id="itin-title" value="${item ? item.title.replace(/"/g,'&quot;') : ''}" placeholder="e.g. Flight to JFK">
+      </div>
+      <div class="form-group">
+        <label>Time (optional)</label>
+        <input type="time" class="form-input" id="itin-time" value="${item && item.time ? item.time.slice(0,5) : ''}">
+      </div>
+      <div class="form-group">
+        <label>Project (optional)</label>
+        <select class="form-select" id="itin-project">
+          <option value="">None</option>
+          ${projOpts}
+        </select>
+      </div>
+      <div class="form-group full">
+        <label>Description (optional)</label>
+        <textarea class="form-textarea" id="itin-description" rows="2" style="min-height:60px">${item ? (item.description || '') : ''}</textarea>
+      </div>
+    </div>`;
+
+  document.getElementById('itin-modal-footer').innerHTML = `
+    <button class="btn-cancel" onclick="closeItinModal()">Cancel</button>
+    <button class="btn-primary" onclick="saveItinModal()">Save Item</button>`;
+}
+
+async function saveItinModal() {
+  const type  = document.getElementById('itin-type').value;
+  const date  = document.getElementById('itin-date').value;
+  const title = document.getElementById('itin-title').value.trim();
+  const time  = document.getElementById('itin-time').value || null;
+  const proj  = document.getElementById('itin-project').value || null;
+  const desc  = document.getElementById('itin-description').value.trim() || null;
+
+  if (!title || !date) { alert('Please fill in Title and Date.'); return; }
+
+  const item = {
+    id:          travelState.editItinId || null,
+    trip_id:     travelState.editItinTripId,
+    date,
+    time,
+    title,
+    description: desc,
+    type,
+    project_id:  proj,
+    completed:   false,
+  };
+
+  showLoading('Saving…');
+  await dbSaveItinItem(item);
+  hideLoading();
+  closeItinModal();
+}
+
+// ---- People Manager Modal ----
+
+function openPeopleModal() {
+  document.getElementById('people-modal-overlay').classList.add('open');
+  renderPeopleModal();
+}
+
+function closePeopleModal() {
+  document.getElementById('people-modal-overlay').classList.remove('open');
+}
+
+function renderPeopleModal() {
+  const travelers = travelState.travelers;
+
+  const listHTML = travelers.map(t => `
+    <div class="people-item">
+      <div class="people-color-dot" style="background:${t.color}"></div>
+      <div class="people-initials-badge" style="background:${t.color}">${t.initials}</div>
+      <div class="people-name">${t.name}</div>
+      <button class="people-active-toggle ${t.active ? 'active' : ''}"
+        onclick="dbToggleTravelerActive('${t.id}',${t.active})">
+        ${t.active ? 'Active' : 'Inactive'}
+      </button>
+      <button class="people-delete-btn" onclick="dbDeleteTraveler('${t.id}')">Del</button>
+    </div>`).join('');
+
+  // Add form
+  const paletteHTML = TRAVELER_PALETTE.map(c =>
+    `<div class="color-swatch-btn ${travelState.newTravelerColor === c ? 'selected' : ''}"
+      style="background:${c}" onclick="selectTravelerColor('${c}')"></div>`
+  ).join('');
+
+  document.getElementById('people-modal-body').innerHTML = `
+    <div class="people-list">${listHTML || '<p style="color:var(--warm-gray)">No travelers yet.</p>'}</div>
+    <hr style="border:none;border-top:1px solid var(--border);margin:0 0 20px">
+    <div class="form-grid" style="margin-bottom:0">
+      <div class="form-group">
+        <label>Name <span class="required">*</span></label>
+        <input type="text" class="form-input" id="new-traveler-name" placeholder="Full Name"
+          oninput="autoFillInitials(this.value)">
+      </div>
+      <div class="form-group">
+        <label>Initials (auto)</label>
+        <input type="text" class="form-input" id="new-traveler-initials" maxlength="3" placeholder="AB">
+      </div>
+      <div class="form-group full">
+        <label>Color</label>
+        <div class="color-palette">${paletteHTML}</div>
+        <input type="hidden" id="new-traveler-color" value="${travelState.newTravelerColor}">
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:16px;padding:0">
+      <button class="btn-primary" onclick="saveNewTraveler()">Add Traveler</button>
+    </div>`;
+}
+
+function autoFillInitials(name) {
+  const el = document.getElementById('new-traveler-initials');
+  if (el) el.value = autoInitials(name);
+}
+
+function selectTravelerColor(color) {
+  travelState.newTravelerColor = color;
+  document.getElementById('new-traveler-color').value = color;
+  document.querySelectorAll('.color-swatch-btn').forEach(btn => {
+    btn.classList.toggle('selected', btn.style.backgroundColor === hexToRgb(color) || btn.getAttribute('onclick') === `selectTravelerColor('${color}')`);
+  });
+  renderPeopleModal(); // re-render to update selected state
+}
+
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
+async function saveNewTraveler() {
+  const name     = document.getElementById('new-traveler-name').value.trim();
+  const initials = document.getElementById('new-traveler-initials').value.trim().toUpperCase();
+  const color    = document.getElementById('new-traveler-color').value;
+
+  if (!name) { alert('Please enter a name.'); return; }
+  if (!initials || initials.length < 2) { alert('Initials must be 2–3 characters.'); return; }
+
+  showLoading('Saving…');
+  await dbSaveTraveler({ name, initials, color });
+  hideLoading();
+}
+
+// ---- Load restaurant ID map ----
+
+async function loadRestaurantMap() {
+  const { data } = await db.from('restaurants').select('id,name');
+  travelState.restaurantMap = {};
+  (data || []).forEach(r => { travelState.restaurantMap[r.name] = r.id; });
+}
 
 // ============================================================
 // RENDER
