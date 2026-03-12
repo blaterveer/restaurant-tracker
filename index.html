@@ -1877,6 +1877,36 @@
     .travel-cal-cell { min-height: 72px; }
     .trip-modal .modal { max-width: 100%; }
   }
+
+  /* ============================================================
+     INBOX FEATURE
+     ============================================================ */
+  .inbox-view { padding: 32px 40px; max-width: 820px; }
+  .inbox-section { margin-bottom: 36px; }
+  .inbox-section-title { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--warm-gray); margin-bottom: 14px; }
+  .inbox-form-card { background: white; border: 1px solid var(--border); border-radius: 4px; padding: 24px; margin-bottom: 0; }
+  .inbox-submit-btn { font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; background: var(--ink); color: var(--cream); border: none; padding: 10px 20px; border-radius: 3px; cursor: pointer; margin-top: 4px; }
+  .inbox-submit-btn:hover { opacity: 0.85; }
+  .inbox-item { background: white; border: 1px solid var(--border); border-radius: 4px; padding: 14px 18px; margin-bottom: 8px; display: flex; align-items: flex-start; gap: 14px; }
+  .inbox-item-body { flex: 1; min-width: 0; }
+  .inbox-item-title { font-family: 'Instrument Sans', sans-serif; font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 3px; }
+  .inbox-item-meta { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--warm-gray); letter-spacing: 0.03em; margin-top: 4px; }
+  .inbox-item-desc { font-size: 13px; color: #6b6055; margin-top: 4px; line-height: 1.5; }
+  .inbox-item-actions { display: flex; gap: 8px; flex-shrink: 0; align-items: flex-start; padding-top: 2px; }
+  .inbox-status { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 9px; border-radius: 20px; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
+  .inbox-status.submitted { background: #e5e0db; color: #6b6055; }
+  .inbox-status.added     { background: #d1ead8; color: #2d6a3f; }
+  .inbox-status.agenda    { background: #dbeafe; color: #1e40af; }
+  .inbox-status.converted { background: #d1ead8; color: #2d6a3f; }
+  .inbox-status.cleared   { background: #e5e0db; color: #6b6055; }
+  .inbox-action-btn { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; padding: 5px 12px; border-radius: 3px; cursor: pointer; border: 1px solid var(--border); background: white; color: var(--ink); white-space: nowrap; }
+  .inbox-action-btn:hover { background: var(--parchment); }
+  .inbox-action-btn.primary { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+  .inbox-action-btn.primary:hover { opacity: 0.85; }
+  .inbox-action-btn.danger { color: var(--rust); border-color: var(--rust); background: white; }
+  .inbox-action-btn.danger:hover { background: var(--rust); color: white; }
+  .inbox-empty { font-family: 'Instrument Sans', sans-serif; font-size: 13px; color: var(--warm-gray); padding: 20px; text-align: center; background: var(--parchment); border-radius: 4px; border: 1px dashed var(--border); }
+  .inbox-category-pill { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; background: var(--parchment); border: 1px solid var(--border); color: var(--warm-gray); padding: 1px 7px; border-radius: 20px; white-space: nowrap; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
 </head>
@@ -2197,6 +2227,11 @@
   </div>
 </div>
 
+<!-- INBOX VIEW (restaurant role only) -->
+<div id="inbox-view" style="display:none">
+  <div class="inbox-view" id="inbox-view-content"></div>
+</div>
+
 <!-- ADD/EDIT PROJECT MODAL -->
 <div class="modal-overlay" id="project-modal">
   <div class="modal">
@@ -2448,6 +2483,7 @@ let state = {
   session: null,
   sort: { col: null, dir: 'asc' },
   showOverdue: false,
+  inboxRequests: [],
 };
 
 // ============================================================
@@ -2762,7 +2798,9 @@ function renderTabs() {
   }
 
   const travelTab = `<button class="tab ${state.activeTab === '__travel__' ? 'active' : ''}" onclick="switchTab('__travel__')" style="border-left:1px solid rgba(255,255,255,0.08)">&#9992; Travel</button>`;
-  wrapper.innerHTML = visibleRestaurantTabs + ganttTab + recentTab + travelTab + (isAdmin ? analyticsTab : '') + (isAdmin ? adminTab : '');
+  const isRestaurant = state.session && state.session.role === 'restaurant';
+  const inboxTab = isRestaurant ? `<button class="tab ${state.activeTab === '__inbox__' ? 'active' : ''}" onclick="switchTab('__inbox__')" style="border-left:1px solid rgba(255,255,255,0.08)">&#128235; Inbox</button>` : '';
+  wrapper.innerHTML = visibleRestaurantTabs + ganttTab + recentTab + travelTab + (isAdmin ? analyticsTab : '') + inboxTab + (isAdmin ? adminTab : '');
 }
 
 function switchTab(tab) {
@@ -2777,6 +2815,7 @@ function switchTab(tab) {
   const ganttEl       = document.getElementById('gantt-view');
   const analyticsEl   = document.getElementById('analytics-view');
   const travelEl      = document.getElementById('travel-view');
+  const inboxEl       = document.getElementById('inbox-view');
 
   projectsEl.style.display = 'none';
   if (filterBar)   filterBar.style.display   = 'none';
@@ -2785,6 +2824,7 @@ function switchTab(tab) {
   ganttEl.style.display = 'none';
   analyticsEl.style.display = 'none';
   if (travelEl) travelEl.style.display = 'none';
+  if (inboxEl) inboxEl.style.display = 'none';
 
   if (tab === '__recent__') {
     renderRecentView();
@@ -2800,6 +2840,9 @@ function switchTab(tab) {
   } else if (tab === '__travel__') {
     if (travelEl) travelEl.style.display = 'block';
     renderTravelView();
+  } else if (tab === '__inbox__') {
+    if (inboxEl) inboxEl.style.display = 'block';
+    renderRestaurantInbox();
   } else {
     projectsEl.style.display = '';
     if (filterBar)  filterBar.style.display  = '';
@@ -4216,6 +4259,130 @@ async function removeRestaurant(name) {
   state.restaurants = state.restaurants.filter(r => r !== name);
   if (state.activeTab === name) state.activeTab = 'all';
   renderRestaurantChips();
+}
+
+// ============================================================
+// INBOX (restaurant role)
+// ============================================================
+
+async function dbLoadInboxRequests(restaurantName) {
+  const { data, error } = await supabase
+    .from('inbox_requests')
+    .select('*')
+    .eq('restaurant_name', restaurantName)
+    .order('created_at', { ascending: false });
+  if (error) { console.error('inbox load error', error); return []; }
+  return data || [];
+}
+
+async function dbSubmitInboxRequest(restaurantName, title, description, category) {
+  const { data, error } = await supabase
+    .from('inbox_requests')
+    .insert([{ restaurant_name: restaurantName, title, description, category, status: 'submitted' }])
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+async function dbDeleteInboxRequest(id) {
+  const { error } = await supabase.from('inbox_requests').delete().eq('id', id);
+  if (error) throw error;
+}
+
+async function renderRestaurantInbox() {
+  const container = document.getElementById('inbox-view-content');
+  if (!container) return;
+  const restaurantName = state.session && state.session.restaurant;
+  if (!restaurantName) return;
+
+  container.innerHTML = '<p style="color:var(--warm-gray);font-family:\'DM Mono\',monospace;font-size:13px;">Loading…</p>';
+
+  state.inboxRequests = await dbLoadInboxRequests(restaurantName);
+
+  const categories = state.categories.length ? state.categories : [];
+
+  const categoryOptions = categories.map(c =>
+    `<option value="${escHtml(c)}">${escHtml(c)}</option>`
+  ).join('');
+
+  const requestsHtml = state.inboxRequests.length === 0
+    ? `<div class="inbox-empty">No requests yet. Use the form above to submit one.</div>`
+    : state.inboxRequests.map(req => {
+        const statusLabel = { submitted: 'Submitted', added: 'Added to Tasks', agenda: 'On Agenda', converted: 'Converted', cleared: 'Cleared' }[req.status] || req.status;
+        const dateStr = req.created_at ? new Date(req.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+        const catPill = req.category ? `<span class="inbox-category-pill">${escHtml(req.category)}</span>` : '';
+        return `<div class="inbox-item">
+          <div class="inbox-item-body">
+            <div class="inbox-item-title">${escHtml(req.title)}</div>
+            <div class="inbox-item-meta">${dateStr}${catPill ? ' · ' + catPill : ''}</div>
+            ${req.description ? `<div class="inbox-item-desc">${escHtml(req.description)}</div>` : ''}
+          </div>
+          <div class="inbox-item-actions">
+            <span class="inbox-status ${escHtml(req.status)}">${escHtml(statusLabel)}</span>
+            ${req.status === 'submitted' ? `<button class="inbox-action-btn danger" onclick="inboxDeleteRequest('${escHtml(req.id)}')">Delete</button>` : ''}
+          </div>
+        </div>`;
+      }).join('');
+
+  container.innerHTML = `
+    <div class="inbox-section">
+      <div class="inbox-section-title">Submit a Request</div>
+      <div class="inbox-form-card">
+        <div style="margin-bottom:14px">
+          <label style="display:block;font-family:'DM Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--warm-gray);margin-bottom:6px">Request Title *</label>
+          <input id="inbox-title" type="text" placeholder="e.g. New appetizer menu for spring" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid var(--border);border-radius:4px;font-family:'Instrument Sans',sans-serif;font-size:14px;color:var(--ink);background:var(--cream);outline:none">
+        </div>
+        <div style="margin-bottom:14px">
+          <label style="display:block;font-family:'DM Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--warm-gray);margin-bottom:6px">Category</label>
+          <select id="inbox-category" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid var(--border);border-radius:4px;font-family:'Instrument Sans',sans-serif;font-size:14px;color:var(--ink);background:var(--cream);outline:none">
+            <option value="">— Select category —</option>
+            ${categoryOptions}
+          </select>
+        </div>
+        <div style="margin-bottom:18px">
+          <label style="display:block;font-family:'DM Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--warm-gray);margin-bottom:6px">Description</label>
+          <textarea id="inbox-desc" rows="3" placeholder="Add any context or details…" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid var(--border);border-radius:4px;font-family:'Instrument Sans',sans-serif;font-size:14px;color:var(--ink);background:var(--cream);outline:none;resize:vertical"></textarea>
+        </div>
+        <button class="inbox-submit-btn" onclick="inboxSubmitRequest()">Submit Request</button>
+      </div>
+    </div>
+    <div class="inbox-section">
+      <div class="inbox-section-title">My Requests</div>
+      ${requestsHtml}
+    </div>`;
+}
+
+async function inboxSubmitRequest() {
+  const titleEl    = document.getElementById('inbox-title');
+  const categoryEl = document.getElementById('inbox-category');
+  const descEl     = document.getElementById('inbox-desc');
+  const title      = titleEl ? titleEl.value.trim() : '';
+  if (!title) { alert('Please enter a request title.'); return; }
+  const restaurantName = state.session && state.session.restaurant;
+  if (!restaurantName) return;
+  try {
+    const btn = document.querySelector('.inbox-submit-btn');
+    if (btn) btn.disabled = true;
+    await dbSubmitInboxRequest(restaurantName, title, descEl ? descEl.value.trim() : '', categoryEl ? categoryEl.value : '');
+    await renderRestaurantInbox();
+  } catch (e) {
+    console.error('inbox submit error', e);
+    alert('Error submitting request. Please try again.');
+    const btn = document.querySelector('.inbox-submit-btn');
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function inboxDeleteRequest(id) {
+  if (!confirm('Delete this request?')) return;
+  try {
+    await dbDeleteInboxRequest(id);
+    await renderRestaurantInbox();
+  } catch (e) {
+    console.error('inbox delete error', e);
+    alert('Error deleting request.');
+  }
 }
 
 // ============================================================
