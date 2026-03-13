@@ -1244,6 +1244,11 @@
     .pr-empty { font-size: 10pt; color: #a09585; font-style: italic; padding: 6pt 0; }
     .pr-page-break { page-break-before: always; padding-top: 8pt; }
     .pr-footer { border-top: 1px solid #d4cbb8; padding-top: 8pt; margin-top: 20pt; font-size: 8pt; color: #a09585; display: flex; justify-content: space-between; }
+    .pr-restaurant-section { margin-bottom: 0; }
+    .pr-restaurant-header { font-size: 14pt; font-weight: 700; color: #1a1612; border-bottom: 2px solid #8b3a1e; padding-bottom: 6pt; margin-bottom: 16pt; }
+    .pr-subsection { margin-bottom: 16pt; page-break-inside: avoid; }
+    .pr-subsection-title { font-size: 10pt; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #6b6055; margin-bottom: 6pt; }
+    .pr-no-activity { font-size: 10pt; color: #a09585; font-style: italic; margin: 4pt 0 0; }
   }
   /* ============================================================
      LOGIN SCREEN
@@ -3195,64 +3200,10 @@ async function toggleComplete(id) {
 // ============================================================
 function printReport() {
   var session  = state.session;
-  var isAdmin  = session && session.role === 'admin';
   var myRest   = session && session.role === 'restaurant' ? session.restaurant : null;
   var todayStr = today();
   var now      = new Date(todayStr + 'T00:00:00');
   var cutoff8  = new Date(now); cutoff8.setDate(cutoff8.getDate() - 8);
-
-  var allProjects = myRest
-    ? state.projects.filter(function(p){ return p.restaurant === myRest; })
-    : state.projects;
-
-  // 1. Completed in past 8 days
-  var recentDone = allProjects.filter(function(p) {
-    if (!p.complete) return false;
-    var u = p.updatedAt ? new Date(p.updatedAt) : null;
-    return u && u >= cutoff8;
-  });
-
-  // 2. New projects added in past 8 days
-  var recentNew = allProjects.filter(function(p) {
-    var c = p.createdAt ? new Date(p.createdAt) : null;
-    return c && c >= cutoff8;
-  });
-
-  // 3. Notes added in past 8 days
-  var recentNotes = [];
-  allProjects.forEach(function(p) {
-    (p.notes || []).forEach(function(n) {
-      if (!n.date) return;
-      if (new Date(n.date + 'T00:00:00') >= cutoff8) recentNotes.push({ project: p, note: n });
-    });
-  });
-  recentNotes.sort(function(a, b) { return new Date(b.note.date) - new Date(a.note.date); });
-
-  // 3. Overdue
-  var overdueList = allProjects.filter(function(p) {
-    if (p.complete) return false;
-    var d = daysUntil(dueDate(p));
-    return d !== null && d < 0;
-  });
-
-  // 4. Due in next 14 days — projects AND subtasks
-  var upcoming = [];
-  allProjects.forEach(function(p) {
-    if (p.complete) return;
-    var pd = dueDate(p);
-    if (pd) {
-      var days = daysUntil(pd);
-      if (days !== null && days >= 0 && days <= 14)
-        upcoming.push({ type: 'project', label: p.title, sub: null, restaurant: p.restaurant, owner: p.owner, priority: p.priority, dueDate: pd, days: days });
-    }
-    (p.subtasks || []).forEach(function(st) {
-      if (st.status === 'complete' || !st.dueDate) return;
-      var sd = daysUntil(st.dueDate);
-      if (sd !== null && sd >= 0 && sd <= 14)
-        upcoming.push({ type: 'subtask', label: st.name, sub: p.title, restaurant: p.restaurant, owner: st.owner || p.owner, priority: p.priority, dueDate: st.dueDate, days: sd });
-    });
-  });
-  upcoming.sort(function(a, b) { return a.days - b.days; });
 
   // Logo + header strings
   var logoSrc  = '';
@@ -3261,109 +3212,121 @@ function printReport() {
   var dateLabel   = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   var reportTitle = myRest ? myRest + ' — Weekly Summary' : 'SC Culinary — Weekly Summary';
 
-  function rCol(r) { return isAdmin ? '<td>' + escHtml(r || '') + '</td>' : ''; }
-  function rTh()   { return isAdmin ? '<th>Restaurant</th>' : ''; }
+  // Determine which restaurants to include (in state.restaurants order)
+  var restaurants = myRest
+    ? state.restaurants.filter(function(r) { return r.name === myRest; })
+    : state.restaurants;
 
-  // ── Completed section ─────────────────────────────────────────────────────
-  var secDone = '<div class="pr-section">'
-    + '<div class="pr-section-title">✅ Completed — Past 8 Days (' + recentDone.length + ')</div>'
-    + '<table class="pr-table"><thead><tr><th>Project</th>' + rTh() + '<th>Owner</th><th>Completed</th></tr></thead><tbody>';
-  if (!recentDone.length) {
-    secDone += '<tr><td colspan="' + (isAdmin ? 4 : 3) + '" class="pr-empty">No projects completed in the past 8 days.</td></tr>';
-  } else {
-    recentDone.forEach(function(p) {
-      var cd = p.updatedAt ? new Date(p.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
-      secDone += '<tr><td>' + escHtml(p.title)
-        + (p.description ? '<br><span style="font-size:9pt;color:#6b6055">' + escHtml(p.description) + '</span>' : '')
-        + '</td>' + rCol(p.restaurant) + '<td>' + (p.owner || '—') + '</td>'
-        + '<td class="pr-complete">' + cd + '</td></tr>';
-    });
-  }
-  secDone += '</tbody></table></div>';
+  // Build per-restaurant sections
+  var sectionsHtml = '';
+  restaurants.forEach(function(rest, idx) {
+    var restName     = rest.name;
+    var restProjects = state.projects.filter(function(p) { return p.restaurant === restName; });
 
-  // ── New Projects section ──────────────────────────────────────────────────
-  var secNew = '<div class="pr-section" style="page-break-inside:auto">'
-    + '<div class="pr-section-title">🆕 New Projects — Past 8 Days (' + recentNew.length + ')</div>'
-    + '<table class="pr-table"><thead><tr><th>Project</th>' + rTh() + '<th>Owner</th><th>Category</th><th>Added</th></tr></thead><tbody>';
-  if (!recentNew.length) {
-    secNew += '<tr><td colspan="' + (isAdmin ? 5 : 4) + '" class="pr-empty">No new projects added in the past 8 days.</td></tr>';
-  } else {
-    recentNew.forEach(function(p) {
-      var ad = p.createdAt ? new Date(p.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
-      secNew += '<tr><td>' + escHtml(p.title)
-        + (p.description ? '<br><span style="font-size:9pt;color:#6b6055">' + escHtml(p.description) + '</span>' : '')
-        + '</td>' + rCol(p.restaurant) + '<td>' + (p.owner || '—') + '</td>'
-        + '<td>' + escHtml(p.category || '—') + '</td>'
-        + '<td style="white-space:nowrap">' + ad + '</td></tr>';
+    // 1. Recently Completed in past 8 days
+    var done = restProjects.filter(function(p) {
+      if (!p.complete) return false;
+      var u = p.updatedAt ? new Date(p.updatedAt) : null;
+      return u && u >= cutoff8;
     });
-  }
-  secNew += '</tbody></table></div>';
 
-  // ── Notes section ─────────────────────────────────────────────────────────
-  var secNotes = '<div class="pr-section pr-page-break">'
-    + '<div class="pr-section-title">📝 Recent Notes — Past 8 Days (' + recentNotes.length + ')</div>'
-    + '<table class="pr-table"><thead><tr><th>Date</th><th>Project</th>' + rTh() + '<th>Note</th><th>Author</th></tr></thead><tbody>';
-  if (!recentNotes.length) {
-    secNotes += '<tr><td colspan="' + (isAdmin ? 5 : 4) + '" class="pr-empty">No notes added in the past 8 days.</td></tr>';
-  } else {
-    recentNotes.forEach(function(item) {
-      secNotes += '<tr>'
-        + '<td style="white-space:nowrap">' + formatDate(item.note.date) + '</td>'
-        + '<td>' + escHtml(item.project.title) + '</td>'
-        + rCol(item.project.restaurant)
-        + '<td>' + escHtml(item.note.text) + '</td>'
-        + '<td style="white-space:nowrap">' + escHtml(item.note.author || '—') + '</td>'
-        + '</tr>';
+    // 2. New Projects added in past 8 days
+    var newP = restProjects.filter(function(p) {
+      var c = p.createdAt ? new Date(p.createdAt) : null;
+      return c && c >= cutoff8;
     });
-  }
-  secNotes += '</tbody></table></div>';
 
-  // ── Overdue section ───────────────────────────────────────────────────────
-  var secOverdue = '';
-  if (overdueList.length) {
-    secOverdue = '<div class="pr-section">'
-      + '<div class="pr-section-title">⚠️ Overdue (' + overdueList.length + ')</div>'
-      + '<table class="pr-table"><thead><tr><th>Project</th>' + rTh() + '<th>Owner</th><th>Was Due</th></tr></thead><tbody>';
-    overdueList.forEach(function(p) {
-      var due = dueDate(p);
-      var ago = Math.abs(daysUntil(due));
-      secOverdue += '<tr><td>' + escHtml(p.title) + '</td>' + rCol(p.restaurant)
-        + '<td>' + (p.owner || '—') + '</td>'
-        + '<td class="pr-overdue">' + formatDate(due) + ' (' + ago + 'd ago)</td></tr>';
+    // 3. Updated: notes in past 8 days, deduplicated from done/newP
+    var doneIds = done.map(function(p) { return p.id; });
+    var newIds  = newP.map(function(p) { return p.id; });
+    var updated = [];
+    restProjects.forEach(function(p) {
+      if (doneIds.indexOf(p.id) !== -1 || newIds.indexOf(p.id) !== -1) return;
+      (p.notes || []).forEach(function(n) {
+        if (!n.date) return;
+        if (new Date(n.date + 'T00:00:00') >= cutoff8) updated.push({ project: p, note: n });
+      });
     });
-    secOverdue += '</tbody></table></div>';
-  }
+    updated.sort(function(a, b) { return new Date(b.note.date) - new Date(a.note.date); });
 
-  // ── Upcoming 14 days section ──────────────────────────────────────────────
-  var secUpcoming = '<div class="pr-section">'
-    + '<div class="pr-section-title">📅 Due in the Next 14 Days (' + upcoming.length + ')</div>'
-    + '<table class="pr-table"><thead><tr><th>Due</th><th>Project / Subtask</th>' + rTh() + '<th>Owner</th><th>Priority</th></tr></thead><tbody>';
-  if (!upcoming.length) {
-    secUpcoming += '<tr><td colspan="' + (isAdmin ? 5 : 4) + '" class="pr-empty">Nothing due in the next 14 days.</td></tr>';
-  } else {
-    upcoming.forEach(function(item) {
-      var dl = item.days === 0 ? '<strong>Today</strong>' : item.days === 1 ? 'Tomorrow' : formatDate(item.dueDate);
-      var dc = item.days <= 3 ? ' class="pr-overdue"' : '';
-      var nm = item.type === 'subtask'
-        ? escHtml(item.label) + '<br><span style="font-size:9pt;color:#6b6055">↳ ' + escHtml(item.sub) + '</span>'
-        : escHtml(item.label);
-      secUpcoming += '<tr>'
-        + '<td' + dc + ' style="white-space:nowrap">' + dl + '</td>'
-        + '<td>' + nm + '</td>'
-        + rCol(item.restaurant)
-        + '<td>' + (item.owner || '—') + '</td>'
-        + '<td class="pr-priority-' + (item.priority || 'medium').toLowerCase() + '">' + (item.priority || '—') + '</td>'
-        + '</tr>';
-    });
-  }
-  secUpcoming += '</tbody></table></div>';
+    var hasActivity = done.length > 0 || newP.length > 0 || updated.length > 0;
+    var pbClass     = idx > 0 ? ' pr-page-break' : '';
+
+    var sec = '<div class="pr-restaurant-section' + pbClass + '">';
+    sec += '<div class="pr-restaurant-header">' + escHtml(restName) + '</div>';
+
+    if (!hasActivity) {
+      sec += '<p class="pr-no-activity">No activity this period.</p>';
+    } else {
+
+      // ── Recently Completed ──
+      sec += '<div class="pr-subsection">';
+      sec += '<div class="pr-subsection-title">✅ Recently Completed</div>';
+      if (!done.length) {
+        sec += '<p class="pr-no-activity">None.</p>';
+      } else {
+        sec += '<table class="pr-table"><thead><tr><th>Project</th><th>Owner</th><th>Completed</th></tr></thead><tbody>';
+        done.forEach(function(p) {
+          var cd = p.updatedAt ? new Date(p.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
+          sec += '<tr><td>' + escHtml(p.title)
+            + (p.description ? '<br><span style="font-size:9pt;color:#6b6055">' + escHtml(p.description) + '</span>' : '')
+            + '</td><td>' + escHtml(p.owner || '—') + '</td>'
+            + '<td class="pr-complete">' + cd + '</td></tr>';
+        });
+        sec += '</tbody></table>';
+      }
+      sec += '</div>';
+
+      // ── New Projects ──
+      sec += '<div class="pr-subsection">';
+      sec += '<div class="pr-subsection-title">🆕 New Projects</div>';
+      if (!newP.length) {
+        sec += '<p class="pr-no-activity">None.</p>';
+      } else {
+        sec += '<table class="pr-table"><thead><tr><th>Project</th><th>Owner</th><th>Category</th><th>Added</th></tr></thead><tbody>';
+        newP.forEach(function(p) {
+          var ad = p.createdAt ? new Date(p.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
+          sec += '<tr><td>' + escHtml(p.title)
+            + (p.description ? '<br><span style="font-size:9pt;color:#6b6055">' + escHtml(p.description) + '</span>' : '')
+            + '</td><td>' + escHtml(p.owner || '—') + '</td>'
+            + '<td>' + escHtml(p.category || '—') + '</td>'
+            + '<td style="white-space:nowrap">' + ad + '</td></tr>';
+        });
+        sec += '</tbody></table>';
+      }
+      sec += '</div>';
+
+      // ── Updated ──
+      sec += '<div class="pr-subsection">';
+      sec += '<div class="pr-subsection-title">📝 Updated</div>';
+      if (!updated.length) {
+        sec += '<p class="pr-no-activity">None.</p>';
+      } else {
+        sec += '<table class="pr-table"><thead><tr><th>Date</th><th>Project</th><th>Note</th><th>Author</th></tr></thead><tbody>';
+        updated.forEach(function(item) {
+          sec += '<tr>'
+            + '<td style="white-space:nowrap">' + formatDate(item.note.date) + '</td>'
+            + '<td>' + escHtml(item.project.title) + '</td>'
+            + '<td>' + escHtml(item.note.text) + '</td>'
+            + '<td style="white-space:nowrap">' + escHtml(item.note.author || '—') + '</td>'
+            + '</tr>';
+        });
+        sec += '</tbody></table>';
+      }
+      sec += '</div>';
+
+    }
+
+    sec += '</div>'; // .pr-restaurant-section
+    sectionsHtml += sec;
+  });
 
   // ── Assemble ──────────────────────────────────────────────────────────────
   var html = '<div class="pr-header">'
     + '<div class="pr-header-left"><h1>' + reportTitle + '</h1><p>' + dateLabel + '</p></div>'
     + (logoSrc ? '<img src="' + logoSrc + '" alt="SC Culinary">' : '')
     + '</div>';
-  html += secOverdue + secDone + secNew + secUpcoming + secNotes;
+  html += sectionsHtml;
   html += '<div class="pr-footer"><span>SC Culinary Project Dashboard</span><span>Generated ' + dateLabel + '</span></div>';
 
   document.getElementById('print-view').innerHTML = html;
