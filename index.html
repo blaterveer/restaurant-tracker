@@ -1895,10 +1895,9 @@
   .inbox-item-actions { display: flex; gap: 8px; flex-shrink: 0; align-items: flex-start; padding-top: 2px; }
   .inbox-status { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 9px; border-radius: 20px; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
   .inbox-status.submitted { background: #e5e0db; color: #6b6055; }
-  .inbox-status.added     { background: #d1ead8; color: #2d6a3f; }
-  .inbox-status.agenda    { background: #dbeafe; color: #1e40af; }
-  .inbox-status.converted { background: #d1ead8; color: #2d6a3f; }
-  .inbox-status.cleared   { background: #e5e0db; color: #6b6055; }
+  .inbox-status.added    { background: #d1ead8; color: #2d6a3f; }
+  .inbox-status.agenda   { background: #dbeafe; color: #1e40af; }
+  .inbox-status.archived { background: #e5e0db; color: #6b6055; }
   .inbox-action-btn { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; padding: 5px 12px; border-radius: 3px; cursor: pointer; border: 1px solid var(--border); background: white; color: var(--ink); white-space: nowrap; }
   .inbox-action-btn:hover { background: var(--parchment); }
   .inbox-action-btn.primary { background: var(--ink); color: var(--cream); border-color: var(--ink); }
@@ -2559,8 +2558,10 @@ async function loadAll() {
   // Load agenda items
   state.agendaItems = (agendaItems || []).map(a => ({
     id: a.id, restaurant: a.restaurant_name, title: a.title,
-    description: a.description || '', status: a.status,
-    sourceInboxId: a.source_inbox_id, createdAt: a.created_at,
+    description: a.description || '',
+    converted: a.converted_to_task || false,
+    cleared: a.cleared || false,
+    sourceInboxId: a.inbox_request_id, createdAt: a.created_at,
   }));
 
   // Fetch unread inbox count for admin badge
@@ -4282,7 +4283,7 @@ async function saveProject() {
     try {
       await dbUpdateAgendaItemStatus(state._pendingAgendaItemId, 'converted');
       state.agendaItems = state.agendaItems.map(a =>
-        a.id === state._pendingAgendaItemId ? { ...a, status: 'converted' } : a
+        a.id === state._pendingAgendaItemId ? { ...a, converted: true } : a
       );
     } catch(e) { console.error('Failed to update agenda status', e); }
     state._pendingAgendaItemId = null;
@@ -4388,21 +4389,25 @@ async function dbUpdateInboxStatus(id, status) {
 // ============================================================
 
 async function dbAddAgendaItem(restaurant, title, description, sourceInboxId) {
-  const row = { restaurant_name: restaurant, title, description: description || '', status: 'active' };
-  if (sourceInboxId) row.source_inbox_id = sourceInboxId;
+  const row = { restaurant_name: restaurant, title, description: description || '' };
+  if (sourceInboxId) row.inbox_request_id = sourceInboxId;
   const { data, error } = await db.from('agenda_items').insert([row]).select().single();
   if (error) throw error;
   return data;
 }
 
 async function dbUpdateAgendaItemStatus(id, status) {
-  const { error } = await db.from('agenda_items').update({ status }).eq('id', id);
+  const update = status === 'converted' ? { converted_to_task: true } : { cleared: true };
+  const { error } = await db.from('agenda_items').update(update).eq('id', id);
   if (error) throw error;
 }
 
 async function dbClearAgendaForRestaurant(restaurant) {
   const { error } = await db.from('agenda_items')
-    .update({ status: 'cleared' }).eq('restaurant_name', restaurant).eq('status', 'active');
+    .update({ cleared: true })
+    .eq('restaurant_name', restaurant)
+    .eq('cleared', false)
+    .eq('converted_to_task', false);
   if (error) throw error;
 }
 
@@ -4431,7 +4436,7 @@ async function renderRestaurantInbox() {
   const requestsHtml = state.inboxRequests.length === 0
     ? `<div class="inbox-empty">No requests yet. Use the form above to submit one.</div>`
     : state.inboxRequests.map(req => {
-        const statusLabel = { submitted: 'Submitted', added: 'Added to Task List', agenda: 'On Agenda', converted: 'Converted to Task', cleared: 'Archived' }[req.status] || req.status;
+        const statusLabel = { submitted: 'Submitted', added: 'Added to Task List', agenda: 'On Agenda', archived: 'Archived' }[req.status] || req.status;
         const dateStr = req.created_at ? new Date(req.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
         const catPill = req.category ? `<span class="inbox-category-pill">${escHtml(req.category)}</span>` : '';
         return `<div class="inbox-item">
@@ -4521,7 +4526,7 @@ async function renderAdminInbox(targetId = 'admin-inbox-section') {
   const activeReqs   = requests.filter(r => r.status === 'submitted');
   const resolvedReqs = requests.filter(r => r.status !== 'submitted');
 
-  const resolvedStatusLabel = { added: 'Added to Task List', agenda: 'On Agenda', converted: 'Converted', cleared: 'Archived' };
+  const resolvedStatusLabel = { added: 'Added to Task List', agenda: 'On Agenda', archived: 'Archived' };
 
   // Store request data keyed by id so onclick handlers can look up by id only
   window._adminInboxMap = {};
@@ -4582,7 +4587,7 @@ async function adminInboxAddToAgenda(id) {
   const { restaurant_name: restaurant, title, description } = req;
   try {
     const item = await dbAddAgendaItem(restaurant, title, description || '', id);
-    state.agendaItems.push({ id: item.id, restaurant, title, description: description || '', status: 'active', sourceInboxId: id, createdAt: item.created_at });
+    state.agendaItems.push({ id: item.id, restaurant, title, description: description || '', converted: false, cleared: false, sourceInboxId: id, createdAt: item.created_at });
     await dbUpdateInboxStatus(id, 'agenda');
     state.adminInboxUnread = Math.max(0, state.adminInboxUnread - 1);
     const targetId = state.activeTab === '__admin_inbox__' ? 'admin-inbox-tab-section' : 'admin-inbox-section';
@@ -4598,7 +4603,7 @@ async function adminInboxAddToTasks(id) {
 
 async function adminInboxArchive(id) {
   try {
-    await dbUpdateInboxStatus(id, 'cleared');
+    await dbUpdateInboxStatus(id, 'archived');
     state.adminInboxUnread = Math.max(0, state.adminInboxUnread - 1);
     const targetId = state.activeTab === '__admin_inbox__' ? 'admin-inbox-tab-section' : 'admin-inbox-section';
     renderAdminInbox(targetId);
@@ -4638,7 +4643,7 @@ function renderRestaurantAgenda(restaurant) {
   const el = document.getElementById('agenda-restaurant-view');
   if (!el) return;
 
-  const activeItems = state.agendaItems.filter(a => a.restaurant === restaurant && a.status === 'active');
+  const activeItems = state.agendaItems.filter(a => a.restaurant === restaurant && !a.converted && !a.cleared);
   const meta        = state.restaurantMeta[restaurant] || {};
   const nextDate    = meta.next_meeting_date || '';
 
@@ -4703,7 +4708,7 @@ async function agendaAddManual(restaurant) {
   if (!title) return;
   try {
     const item = await dbAddAgendaItem(restaurant, title, '', null);
-    state.agendaItems.push({ id: item.id, restaurant, title, description: '', status: 'active', sourceInboxId: null, createdAt: item.created_at });
+    state.agendaItems.push({ id: item.id, restaurant, title, description: '', converted: false, cleared: false, sourceInboxId: null, createdAt: item.created_at });
     renderRestaurantAgenda(restaurant);
   } catch(e) { console.error('Agenda add error', e); alert('Error adding agenda item.'); }
 }
@@ -4729,7 +4734,7 @@ async function agendaClearAll(restaurant) {
   try {
     await dbClearAgendaForRestaurant(restaurant);
     state.agendaItems = state.agendaItems.map(a =>
-      a.restaurant === restaurant && a.status === 'active' ? { ...a, status: 'cleared' } : a
+      a.restaurant === restaurant && !a.converted && !a.cleared ? { ...a, cleared: true } : a
     );
     renderRestaurantAgenda(restaurant);
   } catch(e) { console.error('Clear agenda error', e); alert('Error clearing agenda.'); }
