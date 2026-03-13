@@ -2238,6 +2238,13 @@
   <div class="inbox-view" id="inbox-view-content"></div>
 </div>
 
+<!-- ADMIN INBOX TAB VIEW -->
+<div id="admin-inbox-view" style="display:none; padding:32px 40px;">
+  <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;margin-bottom:6px;">Restaurant Inbox</div>
+  <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--warm-gray);margin-bottom:28px;letter-spacing:0.06em;">Requests submitted by restaurant teams</div>
+  <div id="admin-inbox-tab-section"></div>
+</div>
+
 <!-- ADD/EDIT PROJECT MODAL -->
 <div class="modal-overlay" id="project-modal">
   <div class="modal">
@@ -2779,6 +2786,7 @@ function renderTabs() {
     </button>`;
   }).join('');
 
+  const adminInboxTab = isAdmin ? `<button class="tab ${state.activeTab === '__admin_inbox__' ? 'active' : ''}" onclick="switchTab('__admin_inbox__')" style="border-left:1px solid rgba(255,255,255,0.08)">&#128235; Inbox</button>` : '';
   const ganttTab = `<button class="tab ${state.activeTab === '__gantt__' ? 'active' : ''}" onclick="switchTab('__gantt__')" style="border-left:1px solid rgba(255,255,255,0.08)">
     &#9638; Gantt
   </button>`;
@@ -2806,7 +2814,7 @@ function renderTabs() {
   const travelTab = `<button class="tab ${state.activeTab === '__travel__' ? 'active' : ''}" onclick="switchTab('__travel__')" style="border-left:1px solid rgba(255,255,255,0.08)">&#9992; Travel</button>`;
   const isRestaurant = state.session && state.session.role === 'restaurant';
   const inboxTab = isRestaurant ? `<button class="tab ${state.activeTab === '__inbox__' ? 'active' : ''}" onclick="switchTab('__inbox__')" style="border-left:1px solid rgba(255,255,255,0.08)">&#128235; Submit New Task Request</button>` : '';
-  wrapper.innerHTML = visibleRestaurantTabs + ganttTab + recentTab + travelTab + (isAdmin ? analyticsTab : '') + inboxTab + (isAdmin ? adminTab : '');
+  wrapper.innerHTML = visibleRestaurantTabs + (isAdmin ? adminInboxTab : '') + ganttTab + recentTab + travelTab + (isAdmin ? analyticsTab : '') + inboxTab + (isAdmin ? adminTab : '');
 }
 
 function switchTab(tab) {
@@ -2822,6 +2830,7 @@ function switchTab(tab) {
   const analyticsEl   = document.getElementById('analytics-view');
   const travelEl      = document.getElementById('travel-view');
   const inboxEl       = document.getElementById('inbox-view');
+  const adminInboxEl  = document.getElementById('admin-inbox-view');
 
   projectsEl.style.display = 'none';
   if (filterBar)   filterBar.style.display   = 'none';
@@ -2831,6 +2840,7 @@ function switchTab(tab) {
   analyticsEl.style.display = 'none';
   if (travelEl) travelEl.style.display = 'none';
   if (inboxEl) inboxEl.style.display = 'none';
+  if (adminInboxEl) adminInboxEl.style.display = 'none';
 
   if (tab === '__recent__') {
     renderRecentView();
@@ -2846,6 +2856,9 @@ function switchTab(tab) {
   } else if (tab === '__travel__') {
     if (travelEl) travelEl.style.display = 'block';
     renderTravelView();
+  } else if (tab === '__admin_inbox__') {
+    if (adminInboxEl) adminInboxEl.style.display = 'block';
+    renderAdminInbox('admin-inbox-tab-section');
   } else if (tab === '__inbox__') {
     if (inboxEl) inboxEl.style.display = 'block';
     renderRestaurantInbox();
@@ -4408,8 +4421,8 @@ async function inboxDeleteRequest(id) {
   }
 }
 
-async function renderAdminInbox() {
-  const section = document.getElementById('admin-inbox-section');
+async function renderAdminInbox(targetId = 'admin-inbox-section') {
+  const section = document.getElementById(targetId);
   if (!section) return;
   section.innerHTML = '<p style="color:var(--warm-gray);font-family:\'DM Mono\',monospace;font-size:13px;">Loading…</p>';
 
@@ -4466,7 +4479,8 @@ async function adminInboxUpdateStatus(id, status) {
   } catch (e) {
     console.error('inbox status update error', e);
     alert('Error updating status.');
-    renderAdminInbox();
+    const targetId = state.activeTab === '__admin_inbox__' ? 'admin-inbox-tab-section' : 'admin-inbox-section';
+    renderAdminInbox(targetId);
   }
 }
 

@@ -80,6 +80,24 @@ create table if not exists notes (
 create index if not exists notes_project_id_idx on notes(project_id);
 
 -- ============================================================
+-- INBOX REQUESTS (restaurant → admin communication)
+-- ============================================================
+
+create table if not exists inbox_requests (
+  id              uuid primary key default gen_random_uuid(),
+  restaurant_name text not null,
+  title           text not null,
+  description     text,
+  category        text,
+  status          text not null default 'submitted'
+                    check (status in ('submitted', 'added', 'agenda', 'converted', 'cleared')),
+  created_at      timestamptz not null default now()
+);
+
+create index if not exists inbox_requests_restaurant_idx on inbox_requests(restaurant_name);
+create index if not exists inbox_requests_status_idx     on inbox_requests(status);
+
+-- ============================================================
 -- ROW LEVEL SECURITY
 -- (Enable RLS + allow anon read/write for the dashboard.
 --  Tighten these policies if you add auth later.)
@@ -90,7 +108,8 @@ alter table categories   enable row level security;
 alter table types        enable row level security;
 alter table owners       enable row level security;
 alter table projects     enable row level security;
-alter table notes        enable row level security;
+alter table notes           enable row level security;
+alter table inbox_requests  enable row level security;
 
 -- Allow full access via anon key (public dashboard, no auth)
 create policy "anon all" on restaurants  for all using (true) with check (true);
@@ -98,7 +117,8 @@ create policy "anon all" on categories   for all using (true) with check (true);
 create policy "anon all" on types        for all using (true) with check (true);
 create policy "anon all" on owners       for all using (true) with check (true);
 create policy "anon all" on projects     for all using (true) with check (true);
-create policy "anon all" on notes        for all using (true) with check (true);
+create policy "anon all" on notes           for all using (true) with check (true);
+create policy "anon all" on inbox_requests  for all using (true) with check (true);
 
 -- ============================================================
 -- SEED DATA (matches the original in-memory defaults)
