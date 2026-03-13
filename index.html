@@ -4523,14 +4523,18 @@ async function renderAdminInbox(targetId = 'admin-inbox-section') {
 
   const resolvedStatusLabel = { added: 'Added to Task List', agenda: 'On Agenda', converted: 'Converted', cleared: 'Archived' };
 
+  // Store request data keyed by id so onclick handlers can look up by id only
+  window._adminInboxMap = {};
+  requests.forEach(r => { window._adminInboxMap[r.id] = r; });
+
   function buildInboxItem(req, isResolved) {
     const dateStr = req.created_at ? new Date(req.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
     const catPill = req.category ? `<span class="inbox-category-pill">${escHtml(req.category)}</span>` : '';
     const actions = isResolved
       ? `<span class="inbox-status ${escHtml(req.status)}" style="font-family:'DM Mono',monospace;font-size:11px;opacity:.65">${escHtml(resolvedStatusLabel[req.status] || req.status)}</span>`
       : `<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
-           <button class="inbox-action-btn" style="background:var(--ink);color:var(--cream)" onclick="adminInboxAddToAgenda('${escHtml(req.id)}','${escHtml(req.restaurant_name)}',${JSON.stringify(req.title)},${JSON.stringify(req.description||'')})">Add to Agenda</button>
-           <button class="inbox-action-btn" style="background:var(--gold-light);color:var(--ink)" onclick="adminInboxAddToTasks('${escHtml(req.id)}','${escHtml(req.restaurant_name)}',${JSON.stringify(req.title)},${JSON.stringify(req.description||'')})">Add to Tasks</button>
+           <button class="inbox-action-btn" style="background:var(--ink);color:var(--cream)" onclick="adminInboxAddToAgenda('${escHtml(req.id)}')">Add to Agenda</button>
+           <button class="inbox-action-btn" style="background:var(--gold-light);color:var(--ink)" onclick="adminInboxAddToTasks('${escHtml(req.id)}')">Add to Tasks</button>
            <button class="inbox-action-btn" style="background:transparent;color:var(--warm-gray);border:1px solid var(--border)" onclick="adminInboxArchive('${escHtml(req.id)}')">Archive</button>
          </div>`;
     return `<div class="inbox-item" id="admin-inbox-item-${escHtml(req.id)}" ${isResolved ? 'style="opacity:.55"' : ''}>
@@ -4572,10 +4576,13 @@ async function renderAdminInbox(targetId = 'admin-inbox-section') {
   section.innerHTML = `<div style="max-width:820px">${activeHtml}${resolvedSection}</div>`;
 }
 
-async function adminInboxAddToAgenda(id, restaurant, title, description) {
+async function adminInboxAddToAgenda(id) {
+  const req = (window._adminInboxMap || {})[id];
+  if (!req) return;
+  const { restaurant_name: restaurant, title, description } = req;
   try {
-    const item = await dbAddAgendaItem(restaurant, title, description, id);
-    state.agendaItems.push({ id: item.id, restaurant, title, description, status: 'active', sourceInboxId: id, createdAt: item.created_at });
+    const item = await dbAddAgendaItem(restaurant, title, description || '', id);
+    state.agendaItems.push({ id: item.id, restaurant, title, description: description || '', status: 'active', sourceInboxId: id, createdAt: item.created_at });
     await dbUpdateInboxStatus(id, 'agenda');
     state.adminInboxUnread = Math.max(0, state.adminInboxUnread - 1);
     const targetId = state.activeTab === '__admin_inbox__' ? 'admin-inbox-tab-section' : 'admin-inbox-section';
@@ -4583,8 +4590,10 @@ async function adminInboxAddToAgenda(id, restaurant, title, description) {
   } catch(e) { console.error('Add to agenda error', e); alert('Error adding to agenda.'); }
 }
 
-async function adminInboxAddToTasks(id, restaurant, title, description) {
-  openAddModal(null, { inboxItemId: id, restaurant, title, description });
+async function adminInboxAddToTasks(id) {
+  const req = (window._adminInboxMap || {})[id];
+  if (!req) return;
+  openAddModal(null, { inboxItemId: id, restaurant: req.restaurant_name, title: req.title, description: req.description || '' });
 }
 
 async function adminInboxArchive(id) {
@@ -4633,6 +4642,10 @@ function renderRestaurantAgenda(restaurant) {
   const meta        = state.restaurantMeta[restaurant] || {};
   const nextDate    = meta.next_meeting_date || '';
 
+  // Store agenda items in a lookup map so onclick handlers can retrieve by id only
+  window._agendaItemMap = window._agendaItemMap || {};
+  activeItems.forEach(a => { window._agendaItemMap[a.id] = a; });
+
   const itemsHtml = activeItems.length === 0
     ? `<div style="color:var(--warm-gray);font-family:'DM Mono',monospace;font-size:13px;padding:8px 0 16px">No agenda items yet.</div>`
     : activeItems.map(item => `
@@ -4642,7 +4655,7 @@ function renderRestaurantAgenda(restaurant) {
             ${item.description ? `<div class="inbox-item-desc" style="margin-top:4px">${escHtml(item.description)}</div>` : ''}
           </div>
           <div class="inbox-item-actions" style="display:flex;gap:6px;flex-shrink:0">
-            <button class="inbox-action-btn" style="background:var(--gold-light);color:var(--ink)" onclick="agendaConvertToTask('${escHtml(item.id)}','${escHtml(restaurant)}',${JSON.stringify(item.title)},${JSON.stringify(item.description||'')})">Convert to Task</button>
+            <button class="inbox-action-btn" style="background:var(--gold-light);color:var(--ink)" onclick="agendaConvertToTask('${escHtml(item.id)}')">Convert to Task</button>
             <button class="inbox-action-btn" style="background:transparent;color:var(--warm-gray);border:1px solid var(--border)" onclick="agendaRemoveItem('${escHtml(item.id)}')">Remove</button>
           </div>
         </div>`).join('');
@@ -4695,10 +4708,11 @@ async function agendaAddManual(restaurant) {
   } catch(e) { console.error('Agenda add error', e); alert('Error adding agenda item.'); }
 }
 
-async function agendaConvertToTask(id, restaurant, title, description) {
-  openAddModal(null, { restaurant, title, description });
-  // Mark agenda item as converted after modal closes via save
+async function agendaConvertToTask(id) {
+  const item = (window._agendaItemMap || {})[id];
+  if (!item) return;
   state._pendingAgendaItemId = id;
+  openAddModal(null, { restaurant: item.restaurant, title: item.title, description: item.description || '' });
 }
 
 async function agendaRemoveItem(id) {
