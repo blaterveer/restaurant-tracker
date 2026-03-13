@@ -2533,6 +2533,7 @@ async function loadAll() {
     { data: notes       },
     { data: subtasks    },
     { data: agendaItems },
+    { data: inboxRequests },
   ] = await Promise.all([
     db.from('restaurants').select('name, next_meeting_date').order('sort_order'),
     db.from('categories' ).select('name').order('sort_order'),
@@ -2542,6 +2543,7 @@ async function loadAll() {
     db.from('notes'      ).select('*').order('created_at'),
     db.from('subtasks'   ).select('*').order('sort_order'),
     db.from('agenda_items').select('*').order('created_at'),
+    db.from('inbox_requests').select('*').order('created_at', { ascending: false }),
   ]);
 
   state.restaurants = (restaurants || []).map(r => r.name);
@@ -2564,9 +2566,9 @@ async function loadAll() {
     sourceInboxId: a.inbox_request_id, createdAt: a.created_at,
   }));
 
-  // Fetch unread inbox count for admin badge
-  const { count: inboxUnread } = await db.from('inbox_requests').select('id', { count: 'exact', head: true }).eq('status', 'submitted');
-  state.adminInboxUnread = inboxUnread || 0;
+  // Load inbox requests and derive unread count
+  state.inboxRequests = inboxRequests || [];
+  state.adminInboxUnread = state.inboxRequests.filter(r => r.status === 'submitted').length;
 
   // Normalize project fields from snake_case DB columns to camelCase
   const notesByProject = {};
@@ -2639,12 +2641,12 @@ async function dbUpsertProject(p) {
     is_complex:  p.isComplex  || false,
     archived:    p.archived   || false,
   });
-  if (error) console.error('upsertProject error:', error);
+  if (error) throw error;
 }
 
 async function dbDeleteProject(id) {
   const { error } = await db.from('projects').delete().eq('id', id);
-  if (error) console.error('deleteProject error:', error);
+  if (error) throw error;
 }
 
 async function dbInsertNote(projectId, note) {
@@ -2654,18 +2656,18 @@ async function dbInsertNote(projectId, note) {
     text:       note.text,
     author:     note.author || null,
   }).select().single();
-  if (error) { console.error('insertNote error:', error); return null; }
+  if (error) throw error;
   return data.id;
 }
 
 async function dbUpdateNote(noteId, text) {
   const { error } = await db.from('notes').update({ text }).eq('id', noteId);
-  if (error) console.error('updateNote error:', error);
+  if (error) throw error;
 }
 
 async function dbDeleteNote(noteId) {
   const { error } = await db.from('notes').delete().eq('id', noteId);
-  if (error) console.error('deleteNote error:', error);
+  if (error) throw error;
 }
 
 async function dbUpsertSubtask(projectId, st) {
@@ -2679,29 +2681,29 @@ async function dbUpsertSubtask(projectId, st) {
     due_date:    st.dueDate || null,
     sort_order:  st.sortOrder || 0,
   }).select().single();
-  if (error) { console.error('upsertSubtask error:', error); return null; }
+  if (error) throw error;
   return data ? data.id : st.id;
 }
 
 async function dbDeleteSubtask(id) {
   const { error } = await db.from('subtasks').delete().eq('id', id);
-  if (error) console.error('deleteSubtask error:', error);
+  if (error) throw error;
 }
 
 async function dbAddLookup(table, name) {
   const maxOrder = state[lookupStateKey(table)].length;
   const { error } = await db.from(table).insert({ name, sort_order: maxOrder });
-  if (error) console.error(`addLookup(${table}) error:`, error);
+  if (error) throw error;
 }
 
 async function dbUpdateLookup(table, oldName, newName) {
   const { error } = await db.from(table).update({ name: newName }).eq('name', oldName);
-  if (error) console.error(`updateLookup(${table}) error:`, error);
+  if (error) throw error;
 }
 
 async function dbDeleteLookup(table, name) {
   const { error } = await db.from(table).delete().eq('name', name);
-  if (error) console.error(`deleteLookup(${table}) error:`, error);
+  if (error) throw error;
 }
 
 function lookupStateKey(table) {
@@ -2846,6 +2848,10 @@ function renderTabs() {
 function switchTab(tab) {
   if (tab !== state.activeTab) state.showOverdue = false;
   state.activeTab = tab;
+  // Clear pending inbox/agenda flags so a subsequent task save
+  // doesn't incorrectly trigger status updates from a prior session
+  state.pendingInboxItemId    = null;
+  state._pendingAgendaItemId  = null;
   renderTabs();
 
   const projectsEl    = document.getElementById('projects-view');
@@ -3170,8 +3176,17 @@ function renderTable() {
 async function toggleComplete(id) {
   const p = state.projects.find(x => x.id === id);
   if (!p) return;
+  const prev = p.complete;
   p.complete = !p.complete;
-  await dbUpsertProject(p);
+  try {
+    await dbUpsertProject(p);
+  } catch(e) {
+    console.error('toggleComplete error:', e);
+    p.complete = prev; // roll back optimistic update
+    alert('Error updating task. Please try again.');
+    render();
+    return;
+  }
   render();
 }
 
@@ -3769,9 +3784,15 @@ async function saveSubtask() {
     dueDate:     document.getElementById('st-due-date').value || null,
     sortOrder:   p.subtasks.length,
   };
-  var savedId = await dbUpsertSubtask(p.id, st);
-  if (savedId) st.id = savedId;
-  p.subtasks.push(st);
+  try {
+    var savedId = await dbUpsertSubtask(p.id, st);
+    if (savedId) st.id = savedId;
+    p.subtasks.push(st);
+  } catch(e) {
+    console.error('saveSubtask error:', e);
+    alert('Error saving subtask. Please try again.');
+    return;
+  }
   renderSubtasksPanel(p);
   renderTable();
 }
@@ -3781,8 +3802,17 @@ async function toggleSubtask(projectId, subtaskId) {
   if (!p) return;
   var st = p.subtasks.find(function(s){ return s.id === subtaskId; });
   if (!st) return;
+  var prev = st.status;
   st.status = st.status === 'complete' ? 'incomplete' : 'complete';
-  await dbUpsertSubtask(p.id, st);
+  try {
+    await dbUpsertSubtask(p.id, st);
+  } catch(e) {
+    console.error('toggleSubtask error:', e);
+    st.status = prev; // roll back
+    alert('Error updating subtask. Please try again.');
+    renderSubtasksPanel(p);
+    return;
+  }
   renderSubtasksPanel(p);
   renderTable();
   checkSubtaskRollup(p);
@@ -3792,8 +3822,14 @@ async function deleteSubtask(projectId, subtaskId) {
   if (!confirm('Delete this subtask?')) return;
   var p = state.projects.find(function(x){ return x.id === projectId; });
   if (!p) return;
-  await dbDeleteSubtask(subtaskId);
-  p.subtasks = p.subtasks.filter(function(s){ return s.id !== subtaskId; });
+  try {
+    await dbDeleteSubtask(subtaskId);
+    p.subtasks = p.subtasks.filter(function(s){ return s.id !== subtaskId; });
+  } catch(e) {
+    console.error('deleteSubtask error:', e);
+    alert('Error deleting subtask. Please try again.');
+    return;
+  }
   renderSubtasksPanel(p);
   renderTable();
 }
@@ -3803,7 +3839,13 @@ async function checkSubtaskRollup(p) {
   var allDone = p.subtasks.every(function(s){ return s.status === 'complete'; });
   if (allDone && !p.complete) {
     p.complete = true;
-    await dbUpsertProject(p);
+    try {
+      await dbUpsertProject(p);
+    } catch(e) {
+      console.error('checkSubtaskRollup error:', e);
+      p.complete = false; // roll back
+      return;
+    }
     var completeBtn = document.getElementById('dp-complete-btn');
     if (completeBtn) completeBtn.textContent = 'Mark Incomplete';
     var toast = document.getElementById('dp-rollup-toast');
@@ -3840,7 +3882,13 @@ async function saveSubtaskEdit(projectId, subtaskId) {
   st.description = document.getElementById('st-edit-description').value.trim();
   st.owner       = document.getElementById('st-edit-owner').value;
   st.dueDate     = document.getElementById('st-edit-due-date').value || null;
-  await dbUpsertSubtask(p.id, st);
+  try {
+    await dbUpsertSubtask(p.id, st);
+  } catch(e) {
+    console.error('saveSubtaskEdit error:', e);
+    alert('Error saving subtask. Please try again.');
+    return;
+  }
   state.editingSubtaskId = null;
   renderSubtasksPanel(p);
   renderTable();
@@ -3988,8 +4036,14 @@ async function submitPanelNote() {
   if (authorSel.value === '__new__') {
     author = document.getElementById('dp-note-author-new').value.trim();
     if (author && !state.owners.includes(author)) {
-      await dbAddLookup('owners', author);
-      state.owners.push(author);
+      try {
+        await dbAddLookup('owners', author);
+        state.owners.push(author);
+      } catch(e) {
+        console.error('submitPanelNote addLookup error:', e);
+        alert('Error saving new author. Please try again.');
+        return;
+      }
     }
   } else {
     author = authorSel.value;
@@ -3999,9 +4053,15 @@ async function submitPanelNote() {
   if (!p) return;
 
   const newNote = { date: today(), text, author };
-  const noteId  = await dbInsertNote(p.id, newNote);
-  if (noteId) newNote.id = noteId;
-  p.notes.push(newNote);
+  try {
+    const noteId = await dbInsertNote(p.id, newNote);
+    if (noteId) newNote.id = noteId;
+    p.notes.push(newNote);
+  } catch(e) {
+    console.error('submitPanelNote error:', e);
+    alert('Error saving note. Please try again.');
+    return;
+  }
 
   document.getElementById('dp-note-text').value = '';
   document.getElementById('dp-note-author').value = '';
@@ -4070,25 +4130,33 @@ async function duplicateProject(sourceId) {
     updatedAt:   null,
   };
 
-  // Save project to DB first
-  await dbUpsertProject(newProject);
+  try {
+    // Save project to DB first
+    await dbUpsertProject(newProject);
 
-  // Duplicate subtasks with new IDs
-  for (const st of (src.subtasks || [])) {
-    const newSt = {
-      id:          uid(),
-      name:        st.name,
-      description: st.description || '',
-      status:      'incomplete',
-      owner:       st.owner || '',
-      dueDate:     st.dueDate || null,
-      sortOrder:   st.sortOrder || 0,
-    };
-    await dbUpsertSubtask(newId, newSt);
-    newProject.subtasks.push(newSt);
+    // Duplicate subtasks with new IDs
+    for (const st of (src.subtasks || [])) {
+      const newSt = {
+        id:          uid(),
+        name:        st.name,
+        description: st.description || '',
+        status:      'incomplete',
+        owner:       st.owner || '',
+        dueDate:     st.dueDate || null,
+        sortOrder:   st.sortOrder || 0,
+      };
+      await dbUpsertSubtask(newId, newSt);
+      newProject.subtasks.push(newSt);
+    }
+
+    state.projects.push(newProject);
+  } catch(e) {
+    console.error('duplicateProject error:', e);
+    hideLoading();
+    alert('Error duplicating task. Please try again.');
+    return;
   }
 
-  state.projects.push(newProject);
   hideLoading();
 
   // Open the duplicate in the edit modal so user can adjust fields
@@ -4101,7 +4169,14 @@ async function archiveFromPanel() {
   const p = state.projects.find(x => x.id === state.detailProjectId);
   if (!p) return;
   p.archived = true;
-  await dbUpsertProject(p);
+  try {
+    await dbUpsertProject(p);
+  } catch(e) {
+    console.error('archiveFromPanel error:', e);
+    p.archived = false; // roll back
+    alert('Error archiving task. Please try again.');
+    return;
+  }
   closeDetail();
   render();
 }
@@ -4111,7 +4186,9 @@ async function archiveFromPanel() {
 // ============================================================
 function openAddModal(editId = null, prefill = null) {
   state.editProjectId = editId;
-  if (!editId) state.pendingInboxItemId = prefill ? (prefill.inboxItemId || null) : null;
+  // Set or clear pending inbox/agenda IDs based on what triggered this open
+  state.pendingInboxItemId   = (!editId && prefill) ? (prefill.inboxItemId   || null) : null;
+  state._pendingAgendaItemId = (!editId && prefill) ? (prefill.agendaItemId  || null) : null;
   const isEdit = !!editId;
   const p = isEdit ? state.projects.find(x => x.id === editId) : null;
 
@@ -4239,42 +4316,49 @@ async function saveProject() {
   const dateAdded   = document.getElementById('f-date-added').value;
   const dueDate     = document.getElementById('f-due-date').value || null;
 
-  if (state.editProjectId) {
-    const p = state.projects.find(x => x.id === state.editProjectId);
-    if (!p) { alert('Could not find project to update.'); hideLoading(); return; }
-    p.title = title; p.restaurant = restaurant; p.category = category;
-    p.type = type; p.description = description; p.owner = owner;
-    p.priority = priority; p.weeks = weeks; p.dateAdded = dateAdded; p.dueDate = dueDate;
-    p.isComplex = document.getElementById('f-is-complex').checked;
-    await dbUpsertProject(p);
-    if (noteText) {
-      const newNote = { date: today(), text: noteText, author: '' };
-      const noteId  = await dbInsertNote(p.id, newNote);
-      if (noteId) newNote.id = noteId;
-      p.notes.push(newNote);
+  try {
+    if (state.editProjectId) {
+      const p = state.projects.find(x => x.id === state.editProjectId);
+      if (!p) { alert('Could not find project to update.'); hideLoading(); return; }
+      p.title = title; p.restaurant = restaurant; p.category = category;
+      p.type = type; p.description = description; p.owner = owner;
+      p.priority = priority; p.weeks = weeks; p.dateAdded = dateAdded; p.dueDate = dueDate;
+      p.isComplex = document.getElementById('f-is-complex').checked;
+      await dbUpsertProject(p);
+      if (noteText) {
+        const newNote = { date: today(), text: noteText, author: '' };
+        const noteId  = await dbInsertNote(p.id, newNote);
+        if (noteId) newNote.id = noteId;
+        p.notes.push(newNote);
+      }
+    } else {
+      const newProject = {
+        id: uid(), restaurant, title, category, type, description,
+        owner, priority, weeks, dateAdded, dueDate,
+        isComplex: document.getElementById('f-is-complex').checked,
+        complete: false, link: '', notes: [], subtasks: []
+      };
+      await dbUpsertProject(newProject);
+      if (noteText) {
+        const newNote = { date: today(), text: noteText, author: '' };
+        const noteId  = await dbInsertNote(newProject.id, newNote);
+        if (noteId) newNote.id = noteId;
+        newProject.notes.push(newNote);
+      }
+      state.projects.push(newProject);
     }
-  } else {
-    const newProject = {
-      id: uid(), restaurant, title, category, type, description,
-      owner, priority, weeks, dateAdded, dueDate,
-      isComplex: document.getElementById('f-is-complex').checked,
-      complete: false, link: '', notes: [], subtasks: []
-    };
-    await dbUpsertProject(newProject);
-    if (noteText) {
-      const newNote = { date: today(), text: noteText, author: '' };
-      const noteId  = await dbInsertNote(newProject.id, newNote);
-      if (noteId) newNote.id = noteId;
-      newProject.notes.push(newNote);
-    }
-    state.projects.push(newProject);
+  } catch(e) {
+    console.error('saveProject error:', e);
+    hideLoading();
+    alert('Error saving task. Please try again.');
+    return;
   }
 
   // If this task was created from an inbox item, mark it as added
   if (!state.editProjectId && state.pendingInboxItemId) {
     try {
       await dbUpdateInboxStatus(state.pendingInboxItemId, 'added');
-      state.adminInboxUnread = Math.max(0, state.adminInboxUnread - 1);
+      _updateInboxRequestInState(state.pendingInboxItemId, { status: 'added' });
     } catch(e) { console.error('Failed to update inbox status', e); }
     state.pendingInboxItemId = null;
   }
@@ -4417,15 +4501,13 @@ async function dbUpdateRestaurantMeetingDate(restaurant, date) {
   if (error) throw error;
 }
 
-async function renderRestaurantInbox() {
+function renderRestaurantInbox() {
   const container = document.getElementById('inbox-view-content');
   if (!container) return;
   const restaurantName = state.session && state.session.restaurant;
   if (!restaurantName) return;
 
-  container.innerHTML = '<p style="color:var(--warm-gray);font-family:\'DM Mono\',monospace;font-size:13px;">Loading…</p>';
-
-  state.inboxRequests = await dbLoadInboxRequests(restaurantName);
+  const myRequests = (state.inboxRequests || []).filter(r => r.restaurant_name === restaurantName);
 
   const categories = state.categories.length ? state.categories : [];
 
@@ -4433,9 +4515,9 @@ async function renderRestaurantInbox() {
     `<option value="${escHtml(c)}">${escHtml(c)}</option>`
   ).join('');
 
-  const requestsHtml = state.inboxRequests.length === 0
+  const requestsHtml = myRequests.length === 0
     ? `<div class="inbox-empty">No requests yet. Use the form above to submit one.</div>`
-    : state.inboxRequests.map(req => {
+    : myRequests.map(req => {
         const statusLabel = { submitted: 'Submitted', added: 'Added to Task List', agenda: 'On Agenda', archived: 'Archived' }[req.status] || req.status;
         const dateStr = req.created_at ? new Date(req.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
         const catPill = req.category ? `<span class="inbox-category-pill">${escHtml(req.category)}</span>` : '';
@@ -4491,8 +4573,10 @@ async function inboxSubmitRequest() {
   try {
     const btn = document.querySelector('.inbox-submit-btn');
     if (btn) btn.disabled = true;
-    await dbSubmitInboxRequest(restaurantName, title, descEl ? descEl.value.trim() : '', categoryEl ? categoryEl.value : '');
-    await renderRestaurantInbox();
+    const newReq = await dbSubmitInboxRequest(restaurantName, title, descEl ? descEl.value.trim() : '', categoryEl ? categoryEl.value : '');
+    // Prepend to state so it shows at top (requests ordered desc by created_at)
+    state.inboxRequests = [newReq, ...(state.inboxRequests || [])];
+    renderRestaurantInbox();
   } catch (e) {
     console.error('inbox submit error', e);
     alert('Error submitting request. Please try again.');
@@ -4505,23 +4589,19 @@ async function inboxDeleteRequest(id) {
   if (!confirm('Delete this request?')) return;
   try {
     await dbDeleteInboxRequest(id);
-    await renderRestaurantInbox();
+    state.inboxRequests = (state.inboxRequests || []).filter(r => r.id !== id);
+    renderRestaurantInbox();
   } catch (e) {
     console.error('inbox delete error', e);
     alert('Error deleting request.');
   }
 }
 
-async function renderAdminInbox(targetId = 'admin-inbox-section') {
+function renderAdminInbox(targetId = 'admin-inbox-section') {
   const section = document.getElementById(targetId);
   if (!section) return;
-  section.innerHTML = '<p style="color:var(--warm-gray);font-family:\'DM Mono\',monospace;font-size:13px;">Loading…</p>';
 
-  const requests = await dbLoadAllInboxRequests();
-
-  // Update badge count and re-render tabs
-  state.adminInboxUnread = requests.filter(r => r.status === 'submitted').length;
-  renderTabs();
+  const requests = state.inboxRequests || [];
 
   const activeReqs   = requests.filter(r => r.status === 'submitted');
   const resolvedReqs = requests.filter(r => r.status !== 'submitted');
@@ -4581,6 +4661,12 @@ async function renderAdminInbox(targetId = 'admin-inbox-section') {
   section.innerHTML = `<div style="max-width:820px">${activeHtml}${resolvedSection}</div>`;
 }
 
+function _updateInboxRequestInState(id, updates) {
+  state.inboxRequests = (state.inboxRequests || []).map(r => r.id === id ? { ...r, ...updates } : r);
+  state.adminInboxUnread = state.inboxRequests.filter(r => r.status === 'submitted').length;
+  renderTabs();
+}
+
 async function adminInboxAddToAgenda(id) {
   const req = (window._adminInboxMap || {})[id];
   if (!req) return;
@@ -4589,7 +4675,7 @@ async function adminInboxAddToAgenda(id) {
     const item = await dbAddAgendaItem(restaurant, title, description || '', id);
     state.agendaItems.push({ id: item.id, restaurant, title, description: description || '', converted: false, cleared: false, sourceInboxId: id, createdAt: item.created_at });
     await dbUpdateInboxStatus(id, 'agenda');
-    state.adminInboxUnread = Math.max(0, state.adminInboxUnread - 1);
+    _updateInboxRequestInState(id, { status: 'agenda' });
     const targetId = state.activeTab === '__admin_inbox__' ? 'admin-inbox-tab-section' : 'admin-inbox-section';
     renderAdminInbox(targetId);
   } catch(e) { console.error('Add to agenda error', e); alert('Error adding to agenda.'); }
@@ -4604,7 +4690,7 @@ async function adminInboxAddToTasks(id) {
 async function adminInboxArchive(id) {
   try {
     await dbUpdateInboxStatus(id, 'archived');
-    state.adminInboxUnread = Math.max(0, state.adminInboxUnread - 1);
+    _updateInboxRequestInState(id, { status: 'archived' });
     const targetId = state.activeTab === '__admin_inbox__' ? 'admin-inbox-tab-section' : 'admin-inbox-section';
     renderAdminInbox(targetId);
   } catch(e) { console.error('Archive error', e); alert('Error archiving request.'); }
@@ -4613,6 +4699,7 @@ async function adminInboxArchive(id) {
 async function adminInboxUpdateStatus(id, status) {
   try {
     await dbUpdateInboxStatus(id, status);
+    _updateInboxRequestInState(id, { status });
     const targetId = state.activeTab === '__admin_inbox__' ? 'admin-inbox-tab-section' : 'admin-inbox-section';
     renderAdminInbox(targetId);
   } catch (e) {
@@ -4808,11 +4895,17 @@ async function saveAdminItem(listKey, index) {
   const newVal = input.value.trim();
   if (!newVal) return;
   const oldVal = state[listKey][index];
-  await dbUpdateLookup(lookupTableMap[listKey] || listKey, oldVal, newVal);
-  state[listKey][index] = newVal;
-  if (listKey === 'categories') state.projects.forEach(p => { if (p.category === oldVal) p.category = newVal; });
-  if (listKey === 'types')      state.projects.forEach(p => { if (p.type     === oldVal) p.type     = newVal; });
-  if (listKey === 'owners')     state.projects.forEach(p => { if (p.owner    === oldVal) p.owner    = newVal; });
+  try {
+    await dbUpdateLookup(lookupTableMap[listKey] || listKey, oldVal, newVal);
+    state[listKey][index] = newVal;
+    if (listKey === 'categories') state.projects.forEach(p => { if (p.category === oldVal) p.category = newVal; });
+    if (listKey === 'types')      state.projects.forEach(p => { if (p.type     === oldVal) p.type     = newVal; });
+    if (listKey === 'owners')     state.projects.forEach(p => { if (p.owner    === oldVal) p.owner    = newVal; });
+  } catch(e) {
+    console.error('saveAdminItem error:', e);
+    alert('Error saving changes. Please try again.');
+    return;
+  }
   const mapId = listKey === 'categories' ? 'cat' : listKey === 'types' ? 'type' : 'owner';
   renderAdminList(listKey, `admin-${mapId}-list`, `admin-${mapId}-count`);
   renderFilterDropdowns();
@@ -4826,8 +4919,14 @@ async function deleteAdminItem(listKey, index) {
     ? state.projects.some(p => p.type     === val)
     : state.projects.some(p => p.owner    === val);
   if (inUse && !confirm(`"${val}" is used by existing projects. Remove it anyway?`)) return;
-  await dbDeleteLookup(lookupTableMap[listKey] || listKey, val);
-  state[listKey].splice(index, 1);
+  try {
+    await dbDeleteLookup(lookupTableMap[listKey] || listKey, val);
+    state[listKey].splice(index, 1);
+  } catch(e) {
+    console.error('deleteAdminItem error:', e);
+    alert('Error deleting item. Please try again.');
+    return;
+  }
   const mapId = listKey === 'categories' ? 'cat' : listKey === 'types' ? 'type' : 'owner';
   renderAdminList(listKey, `admin-${mapId}-list`, `admin-${mapId}-count`);
   renderFilterDropdowns();
@@ -4838,9 +4937,15 @@ async function addAdminItem(listKey, inputId, listId, countId) {
   const val   = input.value.trim();
   if (!val) return;
   if (state[listKey].includes(val)) { input.focus(); return; }
-  await dbAddLookup(lookupTableMap[listKey] || listKey, val);
-  state[listKey].push(val);
-  input.value = '';
+  try {
+    await dbAddLookup(lookupTableMap[listKey] || listKey, val);
+    state[listKey].push(val);
+    input.value = '';
+  } catch(e) {
+    console.error('addAdminItem error:', e);
+    alert('Error adding item. Please try again.');
+    return;
+  }
   renderAdminList(listKey, listId, countId);
   renderFilterDropdowns();
 }
@@ -4865,19 +4970,31 @@ async function addAdminRestaurant() {
   const input = document.getElementById('new-restaurant-admin');
   const name  = input.value.trim();
   if (!name || state.restaurants.includes(name)) return;
-  await dbAddLookup('restaurants', name);
-  state.restaurants.push(name);
-  input.value = '';
+  try {
+    await dbAddLookup('restaurants', name);
+    state.restaurants.push(name);
+    input.value = '';
+  } catch(e) {
+    console.error('addAdminRestaurant error:', e);
+    alert('Error adding restaurant. Please try again.');
+    return;
+  }
   renderAdminRestaurants();
   renderTabs();
 }
 
 async function removeAdminRestaurant(name) {
   const count = state.projects.filter(p => p.restaurant === name).length;
-  if (count > 0) { alert(`Cannot remove "${name}" ”” it has ${count} existing project${count !== 1 ? 's' : ''}.`); return; }
-  if (!confirm(`Remove "${name}" from the portfolio?`)) return;
-  await dbDeleteLookup('restaurants', name);
-  state.restaurants = state.restaurants.filter(r => r !== name);
+  if (count > 0) { alert(`Cannot remove “${name}” — it has ${count} existing project${count !== 1 ? 's' : ''}.`); return; }
+  if (!confirm(`Remove “${name}” from the portfolio?`)) return;
+  try {
+    await dbDeleteLookup('restaurants', name);
+    state.restaurants = state.restaurants.filter(r => r !== name);
+  } catch(e) {
+    console.error('removeAdminRestaurant error:', e);
+    alert('Error removing restaurant. Please try again.');
+    return;
+  }
   renderAdminRestaurants();
   renderTabs();
 }
@@ -4888,8 +5005,16 @@ async function clearCompleted() {
   if (!confirm(`Permanently delete ${count} completed project${count !== 1 ? 's' : ''}? This cannot be undone.`)) return;
   // Delete one by one (cascade deletes notes via FK)
   const completed = state.projects.filter(p => p.complete);
-  for (const p of completed) await dbDeleteProject(p.id);
-  state.projects = state.projects.filter(p => !p.complete);
+  try {
+    for (const p of completed) await dbDeleteProject(p.id);
+    state.projects = state.projects.filter(p => !p.complete);
+  } catch(e) {
+    console.error('clearCompleted error:', e);
+    alert('Error deleting completed tasks. Some may not have been removed — please refresh and try again.');
+    await loadAll();
+    render();
+    return;
+  }
   renderAdminStats();
   renderSummary();
   renderTabs();
