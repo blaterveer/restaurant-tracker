@@ -2497,6 +2497,7 @@ let state = {
   sort: { col: null, dir: 'asc' },
   showOverdue: false,
   inboxRequests: [],
+  adminInboxUnread: 0,
 };
 
 // ============================================================
@@ -2541,6 +2542,10 @@ async function loadAll() {
   state.categories  = (categories  || []).map(c => c.name);
   state.types       = (types       || []).map(t => t.name);
   state.owners      = (owners      || []).map(o => o.name);
+
+  // Fetch unread inbox count for admin badge
+  const { count: inboxUnread } = await db.from('inbox_requests').select('id', { count: 'exact', head: true }).eq('status', 'submitted');
+  state.adminInboxUnread = inboxUnread || 0;
 
   // Normalize project fields from snake_case DB columns to camelCase
   const notesByProject = {};
@@ -2793,7 +2798,7 @@ function renderTabs() {
     &#128197; Recent
   </button>`;
   const isAdmin = state.session && state.session.role === 'admin';
-  const adminInboxTab = isAdmin ? `<button class="tab ${state.activeTab === '__admin_inbox__' ? 'active' : ''}" onclick="switchTab('__admin_inbox__')" style="border-left:1px solid rgba(255,255,255,0.08)">&#128235; Inbox</button>` : '';
+  const adminInboxTab = isAdmin ? `<button class="tab ${state.activeTab === '__admin_inbox__' ? 'active' : ''}" onclick="switchTab('__admin_inbox__')" style="border-left:1px solid rgba(255,255,255,0.08)">&#128235; Inbox${state.adminInboxUnread > 0 ? ` <span class="badge" style="background:var(--rust);color:white">${state.adminInboxUnread}</span>` : ''}</button>` : '';
   const analyticsTab = isAdmin ? `<button class="tab ${state.activeTab === '__analytics__' ? 'active' : ''}" onclick="switchTab('__analytics__')" style="border-left:1px solid rgba(255,255,255,0.08)">&#128200; Analytics</button>` : '';
   const adminTab = isAdmin ? `<button class="tab ${state.activeTab === '__admin__' ? 'active' : ''}" onclick="switchTab('__admin__')" style="margin-left:auto;border-left:1px solid rgba(255,255,255,0.08)">&#9881; Admin</button>` : '';
 
@@ -4428,6 +4433,10 @@ async function renderAdminInbox(targetId = 'admin-inbox-section') {
 
   const requests = await dbLoadAllInboxRequests();
 
+  // Update badge count and re-render tabs
+  state.adminInboxUnread = requests.filter(r => r.status === 'submitted').length;
+  renderTabs();
+
   if (requests.length === 0) {
     section.innerHTML = '<div class="inbox-empty" style="max-width:820px">No inbox requests yet.</div>';
     return;
@@ -4476,6 +4485,8 @@ async function renderAdminInbox(targetId = 'admin-inbox-section') {
 async function adminInboxUpdateStatus(id, status) {
   try {
     await dbUpdateInboxStatus(id, status);
+    const targetId = state.activeTab === '__admin_inbox__' ? 'admin-inbox-tab-section' : 'admin-inbox-section';
+    renderAdminInbox(targetId);
   } catch (e) {
     console.error('inbox status update error', e);
     alert('Error updating status.');
