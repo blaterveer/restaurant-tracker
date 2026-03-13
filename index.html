@@ -4426,16 +4426,6 @@ async function removeRestaurant(name) {
 // INBOX (restaurant role)
 // ============================================================
 
-async function dbLoadInboxRequests(restaurantName) {
-  const { data, error } = await db
-    .from('inbox_requests')
-    .select('*')
-    .eq('restaurant_name', restaurantName)
-    .order('created_at', { ascending: false });
-  if (error) { console.error('inbox load error', error); return []; }
-  return data || [];
-}
-
 async function dbSubmitInboxRequest(restaurantName, title, description, category) {
   const { data, error } = await db
     .from('inbox_requests')
@@ -4449,15 +4439,6 @@ async function dbSubmitInboxRequest(restaurantName, title, description, category
 async function dbDeleteInboxRequest(id) {
   const { error } = await db.from('inbox_requests').delete().eq('id', id);
   if (error) throw error;
-}
-
-async function dbLoadAllInboxRequests() {
-  const { data, error } = await db
-    .from('inbox_requests')
-    .select('*')
-    .order('created_at', { ascending: false });
-  if (error) { console.error('admin inbox load error', error); return []; }
-  return data || [];
 }
 
 async function dbUpdateInboxStatus(id, status) {
