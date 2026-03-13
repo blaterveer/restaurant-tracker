@@ -2786,7 +2786,6 @@ function renderTabs() {
     </button>`;
   }).join('');
 
-  const adminInboxTab = isAdmin ? `<button class="tab ${state.activeTab === '__admin_inbox__' ? 'active' : ''}" onclick="switchTab('__admin_inbox__')" style="border-left:1px solid rgba(255,255,255,0.08)">&#128235; Inbox</button>` : '';
   const ganttTab = `<button class="tab ${state.activeTab === '__gantt__' ? 'active' : ''}" onclick="switchTab('__gantt__')" style="border-left:1px solid rgba(255,255,255,0.08)">
     &#9638; Gantt
   </button>`;
@@ -2794,6 +2793,7 @@ function renderTabs() {
     &#128197; Recent
   </button>`;
   const isAdmin = state.session && state.session.role === 'admin';
+  const adminInboxTab = isAdmin ? `<button class="tab ${state.activeTab === '__admin_inbox__' ? 'active' : ''}" onclick="switchTab('__admin_inbox__')" style="border-left:1px solid rgba(255,255,255,0.08)">&#128235; Inbox</button>` : '';
   const analyticsTab = isAdmin ? `<button class="tab ${state.activeTab === '__analytics__' ? 'active' : ''}" onclick="switchTab('__analytics__')" style="border-left:1px solid rgba(255,255,255,0.08)">&#128200; Analytics</button>` : '';
   const adminTab = isAdmin ? `<button class="tab ${state.activeTab === '__admin__' ? 'active' : ''}" onclick="switchTab('__admin__')" style="margin-left:auto;border-left:1px solid rgba(255,255,255,0.08)">&#9881; Admin</button>` : '';
 
