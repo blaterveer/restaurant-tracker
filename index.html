@@ -1330,26 +1330,36 @@
   @media print {
     body > *:not(#print-view) { display: none !important; }
     #print-view { display: block !important; font-family: 'Instrument Sans', Georgia, serif; color: #1a1612; font-size: 12pt; line-height: 1.5; padding: 0; margin: 0; }
-    .pr-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #1a1612; padding-bottom: 12pt; margin-bottom: 20pt; }
-    .pr-header-left h1 { font-size: 18pt; font-weight: 700; margin: 0 0 2pt; }
-    .pr-header-left p { font-size: 9pt; color: #6b6055; margin: 0; }
-    .pr-header img { height: 36pt; }
-    .pr-section { margin-bottom: 24pt; page-break-inside: avoid; }
-    .pr-section-title { font-size: 11pt; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #6b6055; border-bottom: 1px solid #d4cbb8; padding-bottom: 4pt; margin-bottom: 10pt; }
-    .pr-restaurant-group { margin-bottom: 14pt; }
-    .pr-restaurant-name { font-size: 10pt; font-weight: 700; color: #8b3a1e; margin: 0 0 6pt; letter-spacing: 0.04em; }
+    .pr-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #8b3a1e; padding-bottom: 14pt; margin-bottom: 10pt; }
+    .pr-header-left { display: flex; align-items: center; gap: 8pt; }
+    .pr-header-left h1 { font-size: 14pt; font-weight: 700; margin: 0; line-height: 1.2; color: #1a1612; }
+    .pr-header-left p { font-size: 9pt; color: #6b6055; margin: 2pt 0 0; }
+    .pr-header-logos { display: flex; align-items: center; gap: 10pt; }
+    .pr-header-logos img { height: 36pt; object-fit: contain; }
+    .pr-header-logos .pr-logo-divider { width: 1px; height: 28pt; background: #d4cbb8; }
+    .pr-summary-bar { display: flex; gap: 0; margin-bottom: 20pt; border: 1px solid #d4cbb8; border-radius: 4pt; overflow: hidden; }
+    .pr-summary-stat { flex: 1; text-align: center; padding: 10pt 6pt; border-right: 1px solid #d4cbb8; }
+    .pr-summary-stat:last-child { border-right: none; }
+    .pr-summary-stat .pr-stat-value { font-size: 18pt; font-weight: 700; color: #1a1612; display: block; line-height: 1.2; }
+    .pr-summary-stat .pr-stat-label { font-size: 7pt; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #6b6055; }
+    .pr-summary-stat.pr-stat-green .pr-stat-value { color: #4a7c59; }
+    .pr-summary-stat.pr-stat-rust .pr-stat-value { color: #8b3a1e; }
+    .pr-summary-stat.pr-stat-blue .pr-stat-value { color: #4a7c9e; }
     .pr-table { width: 100%; border-collapse: collapse; font-size: 10pt; }
     .pr-table th { text-align: left; font-size: 8pt; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #6b6055; border-bottom: 1px solid #d4cbb8; padding: 3pt 6pt; }
     .pr-table td { padding: 5pt 6pt; border-bottom: 1px solid #ede8df; vertical-align: top; }
     .pr-table tr:last-child td { border-bottom: none; }
-    .pr-priority-high { color: #8b3a1e; font-weight: 600; }
-    .pr-priority-medium { color: #6b6055; }
-    .pr-priority-low { color: #a09585; }
+    .pr-pri-high { display: inline-block; background: #8b3a1e; color: #fff; font-size: 7pt; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 1pt 5pt; border-radius: 2pt; }
+    .pr-pri-medium { display: inline-block; background: #c9a84c; color: #fff; font-size: 7pt; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 1pt 5pt; border-radius: 2pt; }
+    .pr-pri-low { display: inline-block; background: #a09585; color: #fff; font-size: 7pt; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 1pt 5pt; border-radius: 2pt; }
     .pr-overdue { color: #8b3a1e; font-weight: 600; }
+    .pr-due-soon { color: #c9a84c; font-weight: 600; }
     .pr-complete { color: #4a7c59; }
-    .pr-empty { font-size: 10pt; color: #a09585; font-style: italic; padding: 6pt 0; }
+    .pr-status-badge { display: inline-block; font-size: 7pt; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; padding: 1pt 5pt; border-radius: 2pt; }
+    .pr-status-active { background: rgba(74,124,158,0.12); color: #4a7c9e; }
+    .pr-status-new { background: rgba(74,124,89,0.12); color: #4a7c59; }
     .pr-page-break { page-break-before: always; padding-top: 8pt; }
-    .pr-footer { border-top: 1px solid #d4cbb8; padding-top: 8pt; margin-top: 20pt; font-size: 8pt; color: #a09585; display: flex; justify-content: space-between; }
+    .pr-footer { border-top: 2px solid #8b3a1e; padding-top: 8pt; margin-top: 20pt; font-size: 8pt; color: #a09585; display: flex; justify-content: space-between; }
     .pr-restaurant-section { margin-bottom: 0; }
     .pr-restaurant-header { font-size: 14pt; font-weight: 700; color: #1a1612; border-bottom: 2px solid #8b3a1e; padding-bottom: 6pt; margin-bottom: 16pt; }
     .pr-subsection { margin-bottom: 16pt; page-break-inside: avoid; }
@@ -3382,40 +3392,58 @@ function printReport() {
   var myRest   = session && session.role === 'restaurant' ? session.restaurant : null;
   var todayStr = today();
   var now      = new Date(todayStr + 'T00:00:00');
-  var cutoff8  = new Date(now); cutoff8.setDate(cutoff8.getDate() - 8);
+  var cutoff7  = new Date(now); cutoff7.setDate(cutoff7.getDate() - 7);
+  var future7  = new Date(now); future7.setDate(future7.getDate() + 7);
 
   // Logo + header strings
-  var logoSrc  = '';
-  var logoEl   = document.querySelector('.header-logos img');
-  if (logoEl) logoSrc = logoEl.src;
+  var scLogoSrc  = '';
+  var scLogoEl   = document.querySelector('.header-logos img');
+  if (scLogoEl) scLogoSrc = scLogoEl.src;
+  var lthLogoSrc = 'data:image/jpeg;base64,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';
   var dateLabel   = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-  var reportTitle = myRest ? myRest + ' — Weekly Summary' : 'SC Culinary — Weekly Summary';
+  var reportTitle = myRest ? myRest + ' — Weekly Summary' : 'Weekly Project Summary';
 
-  // Determine which restaurants to include (in state.restaurants order)
+  // Determine which restaurants to include (state.restaurants is an array of strings)
   var restaurants = myRest
-    ? state.restaurants.filter(function(r) { return r.name === myRest; })
+    ? state.restaurants.filter(function(r) { return r === myRest; })
     : state.restaurants;
+
+  // ── Gather global stats for summary bar ──
+  var totalCompleted = 0, totalNew = 0, totalUpcoming = 0, totalNotes = 0;
 
   // Build per-restaurant sections
   var sectionsHtml = '';
-  restaurants.forEach(function(rest, idx) {
-    var restName     = rest.name;
+  restaurants.forEach(function(restName, idx) {
     var restProjects = state.projects.filter(function(p) { return p.restaurant === restName; });
 
-    // 1. Recently Completed in past 8 days
+    // 1. Recently Completed in past 7 days
     var done = restProjects.filter(function(p) {
       if (!p.complete) return false;
       var u = p.updatedAt ? new Date(p.updatedAt) : null;
-      return u && u >= cutoff8;
+      return u && u >= cutoff7;
     });
 
-    // 2. New Projects added in past 8 days
+    // 2. New Projects added in past 7 days
     var newP = restProjects.filter(function(p) {
       var c = p.createdAt ? new Date(p.createdAt) : null;
-      return c && c >= cutoff8;
+      return c && c >= cutoff7;
     });
 
-    // 3. Updated: notes in past 8 days, deduplicated from done/newP
+    // 3. Upcoming: due within next 7 days, not complete
+    var upcoming = restProjects.filter(function(p) {
+      if (p.complete) return false;
+      var dd = dueDate(p);
+      if (!dd) return false;
+      var dueD = new Date(dd + 'T00:00:00');
+      return dueD >= now && dueD <= future7;
+    });
+    upcoming.sort(function(a, b) {
+      var da = dueDate(a) || '9999-12-31';
+      var db = dueDate(b) || '9999-12-31';
+      return da.localeCompare(db);
+    });
+
+    // 4. Notes & Updates: notes in past 7 days, deduplicated from done/newP
     var doneIds = done.map(function(p) { return p.id; });
     var newIds  = newP.map(function(p) { return p.id; });
     var updated = [];
@@ -3423,12 +3451,18 @@ function printReport() {
       if (doneIds.indexOf(p.id) !== -1 || newIds.indexOf(p.id) !== -1) return;
       (p.notes || []).forEach(function(n) {
         if (!n.date) return;
-        if (new Date(n.date + 'T00:00:00') >= cutoff8) updated.push({ project: p, note: n });
+        if (new Date(n.date + 'T00:00:00') >= cutoff7) updated.push({ project: p, note: n });
       });
     });
     updated.sort(function(a, b) { return new Date(b.note.date) - new Date(a.note.date); });
 
-    var hasActivity = done.length > 0 || newP.length > 0 || updated.length > 0;
+    // Accumulate global stats
+    totalCompleted += done.length;
+    totalNew       += newP.length;
+    totalUpcoming  += upcoming.length;
+    totalNotes     += updated.length;
+
+    var hasActivity = done.length > 0 || newP.length > 0 || upcoming.length > 0 || updated.length > 0;
     var pbClass     = idx > 0 ? ' pr-page-break' : '';
 
     var sec = '<div class="pr-restaurant-section' + pbClass + '">';
@@ -3440,7 +3474,7 @@ function printReport() {
 
       // ── Recently Completed ──
       sec += '<div class="pr-subsection">';
-      sec += '<div class="pr-subsection-title">✅ Recently Completed</div>';
+      sec += '<div class="pr-subsection-title">' + String.fromCodePoint(0x2705) + ' Recently Completed</div>';
       if (!done.length) {
         sec += '<p class="pr-no-activity">None.</p>';
       } else {
@@ -3458,26 +3492,57 @@ function printReport() {
 
       // ── New Projects ──
       sec += '<div class="pr-subsection">';
-      sec += '<div class="pr-subsection-title">🆕 New Projects</div>';
+      sec += '<div class="pr-subsection-title">' + String.fromCodePoint(0x1F195) + ' New Tasks</div>';
       if (!newP.length) {
         sec += '<p class="pr-no-activity">None.</p>';
       } else {
-        sec += '<table class="pr-table"><thead><tr><th>Project</th><th>Owner</th><th>Category</th><th>Added</th></tr></thead><tbody>';
+        sec += '<table class="pr-table"><thead><tr><th>Project</th><th>Owner</th><th>Category</th><th>Status</th><th>Added</th></tr></thead><tbody>';
         newP.forEach(function(p) {
           var ad = p.createdAt ? new Date(p.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
+          var statusCls = p.complete ? 'pr-status-badge pr-complete' : 'pr-status-badge pr-status-active';
+          var statusTxt = p.complete ? 'Complete' : 'In Progress';
           sec += '<tr><td>' + escHtml(p.title)
             + (p.description ? '<br><span style="font-size:9pt;color:#6b6055">' + escHtml(p.description) + '</span>' : '')
             + '</td><td>' + escHtml(p.owner || '—') + '</td>'
             + '<td>' + escHtml(p.category || '—') + '</td>'
+            + '<td><span class="' + statusCls + '">' + statusTxt + '</span></td>'
             + '<td style="white-space:nowrap">' + ad + '</td></tr>';
         });
         sec += '</tbody></table>';
       }
       sec += '</div>';
 
-      // ── Updated ──
+      // ── Upcoming Tasks ──
       sec += '<div class="pr-subsection">';
-      sec += '<div class="pr-subsection-title">📝 Updated</div>';
+      sec += '<div class="pr-subsection-title">' + String.fromCodePoint(0x1F4C5) + ' Upcoming (Next 7 Days)</div>';
+      if (!upcoming.length) {
+        sec += '<p class="pr-no-activity">None.</p>';
+      } else {
+        sec += '<table class="pr-table"><thead><tr><th>Project</th><th>Owner</th><th>Priority</th><th>Due</th></tr></thead><tbody>';
+        upcoming.forEach(function(p) {
+          var dd = dueDate(p);
+          var du = daysUntil(dd);
+          var dueFmt = dd ? new Date(dd + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
+          var dueCls = '';
+          if (du !== null && du < 0) dueCls = ' class="pr-overdue"';
+          else if (du !== null && du <= 3) dueCls = ' class="pr-due-soon"';
+          var priHtml = '—';
+          if (p.priority) {
+            priHtml = '<span class="pr-pri-' + p.priority.toLowerCase() + '">' + escHtml(p.priority) + '</span>';
+          }
+          sec += '<tr><td>' + escHtml(p.title)
+            + (p.description ? '<br><span style="font-size:9pt;color:#6b6055">' + escHtml(p.description) + '</span>' : '')
+            + '</td><td>' + escHtml(p.owner || '—') + '</td>'
+            + '<td>' + priHtml + '</td>'
+            + '<td style="white-space:nowrap"' + dueCls + '>' + dueFmt + '</td></tr>';
+        });
+        sec += '</tbody></table>';
+      }
+      sec += '</div>';
+
+      // ── Notes & Updates ──
+      sec += '<div class="pr-subsection">';
+      sec += '<div class="pr-subsection-title">' + String.fromCodePoint(0x1F4DD) + ' Notes & Updates</div>';
       if (!updated.length) {
         sec += '<p class="pr-no-activity">None.</p>';
       } else {
@@ -3502,11 +3567,24 @@ function printReport() {
 
   // ── Assemble ──────────────────────────────────────────────────────────────
   var html = '<div class="pr-header">'
-    + '<div class="pr-header-left"><h1>' + reportTitle + '</h1><p>' + dateLabel + '</p></div>'
-    + (logoSrc ? '<img src="' + logoSrc + '" alt="SC Culinary">' : '')
+    + '<div class="pr-header-left">'
+    + '<img src="' + lthLogoSrc + '" alt="LTH" style="height:36pt;margin-right:8pt">'
+    + '<div><h1 style="font-size:14pt;font-weight:700;margin:0;line-height:1.2">Lowder-Tascarella Hospitality</h1>'
+    + '<p>' + dateLabel + '</p></div>'
+    + '</div>'
+    + (scLogoSrc ? '<img src="' + scLogoSrc + '" alt="SC Culinary" style="height:36pt">' : '')
     + '</div>';
+
+  // Summary bar
+  html += '<div class="pr-summary-bar">'
+    + '<div class="pr-summary-stat pr-stat-green"><span class="pr-stat-value">' + totalCompleted + '</span><span class="pr-stat-label">Completed</span></div>'
+    + '<div class="pr-summary-stat pr-stat-blue"><span class="pr-stat-value">' + totalNew + '</span><span class="pr-stat-label">New Tasks</span></div>'
+    + '<div class="pr-summary-stat pr-stat-rust"><span class="pr-stat-value">' + totalUpcoming + '</span><span class="pr-stat-label">Upcoming</span></div>'
+    + '<div class="pr-summary-stat"><span class="pr-stat-value">' + totalNotes + '</span><span class="pr-stat-label">Notes Added</span></div>'
+    + '</div>';
+
   html += sectionsHtml;
-  html += '<div class="pr-footer"><span>SC Culinary Project Dashboard</span><span>Generated ' + dateLabel + '</span></div>';
+  html += '<div class="pr-footer"><span>Lowder-Tascarella Hospitality</span><span>Generated ' + dateLabel + '</span></div>';
 
   document.getElementById('print-view').innerHTML = html;
   window.print();
