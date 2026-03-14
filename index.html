@@ -1329,7 +1329,7 @@
   #print-view { position: absolute; left: -9999px; top: 0; width: 800px; visibility: hidden; }
   @media print {
     body > *:not(#print-view) { display: none !important; }
-    #print-view { display: block !important; font-family: 'Instrument Sans', Georgia, serif; color: #1a1612; font-size: 12pt; line-height: 1.5; padding: 0; margin: 0; }
+    #print-view { display: block !important; position: static !important; left: auto !important; top: auto !important; width: auto !important; visibility: visible !important; font-family: 'Instrument Sans', Georgia, serif; color: #1a1612; font-size: 12pt; line-height: 1.5; padding: 0; margin: 0; }
     .pr-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #8b3a1e; padding-bottom: 14pt; margin-bottom: 10pt; }
     .pr-header-left { display: flex; align-items: center; gap: 8pt; }
     .pr-header-left h1 { font-size: 14pt; font-weight: 700; margin: 0; line-height: 1.2; color: #1a1612; }
