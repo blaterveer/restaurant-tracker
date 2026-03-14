@@ -25,7 +25,7 @@
     --due-soon: #A05C1A;
     --due-mid: #6B5C1A;
     --on-track: #2A4A35;
-    /* Restaurant pill colors ”” up to 8 restaurants */
+    /* Restaurant pill colors "" up to 8 restaurants */
     --r0: #7B3F2E;
     --r1: #3A5C6B;
     --r2: #5C4A2E;
@@ -2733,7 +2733,7 @@ function lookupStateKey(table) {
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
 function today() { return new Date().toISOString().split('T')[0]; }
 function formatDate(d) {
-  if (!d) return '””';
+  if (!d) return '""';
   const dt = new Date(d + 'T00:00:00');
   return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
@@ -2753,7 +2753,7 @@ function daysUntil(dateStr) {
 function dueBadge(project) {
   if (project.complete) return '<span class="due-badge track">Complete</span>';
   const due = dueDate(project);
-  if (!due) return '<span style="color:var(--warm-gray);font-size:11px">””</span>';
+  if (!due) return '<span style="color:var(--warm-gray);font-size:11px">""</span>';
   const days = daysUntil(due);
   if (days < 0) return `<span class="due-badge overdue">Overdue</span>`;
   if (days <= 7) return `<span class="due-badge soon">${formatDate(due)}</span>`;
@@ -3197,11 +3197,11 @@ function renderTable() {
         ${p.description ? `<span class="project-desc">${p.description}</span>` : ''}
         ${p.isComplex ? subtaskBadge(p) : ''}
       </td>
-      <td><span class=”category-tag ${categoryClass(p.category)}”>${p.category || '&mdash;'}</span></td>
-      <td class=”owner-cell”>${p.owner || '&mdash;'}</td>
+      <td><span class="category-tag ${categoryClass(p.category)}">${p.category || '&mdash;'}</span></td>
+      <td class="owner-cell">${p.owner || '&mdash;'}</td>
       <td>${dueBadge(p)}</td>
-      <td>${p.priority ? `<span class=”priority-badge ${p.priority.toLowerCase()}”>${p.priority}</span>` : '&mdash;'}</td>
-      <td><div class=”update-preview”>${latestNote || '&mdash;'}</div></td>
+      <td>${p.priority ? `<span class="priority-badge ${p.priority.toLowerCase()}">${p.priority}</span>` : '&mdash;'}</td>
+      <td><div class="update-preview">${latestNote || '&mdash;'}</div></td>
     </tr>`;
   }).join('');
 }
@@ -3903,11 +3903,11 @@ function openDetail(id) {
     ${p.category ? `<span class="category-tag ${categoryClass(p.category)}">${p.category}</span>` : ''}
   `;
   document.getElementById('dp-details').innerHTML = `
-    <div class="detail-row"><span class="key">Owner</span><span class="val">${p.owner || '””'}</span></div>
-    <div class="detail-row"><span class="key">Type</span><span class="val">${p.type || '””'}</span></div>
+    <div class="detail-row"><span class="key">Owner</span><span class="val">${p.owner || '""'}</span></div>
+    <div class="detail-row"><span class="key">Type</span><span class="val">${p.type || '""'}</span></div>
     <div class="detail-row"><span class="key">Date Added</span><span class="val">${formatDate(p.dateAdded)}</span></div>
-    <div class="detail-row"><span class="key">Weeks to Complete</span><span class="val">${p.weeks || '””'}</span></div>
-    <div class="detail-row"><span class="key">Due By</span><span class="val">${due ? formatDate(due) : '””'}</span></div>
+    <div class="detail-row"><span class="key">Weeks to Complete</span><span class="val">${p.weeks || '""'}</span></div>
+    <div class="detail-row"><span class="key">Due By</span><span class="val">${due ? formatDate(due) : '""'}</span></div>
     <div class="detail-row"><span class="key">Complete?</span><span class="val">${p.complete ? '✓ Yes' : 'No'}</span></div>
   `;
   document.getElementById('dp-description').textContent = p.description || 'No description provided.';
@@ -3916,7 +3916,7 @@ function openDetail(id) {
   renderSubtasksPanel(p);
 
   const authorSel = document.getElementById('dp-note-author');
-  authorSel.innerHTML = `<option value="">”” Who's adding this? ””</option>` +
+  authorSel.innerHTML = `<option value="">"" Who's adding this? ""</option>` +
     state.owners.map(o => `<option value="${o}">${o}</option>`).join('') +
     `<option value="__new__">+ Add my name…</option>`;
   document.getElementById('dp-note-author-new').style.display = 'none';
@@ -4404,7 +4404,7 @@ async function addRestaurant() {
 }
 async function removeRestaurant(name) {
   if (state.projects.some(p => p.restaurant === name)) {
-    alert(`Cannot remove "${name}" ”” it has existing projects.`);
+    alert(`Cannot remove "${name}" "" it has existing projects.`);
     return;
   }
   await dbDeleteLookup('restaurants', name);
@@ -4957,8 +4957,8 @@ async function addAdminRestaurant() {
 
 async function removeAdminRestaurant(name) {
   const count = state.projects.filter(p => p.restaurant === name).length;
-  if (count > 0) { alert(`Cannot remove “${name}” — it has ${count} existing project${count !== 1 ? 's' : ''}.`); return; }
-  if (!confirm(`Remove “${name}” from the portfolio?`)) return;
+  if (count > 0) { alert(`Cannot remove "${name}" — it has ${count} existing project${count !== 1 ? 's' : ''}.`); return; }
+  if (!confirm(`Remove "${name}" from the portfolio?`)) return;
   try {
     await dbDeleteLookup('restaurants', name);
     state.restaurants = state.restaurants.filter(r => r !== name);
@@ -5048,7 +5048,7 @@ function renderGanttView() {
     projects.forEach(p => { const k = p.priority || 'Low'; if (!groups[k]) groups[k] = []; groups[k].push(p); });
   } else {
     state.categories.forEach(c => { groups[c] = []; });
-    projects.forEach(p => { const k = p.category || '””'; if (!groups[k]) groups[k] = []; groups[k].push(p); });
+    projects.forEach(p => { const k = p.category || '""'; if (!groups[k]) groups[k] = []; groups[k].push(p); });
   }
 
   const DAY_W = 28;
@@ -5085,7 +5085,7 @@ function renderGanttView() {
     });
     ps.forEach(p => {
       const due    = getDueDate(p);
-      const dueStr = due ? due.toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '””';
+      const dueStr = due ? due.toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '""';
       const isOverdue = due && due < todayDate && !p.complete;
       tableRows += `<tr class="gantt-row" data-id="${p.id}" onclick="openDetail('${p.id}')" style="cursor:pointer">
         <td class="gantt-label-cell ${p.complete?'complete':''}">
@@ -5143,7 +5143,7 @@ function renderGanttView() {
     const bar = document.createElement('div');
     bar.className = `gantt-bar ${p.complete?'complete':''} ${isOverdue?'overdue':''}`;
     bar.style.cssText = `left:${labelWidth + leftPx}px;width:${widthPx}px;background:${barColor};`;
-    bar.title = `${p.title} ”” Due: ${dueStr}${p.complete?' (Complete)':isOverdue?' (OVERDUE)':''}`;
+    bar.title = `${p.title} "" Due: ${dueStr}${p.complete?' (Complete)':isOverdue?' (OVERDUE)':''}`;
     bar.innerHTML = widthPx > 50 ? `<span class="gantt-bar-label">${dueStr}</span>` : '';
     bar.style.pointerEvents = 'auto';
     overlay.appendChild(bar);
