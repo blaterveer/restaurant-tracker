@@ -429,6 +429,35 @@
     line-height: 1.5;
   }
 
+  /* TOAST NOTIFICATIONS */
+  .toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+  }
+  .toast {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 12px 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    border-left: 3px solid var(--sage);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: auto;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.error { border-left-color: var(--rust); }
+  .toast.info { border-left-color: var(--gold); }
+
   /* EMPTY STATE */
   .empty-state {
     padding: 60px 40px;
@@ -662,9 +691,11 @@
     background: rgba(28,25,21,0.5);
     backdrop-filter: blur(2px);
     z-index: 200;
-    display: none;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
   }
-  .detail-overlay.open { display: block; }
+  .detail-overlay.open { opacity: 1; pointer-events: auto; }
   .detail-panel {
     position: fixed;
     top: 0; right: 0;
@@ -2414,6 +2445,7 @@
 
 <!-- DETAIL SIDE PANEL -->
 <div class="detail-overlay" id="detail-overlay" onclick="closeDetail()"></div>
+<div class="toast-container" id="toast-container"></div>
 <div class="detail-panel" id="detail-panel">
   <div class="detail-panel-header">
     <div class="restaurant-label" id="dp-restaurant"></div>
@@ -2844,6 +2876,22 @@ function showLoading(msg = 'Loading…') {
 function hideLoading() {
   const el = document.getElementById('loading-overlay');
   if (el) el.style.display = 'none';
+}
+
+function showToast(message, type = 'success') {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+  const toast = document.createElement('div');
+  toast.className = 'toast' + (type !== 'success' ? ' ' + type : '');
+  toast.textContent = message;
+  container.appendChild(toast);
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => toast.classList.add('show'));
+  });
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
 }
 
 // ============================================================
@@ -3303,11 +3351,12 @@ async function toggleComplete(id) {
   } catch(e) {
     console.error('toggleComplete error:', e);
     p.complete = prev; // roll back optimistic update
-    alert('Error updating task. Please try again.');
+    showToast('Error updating task', 'error');
     render();
     return;
   }
   render();
+  showToast(p.complete ? 'Task marked complete' : 'Task marked incomplete');
 }
 
 // ============================================================
@@ -4037,7 +4086,7 @@ function renderPanelNotes(p) {
     indexed.reverse();
     notesContainer.innerHTML = indexed.map(n =>
       `<div class="note-item" data-note-index="${n.origIndex}">
-        <div class="note-date">${formatDate(n.date)}${n.author ? ` · <strong>${n.author}</strong>` : ''}</div>
+        <div class="note-date">${formatDate(n.date)} · <strong>${n.author || 'Unknown'}</strong></div>
         <div class="note-text" id="note-text-${n.origIndex}">${n.text}</div>
         <div class="note-actions">
           <button class="note-action-btn" onclick="openNoteEdit('${p.id}', ${n.origIndex})">Edit</button>
@@ -4080,6 +4129,7 @@ async function saveNoteEdit(projectId, noteIndex) {
   if (note.id) await dbUpdateNote(note.id, newText);
   renderPanelNotes(p);
   renderTable();
+  showToast('Note updated');
 }
 
 async function deleteNote(projectId, noteIndex) {
@@ -4091,6 +4141,7 @@ async function deleteNote(projectId, noteIndex) {
   p.notes.splice(noteIndex, 1);
   renderPanelNotes(p);
   renderTable();
+  showToast('Note deleted');
 }
 
 function handleNoteAuthorChange() {
@@ -4149,6 +4200,7 @@ async function submitPanelNote() {
   renderPanelNotes(p);
   renderTable();
   renderSummary();
+  showToast('Note added');
 }
 
 function closeDetail() {
@@ -4252,11 +4304,12 @@ async function archiveFromPanel() {
   } catch(e) {
     console.error('archiveFromPanel error:', e);
     p.archived = false; // roll back
-    alert('Error archiving task. Please try again.');
+    showToast('Error archiving task', 'error');
     return;
   }
   closeDetail();
   render();
+  showToast('Task archived');
 }
 
 // ============================================================
@@ -4451,9 +4504,11 @@ async function saveProject() {
     state._pendingAgendaItemId = null;
   }
 
+  const wasEdit = !!state.editProjectId;
   hideLoading();
   closeModal();
   render();
+  showToast(wasEdit ? 'Task updated' : 'Task created');
 }
 
 function closeModal() {
