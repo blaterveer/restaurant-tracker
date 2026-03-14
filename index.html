@@ -170,12 +170,27 @@
   .divider { width: 1px; height: 36px; background: var(--border); }
 
   /* TABS */
+  .tabs-container {
+    background: var(--ink);
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
   .tabs-wrapper {
     background: var(--ink);
     display: flex;
     padding: 0 40px;
     gap: 0;
     overflow-x: auto;
+  }
+  .tabs-utility {
+    background: var(--ink-light);
+    display: flex;
+    padding: 0 40px;
+    gap: 0;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+  .tabs-utility .tab {
+    padding: 8px 18px;
+    font-size: 12px;
   }
   .tab {
     padding: 12px 24px;
@@ -213,10 +228,44 @@
   main { padding: 32px 40px; }
 
   /* FILTER BAR */
+  .filter-bar-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .filter-toggle {
+    background: none;
+    border: 1px solid var(--border);
+    padding: 5px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--warm-gray);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .filter-toggle:hover { border-color: var(--rust); color: var(--ink-light); }
+  .filter-toggle.active { border-color: var(--rust); color: var(--rust); background: rgba(139,58,30,0.05); }
+  .filter-toggle .arrow { transition: transform 0.2s; display: inline-block; font-size: 10px; }
+  .filter-toggle.active .arrow { transform: rotate(180deg); }
+  .filter-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, margin 0.3s ease;
+    margin-bottom: 0;
+  }
+  .filter-content.open {
+    max-height: 200px;
+    margin-bottom: 24px;
+  }
   .filter-bar {
     display: flex;
     gap: 12px;
-    margin-bottom: 24px;
     align-items: center;
     flex-wrap: wrap;
   }
@@ -757,7 +806,6 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
-    margin-bottom: 24px;
   }
   .filter-row {
     display: flex;
@@ -1975,7 +2023,10 @@
 
 <div class="summary-bar" id="summary-bar"></div>
 
-<div class="tabs-wrapper" id="tabs-wrapper"></div>
+<div class="tabs-container">
+  <div class="tabs-wrapper" id="tabs-wrapper"></div>
+  <div class="tabs-utility" id="tabs-utility"></div>
+</div>
 
 <main>
   <div class="page-header">
@@ -1984,56 +2035,61 @@
     </div>
   </div>
 
-  <div class="filter-bar">
-    <div class="filter-row">
-      <div class="filter-group">
-        <input type="text" class="search-input" placeholder="Search tasks…" id="search-input" oninput="renderTable()">
-      </div>
-      <div class="filter-group">
-        <span class="filter-group-label">Category</span>
-        <select class="filter-select" id="filter-category" onchange="renderTable()">
-          <option value="">All</option>
-        </select>
-      </div>
-      <div class="filter-group">
-        <span class="filter-group-label">Owner</span>
-        <select class="filter-select" id="filter-owner" onchange="renderTable()">
-          <option value="">All</option>
-        </select>
-      </div>
-      <div class="filter-group">
-        <span class="filter-group-label">Priority</span>
-        <select class="filter-select" id="filter-priority" onchange="renderTable()">
-          <option value="">All</option>
-          <option value="High">High</option>
-          <option value="Medium">Medium</option>
-          <option value="Low">Low</option>
-        </select>
-      </div>
-      <div class="filter-group">
-        <span class="filter-group-label">Status</span>
-        <select class="filter-select" id="filter-status" onchange="renderTable()">
-          <option value="">All</option>
-          <option value="open">Open</option>
-          <option value="complete">Complete</option>
-        </select>
-      </div>
-      <button class="filter-clear" id="filter-clear-btn" onclick="clearFilters()" style="display:none">Clear all</button>
-    </div>
-    <div class="filter-row">
-      <span class="filter-group-label">Due within:</span>
-      <div class="due-toggles">
-        <div class="due-toggle d7">
-          <input type="checkbox" id="due-7" onchange="renderTable()">
-          <label for="due-7">7 days</label>
+  <div class="filter-bar-header">
+    <input type="text" class="search-input" placeholder="Search tasks…" id="search-input" oninput="renderTable()">
+    <button class="filter-toggle" id="filter-toggle" onclick="toggleFilters()">
+      <span class="arrow">&#9660;</span> Filters
+    </button>
+    <button class="filter-clear" id="filter-clear-btn" onclick="clearFilters()" style="display:none">Clear all</button>
+  </div>
+  <div class="filter-content" id="filter-content">
+    <div class="filter-bar">
+      <div class="filter-row">
+        <div class="filter-group">
+          <span class="filter-group-label">Category</span>
+          <select class="filter-select" id="filter-category" onchange="renderTable()">
+            <option value="">All</option>
+          </select>
         </div>
-        <div class="due-toggle d14">
-          <input type="checkbox" id="due-14" onchange="renderTable()">
-          <label for="due-14">14 days</label>
+        <div class="filter-group">
+          <span class="filter-group-label">Owner</span>
+          <select class="filter-select" id="filter-owner" onchange="renderTable()">
+            <option value="">All</option>
+          </select>
         </div>
-        <div class="due-toggle d30">
-          <input type="checkbox" id="due-30" onchange="renderTable()">
-          <label for="due-30">30 days</label>
+        <div class="filter-group">
+          <span class="filter-group-label">Priority</span>
+          <select class="filter-select" id="filter-priority" onchange="renderTable()">
+            <option value="">All</option>
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <span class="filter-group-label">Status</span>
+          <select class="filter-select" id="filter-status" onchange="renderTable()">
+            <option value="">All</option>
+            <option value="open">Open</option>
+            <option value="complete">Complete</option>
+          </select>
+        </div>
+      </div>
+      <div class="filter-row">
+        <span class="filter-group-label">Due within:</span>
+        <div class="due-toggles">
+          <div class="due-toggle d7">
+            <input type="checkbox" id="due-7" onchange="renderTable()">
+            <label for="due-7">7 days</label>
+          </div>
+          <div class="due-toggle d14">
+            <input type="checkbox" id="due-14" onchange="renderTable()">
+            <label for="due-14">14 days</label>
+          </div>
+          <div class="due-toggle d30">
+            <input type="checkbox" id="due-30" onchange="renderTable()">
+            <label for="due-30">30 days</label>
+          </div>
         </div>
       </div>
     </div>
@@ -2831,16 +2887,16 @@ function renderTabs() {
     </button>`;
   }).join('');
 
-  const ganttTab = `<button class="tab ${state.activeTab === '__gantt__' ? 'active' : ''}" onclick="switchTab('__gantt__')" style="border-left:1px solid rgba(255,255,255,0.08)">
+  const ganttTab = `<button class="tab ${state.activeTab === '__gantt__' ? 'active' : ''}" onclick="switchTab('__gantt__')">
     &#9638; Gantt
   </button>`;
-  const recentTab = `<button class="tab ${state.activeTab === '__recent__' ? 'active' : ''}" onclick="switchTab('__recent__')" style="border-left:1px solid rgba(255,255,255,0.08)">
+  const recentTab = `<button class="tab ${state.activeTab === '__recent__' ? 'active' : ''}" onclick="switchTab('__recent__')">
     &#128197; Recent
   </button>`;
   const isAdmin = state.session && state.session.role === 'admin';
-  const adminInboxTab = isAdmin ? `<button class="tab ${state.activeTab === '__admin_inbox__' ? 'active' : ''}" onclick="switchTab('__admin_inbox__')" style="border-left:1px solid rgba(255,255,255,0.08)">&#128235; Inbox${state.adminInboxUnread > 0 ? ` <span class="badge" style="background:var(--rust);color:white">${state.adminInboxUnread}</span>` : ''}</button>` : '';
-  const analyticsTab = isAdmin ? `<button class="tab ${state.activeTab === '__analytics__' ? 'active' : ''}" onclick="switchTab('__analytics__')" style="border-left:1px solid rgba(255,255,255,0.08)">&#128200; Analytics</button>` : '';
-  const adminTab = isAdmin ? `<button class="tab ${state.activeTab === '__admin__' ? 'active' : ''}" onclick="switchTab('__admin__')" style="margin-left:auto;border-left:1px solid rgba(255,255,255,0.08)">&#9881; Admin</button>` : '';
+  const adminInboxTab = isAdmin ? `<button class="tab ${state.activeTab === '__admin_inbox__' ? 'active' : ''}" onclick="switchTab('__admin_inbox__')">&#128235; Inbox${state.adminInboxUnread > 0 ? ` <span class="badge" style="background:var(--rust);color:white">${state.adminInboxUnread}</span>` : ''}</button>` : '';
+  const analyticsTab = isAdmin ? `<button class="tab ${state.activeTab === '__analytics__' ? 'active' : ''}" onclick="switchTab('__analytics__')">&#128200; Analytics</button>` : '';
+  const adminTab = isAdmin ? `<button class="tab ${state.activeTab === '__admin__' ? 'active' : ''}" onclick="switchTab('__admin__')" style="margin-left:auto">&#9881; Admin</button>` : '';
 
   // For restaurant role: only show their own restaurant tab
   var visibleRestaurantTabs = restaurantTabs;
@@ -2856,10 +2912,18 @@ function renderTabs() {
     }).join('');
   }
 
-  const travelTab = `<button class="tab ${state.activeTab === '__travel__' ? 'active' : ''}" onclick="switchTab('__travel__')" style="border-left:1px solid rgba(255,255,255,0.08)">&#9992; Travel</button>`;
+  const travelTab = `<button class="tab ${state.activeTab === '__travel__' ? 'active' : ''}" onclick="switchTab('__travel__')">&#9992; Travel</button>`;
   const isRestaurant = state.session && state.session.role === 'restaurant';
-  const inboxTab = isRestaurant ? `<button class="tab ${state.activeTab === '__inbox__' ? 'active' : ''}" onclick="switchTab('__inbox__')" style="border-left:1px solid rgba(255,255,255,0.08)">&#128235; Submit New Task Request</button>` : '';
-  wrapper.innerHTML = visibleRestaurantTabs + (isAdmin ? adminInboxTab : '') + ganttTab + recentTab + travelTab + (isAdmin ? analyticsTab : '') + inboxTab + (isAdmin ? adminTab : '');
+  const inboxTab = isRestaurant ? `<button class="tab ${state.activeTab === '__inbox__' ? 'active' : ''}" onclick="switchTab('__inbox__')">&#128235; Submit New Task Request</button>` : '';
+
+  // Restaurant tabs go in primary row
+  wrapper.innerHTML = visibleRestaurantTabs;
+
+  // Utility tabs go in secondary row
+  const utilityWrapper = document.getElementById('tabs-utility');
+  if (utilityWrapper) {
+    utilityWrapper.innerHTML = (isAdmin ? adminInboxTab : '') + ganttTab + recentTab + travelTab + (isAdmin ? analyticsTab : '') + inboxTab + (isAdmin ? adminTab : '');
+  }
 }
 
 function switchTab(tab) {
@@ -2872,7 +2936,8 @@ function switchTab(tab) {
   renderTabs();
 
   const projectsEl    = document.getElementById('projects-view');
-  const filterBar     = document.querySelector('.filter-bar');
+  const filterBar     = document.querySelector('.filter-bar-header');
+  const filterContent = document.getElementById('filter-content');
   const pageHeader    = document.querySelector('.page-header');
   const adminEl       = document.getElementById('admin-view');
   const ganttEl       = document.getElementById('gantt-view');
@@ -2883,8 +2948,9 @@ function switchTab(tab) {
   const agendaEl      = document.getElementById('agenda-restaurant-view');
 
   projectsEl.style.display = 'none';
-  if (filterBar)   filterBar.style.display   = 'none';
-  if (pageHeader)  pageHeader.style.display  = 'none';
+  if (filterBar)     filterBar.style.display     = 'none';
+  if (filterContent) filterContent.style.display = 'none';
+  if (pageHeader)    pageHeader.style.display    = 'none';
   adminEl.style.display = 'none';
   ganttEl.style.display = 'none';
   analyticsEl.style.display = 'none';
@@ -2915,8 +2981,9 @@ function switchTab(tab) {
     renderRestaurantInbox();
   } else {
     projectsEl.style.display = '';
-    if (filterBar)  filterBar.style.display  = '';
-    if (pageHeader) pageHeader.style.display = '';
+    if (filterBar)     filterBar.style.display     = '';
+    if (filterContent) filterContent.style.display = '';
+    if (pageHeader)    pageHeader.style.display    = '';
     document.getElementById('page-title').textContent = tab === 'all' ? 'All Restaurants' : tab;
     const col = document.getElementById('col-restaurant');
     if (col) col.style.display = tab === 'all' ? '' : 'none';
@@ -3018,6 +3085,24 @@ function clearFilters() {
   renderTable();
 }
 
+function toggleFilters() {
+  const content = document.getElementById('filter-content');
+  const toggle = document.getElementById('filter-toggle');
+  if (content && toggle) {
+    content.classList.toggle('open');
+    toggle.classList.toggle('active');
+  }
+}
+
+function openFilters() {
+  const content = document.getElementById('filter-content');
+  const toggle = document.getElementById('filter-toggle');
+  if (content && toggle && !content.classList.contains('open')) {
+    content.classList.add('open');
+    toggle.classList.add('active');
+  }
+}
+
 function filterFromSummary(type) {
   clearFilters();
   if (type === 'overdue') {
@@ -3025,10 +3110,12 @@ function filterFromSummary(type) {
     switchTab('all');
   } else if (type === 'due7') {
     switchTab('all');
+    openFilters();
     document.getElementById('due-7').checked = true;
     renderTable();
   } else if (type === 'high') {
     switchTab('all');
+    openFilters();
     document.getElementById('filter-priority').value = 'High';
     renderTable();
   }
@@ -5206,15 +5293,17 @@ function setGanttGroup(val) {
 // ============================================================
 function renderRecentView() {
   var projectsEl = document.getElementById("projects-view");
-  var filterBar  = document.querySelector(".filter-bar");
+  var filterBar  = document.querySelector(".filter-bar-header");
+  var filterContent = document.getElementById("filter-content");
   var pageHeader = document.querySelector(".page-header");
   var adminEl    = document.getElementById("admin-view");
   var ganttEl    = document.getElementById("gantt-view");
   var recentEl   = document.getElementById("recent-view");
 
   projectsEl.style.display = "none";
-  if (filterBar)  filterBar.style.display  = "none";
-  if (pageHeader) pageHeader.style.display = "none";
+  if (filterBar)     filterBar.style.display     = "none";
+  if (filterContent) filterContent.style.display = "none";
+  if (pageHeader)    pageHeader.style.display    = "none";
   adminEl.style.display  = "none";
   ganttEl.style.display  = "none";
   recentEl.style.display = "block";
