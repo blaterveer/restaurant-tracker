@@ -3568,11 +3568,11 @@ function printReport() {
   // ── Assemble ──────────────────────────────────────────────────────────────
   var html = '<div class="pr-header">'
     + '<div class="pr-header-left">'
-    + '<img src="' + lthLogoSrc + '" alt="LTH" style="height:36pt;margin-right:8pt">'
-    + '<div><h1 style="font-size:14pt;font-weight:700;margin:0;line-height:1.2">Lowder-Tascarella Hospitality</h1>'
-    + '<p>' + dateLabel + '</p></div>'
+    + '<img src="' + lthLogoSrc + '" alt="Lowder-Tascarella Hospitality" style="height:40pt">'
     + '</div>'
-    + (scLogoSrc ? '<img src="' + scLogoSrc + '" alt="SC Culinary" style="height:36pt">' : '')
+    + '<div style="text-align:center;flex:1"><h1 style="font-size:14pt;font-weight:700;margin:0;color:#1a1612">' + reportTitle + '</h1>'
+    + '<p style="font-size:9pt;color:#6b6055;margin:2pt 0 0">' + dateLabel + '</p></div>'
+    + (scLogoSrc ? '<img src="' + scLogoSrc + '" alt="SC Culinary" style="height:40pt">' : '')
     + '</div>';
 
   // Summary bar
