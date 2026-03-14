@@ -1073,7 +1073,22 @@
   .gantt-bar-label { font-size: 10px; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'DM Mono', monospace; }
   .gantt-bar.complete { opacity: 0.35; }
   .gantt-bar.overdue { box-shadow: 0 0 0 2px var(--rust); }
-  .gantt-today-line { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--rust); opacity: 0.7; pointer-events: none; z-index: 5; }
+  .gantt-today-line { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--rust); opacity: 0.85; pointer-events: none; z-index: 5; }
+  .gantt-today-line::before {
+    content: 'TODAY';
+    position: absolute;
+    top: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    color: var(--cream);
+    background: var(--rust);
+    padding: 1px 5px;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
   .gantt-day-cell { min-width: 28px; border-right: 1px solid rgba(212,203,184,0.3); }
   .gantt-day-cell.today-col { background: rgba(139,58,30,0.06); }
   .gantt-day-cell.weekend { background: rgba(0,0,0,0.015); }
@@ -3561,7 +3576,20 @@ function renderAnalyticsView() {
     options: {
       responsive: true,
       plugins: { legend: { position: 'bottom' } },
-      scales: { x: { stacked: false }, y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+      scales: {
+        x: {
+          stacked: false,
+          ticks: {
+            maxRotation: 45,
+            minRotation: 0,
+            callback: function(value) {
+              var label = this.getLabelForValue(value);
+              return label.length > 12 ? label.substring(0, 11) + '...' : label;
+            }
+          }
+        },
+        y: { beginAtZero: true, ticks: { stepSize: 1 } }
+      }
     }
   });
 
