@@ -141,6 +141,16 @@
     flex-direction: column;
     gap: 2px;
   }
+  .summary-stat.clickable {
+    cursor: pointer;
+    padding: 4px 8px;
+    margin: -4px -8px;
+    border-radius: 4px;
+    transition: background 0.15s;
+  }
+  .summary-stat.clickable:hover {
+    background: rgba(0,0,0,0.05);
+  }
   .summary-stat .label {
     font-family: 'DM Mono', monospace;
     font-size: 11px;
@@ -269,7 +279,8 @@
     transition: background 0.15s;
     cursor: pointer;
   }
-  tbody tr:hover { background: rgba(196,154,60,0.05); }
+  tbody tr:nth-child(even) { background: var(--parchment); }
+  tbody tr:hover { background: rgba(196,154,60,0.1); }
   tbody td {
     padding: 14px;
     font-size: 15px;
@@ -305,12 +316,13 @@
     border: 1px solid;
     color: var(--sage);
     border-color: var(--sage);
+    background: rgba(74,92,74,0.08);
   }
-  .category-tag.beverage { color: #2A3F5C; border-color: #2A3F5C; }
-  .category-tag.culinary { color: var(--rust); border-color: var(--rust); }
-  .category-tag.administrative { color: var(--warm-gray); border-color: var(--border); }
-  .category-tag.collateral { color: var(--gold); border-color: var(--gold); }
-  .category-tag.dining { color: var(--sage); border-color: var(--sage); }
+  .category-tag.beverage { color: #2A3F5C; border-color: #2A3F5C; background: rgba(42,63,92,0.08); }
+  .category-tag.culinary { color: var(--rust); border-color: var(--rust); background: rgba(139,58,30,0.08); }
+  .category-tag.administrative { color: var(--warm-gray); border-color: var(--border); background: rgba(140,130,120,0.08); }
+  .category-tag.collateral { color: var(--gold); border-color: var(--gold); background: rgba(196,154,60,0.08); }
+  .category-tag.dining { color: var(--sage); border-color: var(--sage); background: rgba(74,92,74,0.08); }
 
   .owner-cell {
     font-size: 14px;
@@ -341,8 +353,8 @@
     text-transform: uppercase;
     padding: 2px 6px;
   }
-  .priority-badge.high { background: rgba(139,58,30,0.12); color: var(--rust); }
-  .priority-badge.medium { background: rgba(196,154,60,0.12); color: var(--gold); }
+  .priority-badge.high { background: var(--rust); color: var(--cream); font-weight: 500; }
+  .priority-badge.medium { background: rgba(196,154,60,0.15); color: #8A7428; }
   .priority-badge.low { background: rgba(74,92,74,0.12); color: var(--sage); }
 
   .complete-toggle {
@@ -2793,10 +2805,10 @@ function renderSummary() {
   document.getElementById('summary-bar').innerHTML = `
     <div class="summary-stat"><span class="label">Open Tasks</span><span class="value">${open.length}</span></div>
     <div class="divider"></div>
-    <div class="summary-stat"><span class="label">Overdue</span><span class="value red">${overdue}</span></div>
-    <div class="summary-stat"><span class="label">Due ≤ 7 days</span><span class="value orange">${soon}</span></div>
+    <div class="summary-stat clickable" onclick="filterFromSummary('overdue')" title="Click to filter overdue tasks"><span class="label">Overdue</span><span class="value red">${overdue}</span></div>
+    <div class="summary-stat clickable" onclick="filterFromSummary('due7')" title="Click to filter tasks due within 7 days"><span class="label">Due ≤ 7 days</span><span class="value orange">${soon}</span></div>
     <div class="divider"></div>
-    <div class="summary-stat"><span class="label">High Priority</span><span class="value">${high}</span></div>
+    <div class="summary-stat clickable" onclick="filterFromSummary('high')" title="Click to filter high priority tasks"><span class="label">High Priority</span><span class="value">${high}</span></div>
     <div class="divider"></div>
     <div class="summary-stat"><span class="label">Complete</span><span class="value green">${complete}</span></div>
   `;
@@ -3006,6 +3018,22 @@ function clearFilters() {
   renderTable();
 }
 
+function filterFromSummary(type) {
+  clearFilters();
+  if (type === 'overdue') {
+    state.showOverdue = true;
+    switchTab('all');
+  } else if (type === 'due7') {
+    switchTab('all');
+    document.getElementById('due-7').checked = true;
+    renderTable();
+  } else if (type === 'high') {
+    switchTab('all');
+    document.getElementById('filter-priority').value = 'High';
+    renderTable();
+  }
+}
+
 function renderRestaurantCards() {
   var ownRest   = state.session && state.session.restaurant;
   var projects  = getFilteredProjects();
@@ -3169,11 +3197,11 @@ function renderTable() {
         ${p.description ? `<span class="project-desc">${p.description}</span>` : ''}
         ${p.isComplex ? subtaskBadge(p) : ''}
       </td>
-      <td><span class="category-tag ${categoryClass(p.category)}">${p.category || '””'}</span></td>
-      <td class="owner-cell">${p.owner || '””'}</td>
+      <td><span class=”category-tag ${categoryClass(p.category)}”>${p.category || '&mdash;'}</span></td>
+      <td class=”owner-cell”>${p.owner || '&mdash;'}</td>
       <td>${dueBadge(p)}</td>
-      <td>${p.priority ? `<span class="priority-badge ${p.priority.toLowerCase()}">${p.priority}</span>` : '””'}</td>
-      <td><div class="update-preview">${latestNote || '””'}</div></td>
+      <td>${p.priority ? `<span class=”priority-badge ${p.priority.toLowerCase()}”>${p.priority}</span>` : '&mdash;'}</td>
+      <td><div class=”update-preview”>${latestNote || '&mdash;'}</div></td>
     </tr>`;
   }).join('');
 }
