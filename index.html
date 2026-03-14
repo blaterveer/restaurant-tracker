@@ -1326,7 +1326,7 @@
   /* ============================================================
      PRINT / PDF REPORT
      ============================================================ */
-  #print-view { display: none; }
+  #print-view { position: absolute; left: -9999px; top: 0; width: 800px; visibility: hidden; }
   @media print {
     body > *:not(#print-view) { display: none !important; }
     #print-view { display: block !important; font-family: 'Instrument Sans', Georgia, serif; color: #1a1612; font-size: 12pt; line-height: 1.5; padding: 0; margin: 0; }
@@ -3586,8 +3586,30 @@ function printReport() {
   html += sectionsHtml;
   html += '<div class="pr-footer"><span>Lowder-Tascarella Hospitality</span><span>Generated ' + dateLabel + '</span></div>';
 
-  document.getElementById('print-view').innerHTML = html;
-  window.print();
+  var printEl = document.getElementById('print-view');
+  printEl.innerHTML = html;
+
+  // Pre-load images before printing — wait for all <img> in print-view to load
+  var imgs = printEl.querySelectorAll('img');
+  var loaded = 0;
+  var total = imgs.length;
+  function tryPrint() {
+    loaded++;
+    if (loaded >= total) {
+      setTimeout(function() { window.print(); }, 100);
+    }
+  }
+  if (total === 0) {
+    window.print();
+  } else {
+    imgs.forEach(function(img) {
+      if (img.complete) { tryPrint(); }
+      else {
+        img.onload = tryPrint;
+        img.onerror = tryPrint;
+      }
+    });
+  }
 }
 
 // ============================================================
