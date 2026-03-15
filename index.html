@@ -3323,18 +3323,14 @@ function renderTable() {
   var _pv   = document.getElementById('projects-view');
   var _tbl  = _pv ? _pv.querySelector('table') : null;
   var _cards = document.getElementById('restaurant-cards');
-  if (state.session && state.session.role === 'restaurant') {
-    if (_tbl) _tbl.style.display = 'none';
-    renderRestaurantCards();
-    return;
-  }
-  // Admin: ensure table visible, hide cards
+  // Always use table view (cards no longer used)
   if (_tbl)   _tbl.style.display   = '';
   if (_cards) _cards.style.display = 'none';
   const projects = getFilteredProjects();
   const tbody    = document.getElementById('project-table-body');
   const empty    = document.getElementById('empty-state');
-  const showRestaurant = state.activeTab === 'all';
+  const isRestRole = state.session && state.session.role === 'restaurant';
+  const showRestaurant = state.activeTab === 'all' && !isRestRole;
   const col = document.getElementById('col-restaurant');
   if (col) col.style.display = showRestaurant ? '' : 'none';
 
