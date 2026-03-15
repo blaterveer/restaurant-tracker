@@ -173,14 +173,39 @@
   .tabs-container {
     background: var(--ink);
     border-top: 1px solid rgba(255,255,255,0.06);
+    position: relative;
   }
+  .tabs-container::before,
+  .tabs-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 40px;
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .tabs-container::before {
+    left: 0;
+    background: linear-gradient(to right, var(--ink), transparent);
+  }
+  .tabs-container::after {
+    right: 0;
+    background: linear-gradient(to left, var(--ink), transparent);
+  }
+  .tabs-container.scroll-left::before { opacity: 1; }
+  .tabs-container.scroll-right::after { opacity: 1; }
   .tabs-wrapper {
     background: var(--ink);
     display: flex;
     padding: 0 40px;
     gap: 0;
     overflow-x: auto;
+    scrollbar-width: none;
   }
+  .tabs-wrapper::-webkit-scrollbar { display: none; }
   .tabs-utility {
     background: var(--ink-light);
     display: flex;
@@ -1446,35 +1471,164 @@
   .rc-owner { font-size: 12px; color: var(--warm-gray); margin-top: 8px; }
   .rc-note { font-size: 11px; color: var(--warm-gray); margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   /* ============================================================
+     MOBILE NAV DRAWER
+     ============================================================ */
+  .mobile-menu-btn {
+    display: none;
+    background: none;
+    border: 1px solid rgba(255,255,255,0.25);
+    color: var(--cream);
+    width: 44px;
+    height: 44px;
+    border-radius: 4px;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: border-color 0.2s;
+  }
+  .mobile-menu-btn:hover { border-color: var(--gold-light); }
+  .mobile-menu-btn svg { width: 20px; height: 20px; }
+
+  .mobile-nav-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+  .mobile-nav-overlay.open { opacity: 1; }
+
+  .mobile-nav-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 280px;
+    max-width: 85vw;
+    background: var(--ink);
+    z-index: 1000;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .mobile-nav-drawer.open { transform: translateX(0); }
+
+  .mobile-nav-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    flex-shrink: 0;
+  }
+  .mobile-nav-header span {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--warm-gray);
+  }
+  .mobile-nav-close {
+    background: none;
+    border: none;
+    color: var(--cream);
+    width: 44px;
+    height: 44px;
+    cursor: pointer;
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mobile-nav-section {
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .mobile-nav-section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--warm-gray);
+    padding: 4px 20px 8px;
+  }
+  .mobile-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 14px 20px;
+    min-height: 48px;
+    background: none;
+    border: none;
+    color: var(--cream);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s;
+  }
+  .mobile-nav-item:hover,
+  .mobile-nav-item:active { background: rgba(255,255,255,0.06); }
+  .mobile-nav-item.active { color: var(--gold-light); background: rgba(196,154,60,0.08); }
+  .mobile-nav-item .badge {
+    background: rgba(255,255,255,0.1);
+    color: var(--warm-gray);
+    font-size: 11px;
+    padding: 1px 6px;
+    border-radius: 2px;
+    min-width: 18px;
+    text-align: center;
+    margin-left: auto;
+  }
+  .mobile-nav-item.active .badge { background: rgba(196,154,60,0.2); color: var(--gold-light); }
+
+  /* ============================================================
      MOBILE RESPONSIVE
      ============================================================ */
   @media (max-width: 768px) {
 
-    /* HEADER */
-    header { padding: 12px 16px; flex-wrap: wrap; gap: 10px; }
-    .header-logos img { height: 28px; }
-    .header-logos img:first-child { height: 34px; }
-    header h1 { font-size: 20px; }
+    /* HAMBURGER VISIBLE */
+    .mobile-menu-btn { display: flex; }
+
+    /* HEADER — slimmed down */
+    header { padding: 10px 16px; flex-wrap: nowrap; gap: 10px; }
+    .header-logos img { height: 24px; }
+    .header-logos img:first-child { height: 30px; }
+    .header-logos .logo-divider { display: none; }
+    .header-logos img:nth-child(3) { display: none; }
+    header h1 { font-size: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
     .header-sub { display: none; }
-    .header-actions { margin-left: auto; gap: 8px; }
-    .btn-primary, .btn-ghost { padding: 7px 12px; font-size: 11px; }
+    .header-actions { margin-left: auto; gap: 6px; flex-shrink: 0; }
+    /* Hide text buttons in header; keep + New Task and hamburger */
+    #btn-add-restaurant, #btn-print-report { display: none; }
+    .header-actions .btn-ghost[onclick*="logout"] { display: none; }
+    .btn-primary, .btn-ghost { min-height: 44px; min-width: 44px; padding: 8px 14px; font-size: 11px; }
+
+    /* HIDE DESKTOP TABS — replaced by mobile nav drawer */
+    .tabs-container { display: none; }
 
     /* SUMMARY BAR */
-    .summary-bar { padding: 12px 16px; gap: 16px; }
+    .summary-bar { padding: 12px 16px; gap: 12px; }
     .summary-stat .value { font-size: 22px; }
     .divider { display: none; }
-
-    /* TABS */
-    .tabs-wrapper { padding: 0 8px; }
-    .tab { padding: 10px 14px; font-size: 11px; }
 
     /* MAIN */
     main { padding: 16px; }
 
     /* FILTER BAR */
     .filter-bar { flex-direction: column; align-items: stretch; gap: 8px; }
-    .search-input { width: 100%; }
-    .filter-select { width: 100%; }
+    .search-input { width: 100%; min-height: 44px; font-size: 16px; }
+    .filter-select { width: 100%; min-height: 44px; font-size: 16px; }
+    .filter-toggle { min-height: 44px; }
 
     /* TABLE */
     thead th:nth-child(5), tbody td:nth-child(5) { display: none; }
@@ -1503,18 +1657,25 @@
 
     /* GANTT — scrolls horizontally on mobile; don't shrink sticky label column */
     .gantt-controls { gap: 8px; }
-    .gantt-window-btn { padding: 5px 10px; font-size: 11px; }
+    .gantt-window-btn { padding: 5px 10px; font-size: 11px; min-height: 44px; }
     .gantt-scroll-wrap { -webkit-overflow-scrolling: touch; }
     .gantt-mobile-notice { display: block; background: #fff8e7; border: 1px solid #e8d9a0; border-radius: 6px; padding: 10px 14px; font-size: 13px; color: #7a6a3a; margin-bottom: 16px; }
 
     /* RECENT VIEW */
     #recent-view { padding: 16px !important; }
+
+    /* TOUCH TARGETS — ensure 44px minimums */
+    .tab { min-height: 44px; padding: 10px 14px; font-size: 11px; }
+    .inbox-submit-btn { min-height: 44px; }
+    .btn-ghost, .btn-primary { min-height: 44px; }
   }
 
   @media (max-width: 480px) {
-    header h1 { font-size: 17px; }
+    header h1 { font-size: 16px; }
+    .header-logos { gap: 8px; }
+    .header-logos img { height: 20px; }
+    .header-logos img:first-child { height: 26px; }
     .summary-stat .value { font-size: 20px; }
-    .tab { padding: 8px 10px; font-size: 10px; }
     tbody td { padding: 8px 6px; }
   }
 
@@ -2074,8 +2235,26 @@
     <span class="overdue-badge" id="overdue-badge" style="display:none" title="Show overdue tasks" onclick="showOverdueTasks()"></span>
     <button class="btn-ghost" id="btn-print-report" onclick="printReport()" title="Print / Save as PDF">&#128438; Weekly Report</button>
     <button class="btn-ghost" onclick="logout()" style="margin-left:4px;font-size:11px;opacity:0.7">Sign Out</button>
+    <button class="mobile-menu-btn" id="mobile-menu-btn" onclick="toggleMobileNav()" aria-label="Open navigation menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
   </div>
 </header>
+
+<!-- Mobile Navigation Drawer -->
+<div class="mobile-nav-overlay" id="mobile-nav-overlay" onclick="closeMobileNav()"></div>
+<div class="mobile-nav-drawer" id="mobile-nav-drawer">
+  <div class="mobile-nav-header">
+    <span>Navigation</span>
+    <button class="mobile-nav-close" onclick="closeMobileNav()" aria-label="Close navigation">&times;</button>
+  </div>
+  <div id="mobile-nav-content"></div>
+  <div style="padding:16px 20px;margin-top:auto;border-top:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;gap:8px;">
+    <button class="mobile-nav-item" onclick="openRestaurantModal();closeMobileNav()">+ Restaurant</button>
+    <button class="mobile-nav-item" onclick="printReport();closeMobileNav()">&#128438; Weekly Report</button>
+    <button class="mobile-nav-item" onclick="logout()" style="color:var(--warm-gray);font-size:11px;">Sign Out</button>
+  </div>
+</div>
 
 <div class="summary-bar" id="summary-bar"></div>
 
@@ -2997,6 +3176,108 @@ function renderTabs() {
   if (utilityWrapper) {
     utilityWrapper.innerHTML = (isAdmin ? adminInboxTab : '') + ganttTab + recentTab + (isAdmin ? travelTab : '') + (isAdmin ? analyticsTab : '') + inboxTab + (isAdmin ? adminTab : '');
   }
+
+  // Also update mobile nav drawer
+  renderMobileNav();
+  // Update scroll fade indicators after DOM settles
+  requestAnimationFrame(updateTabScrollIndicators);
+}
+
+// ============================================================
+// MOBILE NAV DRAWER
+// ============================================================
+function renderMobileNav() {
+  const container = document.getElementById('mobile-nav-content');
+  if (!container) return;
+
+  const isAdmin = state.session && state.session.role === 'admin';
+  const isRestaurant = state.session && state.session.role === 'restaurant';
+  let html = '';
+
+  // Restaurant tabs section
+  html += '<div class="mobile-nav-section">';
+  html += '<div class="mobile-nav-section-label">Restaurants</div>';
+
+  if (isRestaurant) {
+    const myRest = state.session.restaurant;
+    const count = state.projects.filter(p => p.restaurant === myRest && !p.complete).length;
+    html += `<button class="mobile-nav-item ${state.activeTab === 'all' ? 'active' : ''}" onclick="switchTab('all');closeMobileNav()">All Tasks <span class="badge">${count}</span></button>`;
+    html += `<button class="mobile-nav-item ${state.activeTab === myRest ? 'active' : ''}" onclick="switchTab('${myRest}');closeMobileNav()">${myRest} <span class="badge">${count}</span></button>`;
+  } else {
+    const allCount = state.projects.filter(p => !p.complete).length;
+    html += `<button class="mobile-nav-item ${state.activeTab === 'all' ? 'active' : ''}" onclick="switchTab('all');closeMobileNav()">All Restaurants <span class="badge">${allCount}</span></button>`;
+    state.restaurants.forEach(r => {
+      const cnt = state.projects.filter(p => p.restaurant === r && !p.complete).length;
+      html += `<button class="mobile-nav-item ${state.activeTab === r ? 'active' : ''}" onclick="switchTab('${r.replace(/'/g, "\\'")}');closeMobileNav()">${r} <span class="badge">${cnt}</span></button>`;
+    });
+  }
+  html += '</div>';
+
+  // Views section
+  html += '<div class="mobile-nav-section">';
+  html += '<div class="mobile-nav-section-label">Views</div>';
+  if (isAdmin) {
+    html += `<button class="mobile-nav-item ${state.activeTab === '__admin_inbox__' ? 'active' : ''}" onclick="switchTab('__admin_inbox__');closeMobileNav()">&#128235; Inbox${state.adminInboxUnread > 0 ? ' <span class="badge" style="background:var(--rust);color:white">' + state.adminInboxUnread + '</span>' : ''}</button>`;
+  }
+  html += `<button class="mobile-nav-item ${state.activeTab === '__gantt__' ? 'active' : ''}" onclick="switchTab('__gantt__');closeMobileNav()">&#9638; Gantt</button>`;
+  html += `<button class="mobile-nav-item ${state.activeTab === '__recent__' ? 'active' : ''}" onclick="switchTab('__recent__');closeMobileNav()">&#128197; Recent</button>`;
+  if (isAdmin) {
+    html += `<button class="mobile-nav-item ${state.activeTab === '__travel__' ? 'active' : ''}" onclick="switchTab('__travel__');closeMobileNav()">&#9992; Travel</button>`;
+    html += `<button class="mobile-nav-item ${state.activeTab === '__analytics__' ? 'active' : ''}" onclick="switchTab('__analytics__');closeMobileNav()">&#128200; Analytics</button>`;
+    html += `<button class="mobile-nav-item ${state.activeTab === '__admin__' ? 'active' : ''}" onclick="switchTab('__admin__');closeMobileNav()">&#9881; Admin</button>`;
+  }
+  if (isRestaurant) {
+    html += `<button class="mobile-nav-item ${state.activeTab === '__inbox__' ? 'active' : ''}" onclick="switchTab('__inbox__');closeMobileNav()">&#128235; Submit New Task Request</button>`;
+  }
+  html += '</div>';
+
+  container.innerHTML = html;
+}
+
+// ============================================================
+// TAB SCROLL FADE INDICATORS
+// ============================================================
+function updateTabScrollIndicators() {
+  const wrapper = document.getElementById('tabs-wrapper');
+  const container = document.querySelector('.tabs-container');
+  if (!wrapper || !container) return;
+  const scrollLeft = wrapper.scrollLeft;
+  const maxScroll = wrapper.scrollWidth - wrapper.clientWidth;
+  container.classList.toggle('scroll-left', scrollLeft > 4);
+  container.classList.toggle('scroll-right', scrollLeft < maxScroll - 4);
+}
+(function initTabScroll() {
+  const wrapper = document.getElementById('tabs-wrapper');
+  if (wrapper) {
+    wrapper.addEventListener('scroll', updateTabScrollIndicators, { passive: true });
+    // Also check on resize
+    window.addEventListener('resize', updateTabScrollIndicators, { passive: true });
+  }
+})();
+
+function toggleMobileNav() {
+  const overlay = document.getElementById('mobile-nav-overlay');
+  const drawer = document.getElementById('mobile-nav-drawer');
+  const isOpen = drawer.classList.contains('open');
+  if (isOpen) {
+    closeMobileNav();
+  } else {
+    overlay.style.display = 'block';
+    // Force reflow for transition
+    overlay.offsetHeight;
+    overlay.classList.add('open');
+    drawer.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function closeMobileNav() {
+  const overlay = document.getElementById('mobile-nav-overlay');
+  const drawer = document.getElementById('mobile-nav-drawer');
+  drawer.classList.remove('open');
+  overlay.classList.remove('open');
+  document.body.style.overflow = '';
+  setTimeout(() => { overlay.style.display = 'none'; }, 250);
 }
 
 function switchTab(tab) {
