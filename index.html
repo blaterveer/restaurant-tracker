@@ -1626,56 +1626,70 @@
 
     /* FILTER BAR */
     .filter-bar { flex-direction: column; align-items: stretch; gap: 8px; }
+    .filter-row { flex-direction: column; align-items: stretch; gap: 8px; }
+    .filter-group { width: 100%; }
+    .filter-group-label { min-width: 70px; }
     .search-input { width: 100%; min-height: 44px; font-size: 16px; }
     .filter-select { width: 100%; min-height: 44px; font-size: 16px; }
     .filter-toggle { min-height: 44px; }
 
     /* TABLE → MOBILE CARD LAYOUT */
     .projects-container { overflow-x: visible; }
-    table, thead, tbody, tr, th, td { display: block; }
+    table { display: block; width: 100%; }
     thead { display: none; }
+    tbody { display: flex; flex-direction: column; gap: 10px; }
     tbody tr {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 4px 10px;
       background: white;
       border: 1px solid var(--border);
       border-radius: 8px;
-      margin-bottom: 10px;
       padding: 14px 16px;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: flex-start;
-      gap: 6px 10px;
-      position: relative;
+      border-bottom: none;
     }
     tbody tr:nth-child(even) { background: white; }
     tbody tr:hover { background: rgba(196,154,60,0.06); }
-    /* Column 1: checkbox — top-left */
+
+    /* All cells reset */
+    tbody td { padding: 0; font-size: 14px; }
+
+    /* Row 1: checkbox + project title */
     tbody td:first-child {
-      order: 0;
-      padding: 0;
-      flex-shrink: 0;
-      width: auto;
+      grid-row: 1;
+      grid-column: 1;
+      align-self: start;
+      padding-top: 2px;
     }
-    /* Column 2 (restaurant pill if shown) or Column 3 (project name): full width row */
+    /* Project name cell — spans right column, rows 1-2 */
     tbody td:nth-child(2) {
-      order: 1;
-      flex: 1 1 0;
+      grid-row: 1 / 3;
+      grid-column: 2;
       min-width: 0;
-      padding: 0;
     }
+    /* When restaurant column is shown, it takes nth-child(2) and pushes project to nth-child(3) */
     tbody td:nth-child(3) {
-      order: 2;
-      width: 100%;
-      padding: 0;
+      grid-column: 1 / -1;
+      min-width: 0;
     }
+
     /* Show project description on mobile cards */
     .project-name { font-size: 16px; }
     .project-desc { display: block; font-size: 12px; margin-top: 2px; }
-    /* Row of metadata badges */
-    tbody td:nth-child(4) { order: 3; padding: 0; } /* category */
-    tbody td:nth-child(5) { order: 4; padding: 0; display: none; } /* owner — hide */
-    tbody td:nth-child(6) { order: 5; padding: 0; } /* due */
-    tbody td:nth-child(7) { order: 6; padding: 0; } /* priority */
-    tbody td:nth-child(8) { order: 7; padding: 0; display: none; } /* latest update — hide */
+
+    /* Metadata row — all badges on one wrapping line */
+    tbody td:nth-child(4),
+    tbody td:nth-child(5),
+    tbody td:nth-child(6),
+    tbody td:nth-child(7),
+    tbody td:nth-child(8) {
+      grid-column: 1 / -1;
+    }
+    /* Owner cell: show inline, smaller */
+    tbody td:nth-child(5) { display: block; }
+    .owner-cell { font-size: 13px; color: var(--warm-gray); }
+    /* Hide latest update on cards — too long */
+    tbody td:nth-child(8) { display: none; }
 
     /* DETAIL PANEL → BOTTOM SHEET */
     .detail-panel {
@@ -1757,8 +1771,9 @@
     .header-logos img { height: 20px; }
     .header-logos img:first-child { height: 26px; }
     .summary-stat .value { font-size: 20px; }
-    tbody tr { padding: 12px 14px; }
+    tbody tr { padding: 12px 12px; }
     .project-name { font-size: 15px; }
+    .project-desc { font-size: 11px; }
   }
 
   /* ============================================================
