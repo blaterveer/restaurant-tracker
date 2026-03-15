@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Project Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -1750,10 +1750,20 @@
     #restaurant-cards { padding: 0 16px 24px; }
     .rc-grid { grid-template-columns: 1fr; }
 
-    /* GANTT — scrolls horizontally on mobile; don't shrink sticky label column */
-    .gantt-controls { gap: 8px; }
-    .gantt-window-btn { padding: 5px 10px; font-size: 11px; min-height: 44px; }
-    .gantt-scroll-wrap { -webkit-overflow-scrolling: touch; }
+    /* GANTT — improved mobile scroll UX */
+    .gantt-controls { gap: 8px; flex-wrap: wrap; }
+    .gantt-controls > * { flex-shrink: 0; }
+    .gantt-window-btn { padding: 8px 12px; font-size: 11px; min-height: 44px; }
+    .gantt-group-select { min-height: 44px; font-size: 14px; }
+    .gantt-show-complete { margin-left: 0; width: 100%; justify-content: flex-start; min-height: 44px; }
+    .gantt-scroll-wrap {
+      -webkit-overflow-scrolling: touch;
+      scroll-snap-type: x proximity;
+      overscroll-behavior-x: contain;
+    }
+    .gantt-label-cell { min-width: 140px; max-width: 160px; font-size: 12px; }
+    .gantt-label-name { max-width: 140px; font-size: 12px; }
+    .gantt-header-row th.label-col { min-width: 140px; max-width: 160px; }
     .gantt-mobile-notice { display: block; background: #fff8e7; border: 1px solid #e8d9a0; border-radius: 6px; padding: 10px 14px; font-size: 13px; color: #7a6a3a; margin-bottom: 16px; }
 
     /* RECENT VIEW */
@@ -1795,6 +1805,14 @@
     .analytics-stats-grid { grid-template-columns: 1fr 1fr; }
     .analytics-charts-grid { grid-template-columns: 1fr; }
     .analytics-view { padding: 16px; }
+  }
+  @media (max-width: 480px) {
+    .analytics-stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .analytics-stat-card { padding: 14px 10px; }
+    .analytics-stat-value { font-size: 32px; }
+    .analytics-stat-label { font-size: 10px; }
+    .analytics-chart-card { padding: 16px 12px; }
+    .analytics-section-title { font-size: 22px; }
   }
 
   /* ============================================================
@@ -2252,8 +2270,21 @@
 
   @media (max-width: 768px) {
     .travel-view { padding: 16px; }
-    .travel-header { flex-direction: column; align-items: flex-start; }
-    .travel-cal-cell { min-height: 72px; }
+    .travel-header { flex-direction: column; align-items: stretch; gap: 12px; }
+    .travel-header-left { justify-content: center; }
+    .travel-month-nav h2 { font-size: 22px; min-width: 180px; }
+    .travel-nav-btn { width: 44px; height: 44px; }
+    .travel-header-actions { justify-content: center; }
+    .travel-view-btn { min-height: 44px; padding: 10px 14px; }
+    .travel-people-btn { width: 44px; height: 44px; }
+    /* Compact calendar cells */
+    .travel-cal-cell { min-height: 56px; padding: 4px 2px 2px; }
+    .travel-cal-date-num { font-size: 10px; }
+    .travel-cal-day-label { font-size: 9px; padding: 6px 0; }
+    /* Trip bars — smaller on mobile */
+    .trip-bar { height: 18px; padding: 0 3px; margin-bottom: 1px; }
+    .trip-bar-label { font-size: 8px; }
+    .trip-bar-initials { display: none; }
     .trip-modal .modal { max-width: 100%; }
   }
 
@@ -2285,6 +2316,52 @@
   .inbox-action-btn.danger:hover { background: var(--rust); color: white; }
   .inbox-empty { font-family: 'Instrument Sans', sans-serif; font-size: 13px; color: var(--warm-gray); padding: 20px; text-align: center; background: var(--parchment); border-radius: 4px; border: 1px dashed var(--border); }
   .inbox-category-pill { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; background: var(--parchment); border: 1px solid var(--border); color: var(--warm-gray); padding: 1px 7px; border-radius: 20px; white-space: nowrap; }
+
+  /* INBOX MOBILE */
+  @media (max-width: 768px) {
+    .inbox-view { padding: 16px; }
+    .inbox-form-card { padding: 16px; }
+    .inbox-item { padding: 14px; gap: 10px; flex-wrap: wrap; }
+    .inbox-item-actions { width: 100%; justify-content: flex-start; padding-top: 8px; border-top: 1px solid var(--border); margin-top: 4px; }
+    .inbox-action-btn { min-height: 44px; display: flex; align-items: center; padding: 8px 14px; }
+    .inbox-submit-btn { width: 100%; min-height: 44px; }
+  }
+
+  /* ============================================================
+     WAVE 5: FINISHING TOUCHES
+     ============================================================ */
+  /* Safe area support for notched devices */
+  @supports (padding: env(safe-area-inset-bottom)) {
+    header { padding-top: max(10px, env(safe-area-inset-top)); }
+    .mobile-nav-drawer { padding-bottom: env(safe-area-inset-bottom); }
+    .detail-panel { padding-bottom: env(safe-area-inset-bottom); }
+    .modal-overlay { padding-bottom: env(safe-area-inset-bottom); }
+  }
+
+  /* Use dvh for mobile browser chrome handling */
+  @supports (height: 100dvh) {
+    .detail-panel { height: 100dvh; }
+    .mobile-nav-drawer { height: 100dvh; }
+    @media (max-width: 768px) {
+      .detail-panel { height: auto; max-height: 92dvh; }
+    }
+  }
+
+  /* Smooth view transitions */
+  main > div,
+  .analytics-view,
+  .travel-view,
+  .inbox-view,
+  #admin-view,
+  #gantt-view,
+  #recent-view {
+    animation: fadeInView 0.2s ease-out;
+  }
+  @keyframes fadeInView {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
 </head>
