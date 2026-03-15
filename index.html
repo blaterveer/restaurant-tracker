@@ -2622,7 +2622,7 @@ let state = {
   activeTab: 'all',
   detailProjectId: null,
   editProjectId: null,
-  gantt: { windowDays: 90, groupBy: 'restaurant', showComplete: true },
+  gantt: { windowDays: 90, groupBy: 'restaurant', showComplete: false },
   editingSubtaskId: null,
   session: null,
   sort: { col: null, dir: 'asc' },
@@ -2995,7 +2995,7 @@ function renderTabs() {
   // Utility tabs go in secondary row
   const utilityWrapper = document.getElementById('tabs-utility');
   if (utilityWrapper) {
-    utilityWrapper.innerHTML = (isAdmin ? adminInboxTab : '') + ganttTab + recentTab + travelTab + (isAdmin ? analyticsTab : '') + inboxTab + (isAdmin ? adminTab : '');
+    utilityWrapper.innerHTML = (isAdmin ? adminInboxTab : '') + ganttTab + recentTab + (isAdmin ? travelTab : '') + (isAdmin ? analyticsTab : '') + inboxTab + (isAdmin ? adminTab : '');
   }
 }
 
@@ -3018,6 +3018,7 @@ function switchTab(tab) {
   const travelEl      = document.getElementById('travel-view');
   const inboxEl       = document.getElementById('inbox-view');
   const adminInboxEl  = document.getElementById('admin-inbox-view');
+  const recentEl      = document.getElementById('recent-view');
   const agendaEl      = document.getElementById('agenda-restaurant-view');
 
   projectsEl.style.display = 'none';
@@ -3027,6 +3028,7 @@ function switchTab(tab) {
   adminEl.style.display = 'none';
   ganttEl.style.display = 'none';
   analyticsEl.style.display = 'none';
+  if (recentEl) recentEl.style.display = 'none';
   if (travelEl) travelEl.style.display = 'none';
   if (inboxEl) inboxEl.style.display = 'none';
   if (adminInboxEl) adminInboxEl.style.display = 'none';
@@ -5473,9 +5475,11 @@ function renderRecentView() {
   cutoff.setDate(cutoff.getDate() - 14);
   cutoff.setHours(0, 0, 0, 0);
 
+  var ownRest = state.session && state.session.role === 'restaurant' ? state.session.restaurant : null;
   var recent = state.projects.filter(function(p) {
     if (!p.complete) return false;
     if (!p.updatedAt) return false;
+    if (ownRest && p.restaurant !== ownRest) return false;
     return new Date(p.updatedAt) >= cutoff;
   });
 
@@ -6366,10 +6370,12 @@ function render() {
 
 function applySessionGating() {
   var isAdmin = state.session && state.session.role === 'admin';
-  var btnNew  = document.getElementById('btn-new-project');
-  var btnRest = document.getElementById('btn-add-restaurant');
-  if (btnNew)  btnNew.style.display  = isAdmin ? '' : 'none';
-  if (btnRest) btnRest.style.display = isAdmin ? '' : 'none';
+  var btnNew    = document.getElementById('btn-new-project');
+  var btnRest   = document.getElementById('btn-add-restaurant');
+  var btnReport = document.getElementById('btn-print-report');
+  if (btnNew)    btnNew.style.display    = isAdmin ? '' : 'none';
+  if (btnRest)   btnRest.style.display   = isAdmin ? '' : 'none';
+  if (btnReport) btnReport.style.display = isAdmin ? '' : 'none';
   // Overdue badge — respects restaurant role filter
   var visibleProjects = state.session && state.session.role === 'restaurant'
     ? state.projects.filter(function(p){ return p.restaurant === state.session.restaurant; })
