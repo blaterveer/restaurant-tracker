@@ -1630,22 +1630,103 @@
     .filter-select { width: 100%; min-height: 44px; font-size: 16px; }
     .filter-toggle { min-height: 44px; }
 
-    /* TABLE */
-    thead th:nth-child(5), tbody td:nth-child(5) { display: none; }
-    thead th:nth-child(8), tbody td:nth-child(8) { display: none; }
-    tbody td { padding: 10px 8px; font-size: 13px; }
-    .project-name { font-size: 15px; }
-    .project-desc { display: none; }
+    /* TABLE → MOBILE CARD LAYOUT */
+    .projects-container { overflow-x: visible; }
+    table, thead, tbody, tr, th, td { display: block; }
+    thead { display: none; }
+    tbody tr {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 10px;
+      padding: 14px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      gap: 6px 10px;
+      position: relative;
+    }
+    tbody tr:nth-child(even) { background: white; }
+    tbody tr:hover { background: rgba(196,154,60,0.06); }
+    /* Column 1: checkbox — top-left */
+    tbody td:first-child {
+      order: 0;
+      padding: 0;
+      flex-shrink: 0;
+      width: auto;
+    }
+    /* Column 2 (restaurant pill if shown) or Column 3 (project name): full width row */
+    tbody td:nth-child(2) {
+      order: 1;
+      flex: 1 1 0;
+      min-width: 0;
+      padding: 0;
+    }
+    tbody td:nth-child(3) {
+      order: 2;
+      width: 100%;
+      padding: 0;
+    }
+    /* Show project description on mobile cards */
+    .project-name { font-size: 16px; }
+    .project-desc { display: block; font-size: 12px; margin-top: 2px; }
+    /* Row of metadata badges */
+    tbody td:nth-child(4) { order: 3; padding: 0; } /* category */
+    tbody td:nth-child(5) { order: 4; padding: 0; display: none; } /* owner — hide */
+    tbody td:nth-child(6) { order: 5; padding: 0; } /* due */
+    tbody td:nth-child(7) { order: 6; padding: 0; } /* priority */
+    tbody td:nth-child(8) { order: 7; padding: 0; display: none; } /* latest update — hide */
 
-    /* DETAIL PANEL */
-    .detail-panel { width: 100% !important; max-width: 100% !important; }
+    /* DETAIL PANEL → BOTTOM SHEET */
+    .detail-panel {
+      width: 100% !important;
+      max-width: 100% !important;
+      height: auto !important;
+      max-height: 92vh;
+      top: auto !important;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      border-radius: 16px 16px 0 0;
+      transform: translateY(100%);
+      box-shadow: 0 -8px 32px rgba(0,0,0,0.25);
+    }
+    .detail-panel.open { transform: translateY(0); }
+    .detail-panel-header { padding: 20px 20px 16px; position: relative; }
+    .detail-panel-header::before {
+      content: '';
+      display: block;
+      width: 36px;
+      height: 4px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 2px;
+      margin: 0 auto 12px;
+    }
+    .detail-body { padding: 20px; }
 
-    /* MODALS */
-    .modal { width: 100% !important; max-width: 100% !important; max-height: 95vh; overflow-y: auto; }
+    /* MODALS → BOTTOM SHEET STYLE */
+    .modal {
+      width: 100% !important;
+      max-width: 100% !important;
+      max-height: 92vh;
+      overflow-y: auto;
+      border-radius: 16px 16px 0 0 !important;
+      margin: 0;
+    }
     .modal-overlay { padding: 0; align-items: flex-end; }
     .modal-body { padding: 16px; }
-    .modal-header { padding: 16px; }
+    .modal-header { padding: 16px; position: relative; }
+    .modal-header::before {
+      content: '';
+      display: block;
+      width: 36px;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin: 0 auto 12px;
+    }
     .form-grid { grid-template-columns: 1fr !important; }
+    .modal .btn-primary, .modal .btn-ghost { width: 100%; }
 
     /* ADMIN */
     .admin-view { padding: 16px; }
@@ -1676,7 +1757,8 @@
     .header-logos img { height: 20px; }
     .header-logos img:first-child { height: 26px; }
     .summary-stat .value { font-size: 20px; }
-    tbody td { padding: 8px 6px; }
+    tbody tr { padding: 12px 14px; }
+    .project-name { font-size: 15px; }
   }
 
   /* ============================================================
