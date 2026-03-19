@@ -3283,7 +3283,7 @@ function showToast(message, type = 'success') {
 // ============================================================
 function renderSummary() {
   const ownRest = state.session && state.session.role === 'restaurant' ? state.session.restaurant : null;
-  const baseProjects = ownRest ? state.projects.filter(p => p.restaurant === ownRest) : state.projects;
+  const baseProjects = state.projects.filter(p => !p.archived && (!ownRest || p.restaurant === ownRest));
   const open    = baseProjects.filter(p => !p.complete);
   const overdue = open.filter(p => { const d = daysUntil(dueDate(p)); return d !== null && d < 0; }).length;
   const soon    = open.filter(p => { const d = daysUntil(dueDate(p)); return d !== null && d >= 0 && d <= 7; }).length;
@@ -6907,10 +6907,10 @@ function applySessionGating() {
   if (btnNew)    btnNew.style.display    = isAdmin ? '' : 'none';
   if (btnRest)   btnRest.style.display   = isAdmin ? '' : 'none';
   if (btnReport) btnReport.style.display = isAdmin ? '' : 'none';
-  // Overdue badge — respects restaurant role filter
+  // Overdue badge — respects restaurant role filter, excludes archived
   var visibleProjects = state.session && state.session.role === 'restaurant'
-    ? state.projects.filter(function(p){ return p.restaurant === state.session.restaurant; })
-    : state.projects;
+    ? state.projects.filter(function(p){ return !p.archived && p.restaurant === state.session.restaurant; })
+    : state.projects.filter(function(p){ return !p.archived; });
   var overdueCount = visibleProjects.filter(function(p) {
     if (p.complete) return false;
     var d = daysUntil(dueDate(p));
