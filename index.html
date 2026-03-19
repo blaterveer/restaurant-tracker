@@ -3604,8 +3604,9 @@ function getFilteredProjects() {
 }
 
 function showOverdueTasks() {
-  state.showOverdue = true;
   switchTab('all');
+  state.showOverdue = true;
+  renderTable();
 }
 
 function clearFilters() {
@@ -3642,8 +3643,9 @@ function openFilters() {
 function filterFromSummary(type) {
   clearFilters();
   if (type === 'overdue') {
-    state.showOverdue = true;
     switchTab('all');
+    state.showOverdue = true;
+    renderTable();
   } else if (type === 'due7') {
     switchTab('all');
     openFilters();
