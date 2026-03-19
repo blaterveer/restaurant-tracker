@@ -2713,6 +2713,12 @@
       <p>Download all project data as a JSON file for backup or migration purposes.</p>
       <button class="btn-danger" style="border-color:var(--sage);color:var(--sage)" onmouseover="this.style.background='var(--sage)';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='var(--sage)'" onclick="exportData()">Export JSON</button>
     </div>
+    <div class="danger-zone">
+      <h4>Import / Restore Data</h4>
+      <p>Restore from a previously exported JSON file. Existing records with matching IDs will be overwritten.</p>
+      <input type="file" id="import-file-input" accept=".json" style="display:none" onchange="importData(this)">
+      <button class="btn-danger" style="border-color:var(--sage);color:var(--sage)" onmouseover="this.style.background='var(--sage)';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='var(--sage)'" onclick="document.getElementById('import-file-input').click()">Import JSON</button>
+    </div>
   </div>
 </div>
 
@@ -5712,6 +5718,74 @@ function exportData() {
   a.download = `sc-culinary-projects-${today()}.json`;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+async function importData(input) {
+  const file = input.files[0];
+  if (!file) return;
+  input.value = '';
+
+  try {
+    const text = await file.text();
+    let imported;
+    try { imported = JSON.parse(text); }
+    catch { showToast('Invalid JSON file', 'error'); return; }
+
+    const required = ['restaurants','categories','types','owners','projects'];
+    const missing = required.filter(k => !Array.isArray(imported[k]));
+    if (missing.length) {
+      showToast('Missing required fields: ' + missing.join(', '), 'error');
+      return;
+    }
+
+    const msg = `Import ${imported.projects.length} projects, ${imported.restaurants.length} restaurants, `
+      + `${imported.categories.length} categories, ${imported.types.length} types, ${imported.owners.length} owners?\n\n`
+      + `Existing records with matching IDs will be overwritten.`;
+    if (!confirm(msg)) return;
+
+    // Upsert lookup tables
+    for (const table of ['restaurants','categories','types','owners']) {
+      const rows = imported[table].map((name, i) => ({ name, sort_order: i }));
+      if (rows.length) {
+        const { error } = await db.from(table).upsert(rows, { onConflict: 'name' });
+        if (error) throw new Error(`${table}: ${error.message}`);
+      }
+    }
+
+    // Upsert projects
+    for (const p of imported.projects) {
+      await dbUpsertProject(p);
+
+      // Upsert nested notes
+      if (Array.isArray(p.notes)) {
+        for (const n of p.notes) {
+          const { error } = await db.from('notes').upsert({
+            id:         n.id,
+            project_id: p.id,
+            note_date:  n.date,
+            text:       n.text,
+            author:     n.author || null,
+          });
+          if (error) throw new Error(`note ${n.id}: ${error.message}`);
+        }
+      }
+
+      // Upsert nested subtasks
+      if (Array.isArray(p.subtasks)) {
+        for (const st of p.subtasks) {
+          await dbUpsertSubtask(p.id, st);
+        }
+      }
+    }
+
+    await loadAll();
+    render();
+    renderAdminView();
+    showToast(`Imported ${imported.projects.length} projects successfully`);
+  } catch (err) {
+    console.error('Import failed:', err);
+    showToast('Import failed: ' + err.message, 'error');
+  }
 }
 
 // ============================================================
