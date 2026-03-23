@@ -153,3 +153,65 @@ insert into owners (name, sort_order) values
   ('Brandon Laterveer', 2),
   ('Brandon',           3)
 on conflict (name) do nothing;
+
+-- ============================================================
+-- V2: AGENDA & RECAP TABLES
+-- ============================================================
+
+create table if not exists agenda_templates (
+  id          uuid primary key default gen_random_uuid(),
+  name        text unique not null,
+  description text,
+  blocks      jsonb not null default '[]'::jsonb,
+  created_at  timestamptz default now()
+);
+
+create table if not exists agenda_blocks (
+  id          uuid primary key default gen_random_uuid(),
+  trip_id     uuid references trips(id) on delete cascade,
+  date        date not null,
+  start_time  time,
+  end_time    time,
+  title       text not null,
+  type        text check (type in ('tasting','boh-walk','service-obs','debrief','meeting','training','other')),
+  notes       text,
+  sort_order  int default 0,
+  completed   boolean default false,
+  created_at  timestamptz default now()
+);
+create index if not exists idx_agenda_blocks_trip on agenda_blocks(trip_id);
+
+create table if not exists visit_recaps (
+  id              uuid primary key default gen_random_uuid(),
+  trip_id         uuid references trips(id) on delete cascade,
+  restaurant_id   uuid references restaurants(id),
+  summary         text,
+  next_visit_date date,
+  followup_notes  text,
+  status          text check (status in ('draft','final')) default 'draft',
+  created_at      timestamptz default now(),
+  updated_at      timestamptz default now()
+);
+create index if not exists idx_visit_recaps_trip on visit_recaps(trip_id);
+create index if not exists idx_visit_recaps_restaurant on visit_recaps(restaurant_id);
+
+create table if not exists recap_observations (
+  id                    uuid primary key default gen_random_uuid(),
+  recap_id              uuid references visit_recaps(id) on delete cascade,
+  category              text check (category in ('culinary','beverage','service','facilities')),
+  text                  text not null,
+  sort_order            int default 0,
+  converted_to_task_id  text,
+  created_at            timestamptz default now()
+);
+create index if not exists idx_recap_observations_recap on recap_observations(recap_id);
+
+-- RLS
+alter table agenda_templates enable row level security;
+create policy "anon_all_agenda_templates" on agenda_templates for all to anon using (true) with check (true);
+alter table agenda_blocks enable row level security;
+create policy "anon_all_agenda_blocks" on agenda_blocks for all to anon using (true) with check (true);
+alter table visit_recaps enable row level security;
+create policy "anon_all_visit_recaps" on visit_recaps for all to anon using (true) with check (true);
+alter table recap_observations enable row level security;
+create policy "anon_all_recap_observations" on recap_observations for all to anon using (true) with check (true);

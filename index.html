@@ -1896,6 +1896,290 @@
   }
   .travel-people-btn:hover { border-color: var(--ink); color: var(--ink); }
 
+  /* Quarterly visit tracking widget */
+  .quarterly-widget {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .qv-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    cursor: pointer;
+    background: var(--parchment);
+    border-bottom: 1px solid var(--border);
+    user-select: none;
+  }
+  .qv-header h3 {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 0;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  .qv-toggle { font-size: 11px; color: var(--warm-gray); }
+  .qv-body { padding: 16px 20px; }
+  .qv-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 13px;
+  }
+  .qv-table th {
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 2px solid var(--border);
+    color: var(--warm-gray);
+    font-weight: 500;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .qv-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--ink);
+  }
+  .qv-table tr:last-child td { border-bottom: none; }
+  .qv-restaurant { font-weight: 600; }
+  .qv-metric { white-space: nowrap; }
+  .qv-value {
+    font-family: 'DM Mono', monospace;
+    font-weight: 600;
+    font-size: 15px;
+    margin-right: 4px;
+  }
+  .qv-up { color: var(--on-track); font-size: 11px; margin-left: 6px; }
+  .qv-down { color: var(--overdue); font-size: 11px; margin-left: 6px; }
+  .qv-flat { color: var(--warm-gray); font-size: 11px; margin-left: 6px; }
+  .qv-last-visit { color: var(--ink-light); }
+  .qv-days-since { color: var(--warm-gray); font-size: 11px; }
+  .qv-note {
+    margin-top: 12px;
+    font-size: 11px;
+    color: var(--warm-gray);
+    text-align: right;
+    font-style: italic;
+  }
+
+  /* Restaurant context card */
+  .trip-context-card {
+    background: var(--parchment);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+  }
+  .trip-context-title {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--ink);
+    margin-bottom: 12px;
+  }
+  .trip-context-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  .trip-context-stat { text-align: center; }
+  .trip-context-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .trip-context-value.danger { color: var(--overdue); }
+  .trip-context-label {
+    font-size: 11px;
+    color: var(--warm-gray);
+    margin-top: 2px;
+  }
+
+  /* Agenda blocks */
+  .agenda-blocks-list { display: flex; flex-direction: column; gap: 12px; }
+  .ab-date-group { }
+  .ab-date-header {
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--warm-gray);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--border);
+  }
+  .agenda-block-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    margin-bottom: 6px;
+  }
+  .agenda-block-item.done { opacity: 0.55; }
+  .ab-check {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-top: 2px;
+    transition: all 0.15s;
+  }
+  .ab-check.done { background: var(--sage); border-color: var(--sage); }
+  .ab-check:hover { border-color: var(--sage); }
+  .ab-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .ab-body { flex: 1; min-width: 0; }
+  .ab-title { font-weight: 600; font-size: 14px; color: var(--ink); }
+  .ab-title.done { text-decoration: line-through; color: var(--warm-gray); }
+  .ab-meta { font-size: 12px; color: var(--warm-gray); margin-top: 2px; display: flex; gap: 8px; align-items: center; }
+  .ab-time { font-family: 'DM Mono', monospace; font-size: 11px; }
+  .ab-type-badge {
+    background: var(--parchment);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ink-light);
+  }
+  .ab-notes { font-size: 12px; color: var(--ink-light); margin-top: 4px; line-height: 1.5; }
+  .ab-actions { display: flex; gap: 4px; flex-shrink: 0; }
+  .ab-template-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  /* Pre-trip checklist */
+  .checklist-list { display: flex; flex-direction: column; gap: 6px; }
+  .checklist-item {
+    padding: 8px 12px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+  }
+  .checklist-title { font-weight: 600; font-size: 13px; color: var(--ink); }
+  .checklist-meta { display: flex; gap: 8px; margin-top: 4px; flex-wrap: wrap; }
+  .checklist-cat, .checklist-owner {
+    font-size: 11px;
+    background: var(--parchment);
+    padding: 1px 6px;
+    border-radius: 3px;
+    color: var(--ink-light);
+  }
+  .checklist-due { font-size: 11px; color: var(--warm-gray); }
+  .checklist-due.overdue { color: var(--overdue); font-weight: 600; }
+
+  /* Recap modal styles */
+  .recap-header-card {
+    background: var(--parchment);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+  }
+  .recap-header-title { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 400; color: var(--ink); margin-bottom: 8px; }
+  .recap-header-meta { font-size: 13px; color: var(--ink-light); line-height: 1.6; }
+  .recap-header-meta strong { color: var(--ink); }
+
+  .recap-section { margin-bottom: 20px; }
+  .recap-section-title {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--ink);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .recap-obs-tabs { display: flex; gap: 0; margin-bottom: 12px; border-bottom: 2px solid var(--border); }
+  .recap-obs-tab {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: var(--warm-gray);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.15s;
+  }
+  .recap-obs-tab.active { color: var(--rust); border-bottom-color: var(--rust); }
+  .recap-obs-tab:hover { color: var(--ink); }
+
+  .recap-obs-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    margin-bottom: 6px;
+  }
+  .recap-obs-text { flex: 1; font-size: 14px; line-height: 1.5; color: var(--ink); }
+  .recap-obs-text.converted { text-decoration: line-through; color: var(--warm-gray); }
+  .recap-obs-actions { display: flex; gap: 4px; flex-shrink: 0; }
+
+  .recap-action-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    margin-bottom: 4px;
+    font-size: 13px;
+  }
+  .recap-action-title { flex: 1; font-weight: 500; color: var(--ink); }
+  .recap-action-meta { font-size: 11px; color: var(--warm-gray); }
+
+  .recap-status-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .recap-status-badge.draft { background: #FFF3CD; color: #856404; }
+  .recap-status-badge.final { background: #D4EDDA; color: #155724; }
+
+  /* Recap history list */
+  .recap-history-list { display: flex; flex-direction: column; gap: 8px; }
+  .recap-history-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .recap-history-item:hover { border-color: var(--rust); }
+  .recap-history-info { flex: 1; }
+  .recap-history-title { font-weight: 600; font-size: 14px; color: var(--ink); }
+  .recap-history-meta { font-size: 12px; color: var(--warm-gray); margin-top: 2px; }
+
   /* Calendar grid */
   .travel-calendar-grid {
     background: white;
@@ -2568,6 +2852,10 @@
       <div class="analytics-chart-title">Active Projects by Category</div>
       <canvas id="chart-categories"></canvas>
     </div>
+    <div class="analytics-chart-card">
+      <div class="analytics-chart-title">Visit Tracking — Current Quarter</div>
+      <canvas id="chart-visits"></canvas>
+    </div>
   </div>
 </div>
 
@@ -2615,6 +2903,30 @@
       <button class="modal-close" onclick="closePeopleModal()">&#215;</button>
     </div>
     <div class="modal-body" id="people-modal-body"></div>
+  </div>
+</div>
+
+<!-- AGENDA BLOCK MODAL -->
+<div class="modal-overlay" id="agenda-block-modal-overlay">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header">
+      <h2 id="agenda-block-modal-title">Add Agenda Block</h2>
+      <button class="modal-close" onclick="closeAgendaBlockModal()">&#215;</button>
+    </div>
+    <div class="modal-body" id="agenda-block-modal-body"></div>
+    <div class="modal-footer" id="agenda-block-modal-footer"></div>
+  </div>
+</div>
+
+<!-- RECAP MODAL -->
+<div class="modal-overlay" id="recap-modal-overlay">
+  <div class="modal" style="max-width:860px">
+    <div class="modal-header">
+      <h2 id="recap-modal-title">Site Visit Recap</h2>
+      <button class="modal-close" onclick="closeRecapModal()">&#215;</button>
+    </div>
+    <div class="modal-body" id="recap-modal-body" style="max-height:70vh;overflow-y:auto"></div>
+    <div class="modal-footer" id="recap-modal-footer"></div>
   </div>
 </div>
 
@@ -4226,6 +4538,37 @@ function renderAnalyticsView() {
       plugins: { legend: { position: 'right' } }
     }
   });
+
+  // ── Chart 5: Visit Tracking — current quarter (grouped bar) ──
+  const curQ = getCurrentQuarterLabel();
+  const qStats = travelState.quarterlyStats || {};
+  const visitRestaurants = state.restaurants.filter(r => qStats[r]);
+  const visitCanvas = document.getElementById('chart-visits');
+  if (visitCanvas && visitRestaurants.length > 0) {
+    window._analyticsCharts.visits = new Chart(
+      visitCanvas.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: visitRestaurants,
+        datasets: [
+          { label: 'Days On-Site', data: visitRestaurants.map(r => (qStats[r][curQ] || {}).days || 0), backgroundColor: '#4a7c9e' },
+          { label: 'Trips',        data: visitRestaurants.map(r => (qStats[r][curQ] || {}).trips || 0), backgroundColor: '#c0892b' },
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom' }, title: { display: true, text: curQ } },
+        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+      }
+    });
+  } else if (visitCanvas) {
+    // No visit data — show placeholder text
+    const ctx = visitCanvas.getContext('2d');
+    ctx.font = "13px 'Instrument Sans', sans-serif";
+    ctx.fillStyle = '#8C8278';
+    ctx.textAlign = 'center';
+    ctx.fillText('No visits logged this quarter', visitCanvas.width / 2, visitCanvas.height / 2);
+  }
 }
 
 // ============================================================
@@ -6102,6 +6445,16 @@ const travelState = {
   editItinId: null,
   editItinTripId: null,
   newTravelerColor: '#4F86C6',
+  // v2: quarterly tracking
+  quarterlyStats: {},        // { restaurantName: { 'Q1 2026': {days, trips}, ... } }
+  // v2: agenda builder
+  agendaBlocks: [],
+  agendaTemplates: [],
+  editAgendaBlockId: null,
+  // v2: recap tool
+  recaps: [],
+  recapObservations: [],
+  editRecapId: null,
 };
 
 const TRAVELER_PALETTE = [
@@ -6117,11 +6470,19 @@ async function loadTravelData() {
     { data: trips },
     { data: tripTravelers },
     { data: itinItems },
+    { data: agendaBlocks },
+    { data: agendaTemplates },
+    { data: recaps },
+    { data: recapObs },
   ] = await Promise.all([
     db.from('travelers').select('*').order('created_at'),
     db.from('trips').select('*, restaurants(name)').order('start_date'),
     db.from('trip_travelers').select('*'),
     db.from('itinerary_items').select('*').order('date').order('time', { nullsFirst: true }),
+    db.from('agenda_blocks').select('*').order('date').order('sort_order'),
+    db.from('agenda_templates').select('*').order('name'),
+    db.from('visit_recaps').select('*, restaurants(name)').order('created_at', { ascending: false }),
+    db.from('recap_observations').select('*').order('sort_order'),
   ]);
 
   travelState.travelers = (travelers || []);
@@ -6139,6 +6500,15 @@ async function loadTravelData() {
   }));
 
   travelState.itineraryItems = (itinItems || []);
+  travelState.agendaBlocks = (agendaBlocks || []);
+  travelState.agendaTemplates = (agendaTemplates || []);
+  travelState.recaps = (recaps || []).map(r => ({
+    ...r,
+    restaurantName: r.restaurants ? r.restaurants.name : null,
+  }));
+  travelState.recapObservations = (recapObs || []);
+
+  computeQuarterlyStats();
 }
 
 async function dbSaveTrip(trip, travelerIds) {
@@ -6295,6 +6665,150 @@ function autoInitials(name) {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
+// ---- Quarterly visit tracking ----
+
+function getQuarterForDate(dateStr) {
+  const d = parseLocalDate(dateStr);
+  const m = d.getMonth(); // 0-indexed
+  const q = Math.floor(m / 3) + 1;
+  const y = d.getFullYear();
+  return { quarter: q, year: y, label: 'Q' + q + ' ' + y };
+}
+
+function daysBetweenInclusive(startStr, endStr) {
+  const s = parseLocalDate(startStr);
+  const e = parseLocalDate(endStr);
+  return Math.round((e - s) / 86400000) + 1;
+}
+
+function computeQuarterlyStats() {
+  const stats = {}; // { restaurantName: { 'Q1 2026': {days, trips, tripIds}, ... } }
+
+  travelState.trips.forEach(trip => {
+    if (!trip.restaurantName) return;
+    const rName = trip.restaurantName;
+    if (!stats[rName]) stats[rName] = {};
+
+    // Iterate each day of the trip and assign to correct quarter
+    const start = parseLocalDate(trip.start_date);
+    const end   = parseLocalDate(trip.end_date);
+    const quartersSeen = new Set();
+
+    const cur = new Date(start);
+    while (cur <= end) {
+      const ds = dateStr(cur);
+      const qi = getQuarterForDate(ds);
+      const qLabel = qi.label;
+      if (!stats[rName][qLabel]) stats[rName][qLabel] = { days: 0, trips: 0, tripIds: [] };
+      stats[rName][qLabel].days++;
+      quartersSeen.add(qLabel);
+      cur.setDate(cur.getDate() + 1);
+    }
+
+    // Count this trip once per quarter it touches
+    quartersSeen.forEach(qLabel => {
+      stats[rName][qLabel].trips++;
+      stats[rName][qLabel].tripIds.push(trip.id);
+    });
+  });
+
+  travelState.quarterlyStats = stats;
+}
+
+function getCurrentQuarterLabel() {
+  const now = new Date();
+  const q = Math.floor(now.getMonth() / 3) + 1;
+  return 'Q' + q + ' ' + now.getFullYear();
+}
+
+function getPreviousQuarterLabel(currentLabel) {
+  const parts = currentLabel.split(' ');
+  let q = parseInt(parts[0].replace('Q', ''));
+  let y = parseInt(parts[1]);
+  q--;
+  if (q < 1) { q = 4; y--; }
+  return 'Q' + q + ' ' + y;
+}
+
+function getLastVisitDate(restaurantName) {
+  const now = new Date();
+  let lastDate = null;
+  travelState.trips.forEach(t => {
+    if (t.restaurantName !== restaurantName) return;
+    const end = parseLocalDate(t.end_date);
+    if (end <= now && (!lastDate || end > lastDate)) lastDate = end;
+  });
+  return lastDate;
+}
+
+function buildQuarterlyWidget() {
+  const curQ = getCurrentQuarterLabel();
+  const prevQ = getPreviousQuarterLabel(curQ);
+  const stats = travelState.quarterlyStats;
+  const restaurants = state.restaurants || [];
+
+  if (restaurants.length === 0) return '';
+
+  const rows = restaurants.map(rName => {
+    const rStats = stats[rName] || {};
+    const cur = rStats[curQ] || { days: 0, trips: 0 };
+    const prev = rStats[prevQ] || { days: 0, trips: 0 };
+    const daysDelta = cur.days - prev.days;
+    const tripsDelta = cur.trips - prev.trips;
+    const daysArrow = daysDelta > 0 ? `<span class="qv-up">&#9650; ${daysDelta}</span>` :
+                      daysDelta < 0 ? `<span class="qv-down">&#9660; ${Math.abs(daysDelta)}</span>` : '<span class="qv-flat">—</span>';
+    const tripsArrow = tripsDelta > 0 ? `<span class="qv-up">&#9650; ${tripsDelta}</span>` :
+                       tripsDelta < 0 ? `<span class="qv-down">&#9660; ${Math.abs(tripsDelta)}</span>` : '<span class="qv-flat">—</span>';
+
+    const lastVisit = getLastVisitDate(rName);
+    const lastVisitStr = lastVisit ? fmtDate(dateStr(lastVisit)) : 'Never';
+    const daysSince = lastVisit ? Math.round((new Date() - lastVisit) / 86400000) : null;
+    const daysSinceStr = daysSince !== null ? `(${daysSince}d ago)` : '';
+
+    return `<tr>
+      <td class="qv-restaurant">${escHtml(rName)}</td>
+      <td class="qv-metric"><span class="qv-value">${cur.days}</span> days ${daysArrow}</td>
+      <td class="qv-metric"><span class="qv-value">${cur.trips}</span> trips ${tripsArrow}</td>
+      <td class="qv-last-visit">${lastVisitStr} <span class="qv-days-since">${daysSinceStr}</span></td>
+    </tr>`;
+  }).join('');
+
+  return `
+  <div class="quarterly-widget" id="quarterly-widget">
+    <div class="qv-header" onclick="toggleQuarterlyWidget()">
+      <h3>&#128200; Visit Tracking — ${escHtml(curQ)}</h3>
+      <span class="qv-toggle" id="qv-toggle-icon">&#9660;</span>
+    </div>
+    <div class="qv-body" id="qv-body">
+      <table class="qv-table">
+        <thead>
+          <tr>
+            <th>Restaurant</th>
+            <th>Days On-Site</th>
+            <th>Trips</th>
+            <th>Last Visit</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div class="qv-note">Compared to ${escHtml(prevQ)}</div>
+    </div>
+  </div>`;
+}
+
+function toggleQuarterlyWidget() {
+  const body = document.getElementById('qv-body');
+  const icon = document.getElementById('qv-toggle-icon');
+  if (!body) return;
+  if (body.style.display === 'none') {
+    body.style.display = '';
+    icon.innerHTML = '&#9660;';
+  } else {
+    body.style.display = 'none';
+    icon.innerHTML = '&#9654;';
+  }
+}
+
 // ---- Main render ----
 
 function renderTravelView() {
@@ -6303,17 +6817,23 @@ function renderTravelView() {
 
   if (travelState.view === 'calendar') {
     el.innerHTML = buildCalendarHTML();
+  } else if (travelState.view === 'recaps') {
+    el.innerHTML = buildRecapHistoryHTML();
   } else {
     el.innerHTML = buildListHTML();
   }
-  el.innerHTML = buildTravelHeaderHTML() + el.innerHTML;
+  const showWidget = travelState.view !== 'recaps';
+  el.innerHTML = buildTravelHeaderHTML() + (showWidget ? buildQuarterlyWidget() : '') + el.innerHTML;
 }
 
 function buildTravelHeaderHTML() {
   const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   const label = months[travelState.calMonth] + ' ' + travelState.calYear;
-  const calActive  = travelState.view === 'calendar' ? 'active' : '';
-  const listActive = travelState.view === 'list'     ? 'active' : '';
+  const calActive    = travelState.view === 'calendar' ? 'active' : '';
+  const listActive   = travelState.view === 'list'     ? 'active' : '';
+  const recapsActive = travelState.view === 'recaps'   ? 'active' : '';
+
+  const recapCount = (travelState.recaps || []).length;
 
   const calendarNav = travelState.view === 'calendar' ? `
     <div class="travel-month-nav">
@@ -6331,6 +6851,7 @@ function buildTravelHeaderHTML() {
       <div class="travel-view-toggle">
         <button class="travel-view-btn ${calActive}" onclick="travelSetView('calendar')">&#128197; Calendar</button>
         <button class="travel-view-btn ${listActive}" onclick="travelSetView('list')">&#9776; List</button>
+        <button class="travel-view-btn ${recapsActive}" onclick="travelSetView('recaps')">&#128196; Recaps${recapCount > 0 ? ` (${recapCount})` : ''}</button>
       </div>
       <button class="travel-people-btn" title="Manage travelers" onclick="openPeopleModal()">&#9881;</button>
       <button class="btn-primary" onclick="openTripModal(null)">+ Add Trip</button>
@@ -6575,13 +7096,23 @@ function renderTripModal() {
       <div class="traveler-checkboxes">${checkboxes || '<span style="color:var(--warm-gray);font-size:14px">No active travelers. Add travelers via the ⚙ button.</span>'}</div>
     </div>
   </div>
+  ${isEdit ? buildRestaurantContextCard(trip) : ''}
+  ${isEdit ? buildAgendaSection(tripId) : ''}
+  ${isEdit ? buildPreTripChecklist(trip) : ''}
   ${isEdit ? buildItinerarySection(tripId) : ''}`;
 
   document.getElementById('trip-modal-body').innerHTML = body;
 
-  // Footer
+  // Footer — recap button for existing trips
+  const existingRecap = isEdit ? travelState.recaps.find(r => r.trip_id === tripId) : null;
+  const recapBtn = isEdit ? (existingRecap
+    ? `<button class="btn-sm" style="background:var(--sage);color:white" onclick="closeTripModal();openRecapModal('${existingRecap.id}')">View Recap</button>`
+    : `<button class="btn-sm" style="background:var(--sage);color:white" onclick="createRecapFromTrip('${tripId}')">Create Recap</button>`)
+    : '';
+
   const footerHTML = `
     ${isEdit ? `<button class="btn-cancel" style="color:var(--rust);border-color:rgba(139,58,30,0.35)" onclick="confirmDeleteTrip('${tripId}')">Delete Trip</button>` : ''}
+    ${recapBtn}
     <button class="btn-cancel" onclick="closeTripModal()">Cancel</button>
     <button class="btn-primary" onclick="saveTripModal()">Save Trip</button>`;
   document.getElementById('trip-modal-footer').innerHTML = footerHTML;
@@ -6790,6 +7321,314 @@ async function saveItinModal() {
   closeItinModal();
 }
 
+// ============================================================
+// AGENDA BLOCKS
+// ============================================================
+
+function agendaBlockTypeIcon(type) {
+  const icons = { 'tasting': '🍷', 'boh-walk': '🔧', 'service-obs': '👁️', 'debrief': '📋', 'meeting': '🤝', 'training': '📚', 'other': '📝' };
+  return icons[type] || '📝';
+}
+
+function agendaBlockTypeLabel(type) {
+  const labels = { 'tasting': 'Tasting', 'boh-walk': 'BOH Walk', 'service-obs': 'Service Obs', 'debrief': 'Debrief', 'meeting': 'Meeting', 'training': 'Training', 'other': 'Other' };
+  return labels[type] || type;
+}
+
+async function dbSaveAgendaBlock(block) {
+  const row = {
+    trip_id:    block.trip_id,
+    date:       block.date,
+    start_time: block.start_time || null,
+    end_time:   block.end_time || null,
+    title:      block.title,
+    type:       block.type || 'other',
+    notes:      block.notes || null,
+    sort_order: block.sort_order || 0,
+    completed:  block.completed || false,
+  };
+  if (block.id) {
+    await db.from('agenda_blocks').update(row).eq('id', block.id);
+  } else {
+    await db.from('agenda_blocks').insert(row);
+  }
+  await loadTravelData();
+  reopenTripModal(block.trip_id);
+}
+
+async function dbDeleteAgendaBlock(id, tripId) {
+  await db.from('agenda_blocks').delete().eq('id', id);
+  await loadTravelData();
+  reopenTripModal(tripId);
+}
+
+async function dbToggleAgendaComplete(id, tripId, current) {
+  await db.from('agenda_blocks').update({ completed: !current }).eq('id', id);
+  await loadTravelData();
+  reopenTripModal(tripId);
+}
+
+async function dbApplyAgendaTemplate(tripId, templateId, date) {
+  const tmpl = travelState.agendaTemplates.find(t => t.id === templateId);
+  if (!tmpl || !tmpl.blocks || tmpl.blocks.length === 0) return;
+
+  showLoading('Applying template…');
+  const rows = tmpl.blocks.map((b, i) => ({
+    trip_id:    tripId,
+    date:       date,
+    title:      b.title,
+    type:       b.type || 'other',
+    notes:      b.notes || null,
+    sort_order: i + 1,
+    completed:  false,
+  }));
+  await db.from('agenda_blocks').insert(rows);
+  await loadTravelData();
+  hideLoading();
+  reopenTripModal(tripId);
+}
+
+function buildRestaurantContextCard(trip) {
+  if (!trip || !trip.restaurantName) return '';
+
+  const rName = trip.restaurantName;
+  const curQ = getCurrentQuarterLabel();
+  const qStats = travelState.quarterlyStats[rName] || {};
+  const curQData = qStats[curQ] || { days: 0, trips: 0 };
+  const lastVisit = getLastVisitDate(rName);
+  const lastVisitStr = lastVisit ? fmtDate(dateStr(lastVisit)) : 'No previous visits';
+  const daysSince = lastVisit ? Math.round((new Date() - lastVisit) / 86400000) : null;
+
+  // Open tasks at this restaurant
+  const openTasks = state.projects.filter(p => p.restaurant === rName && !p.complete && !p.archived);
+  const overdueTasks = openTasks.filter(p => {
+    const d = daysUntil(dueDate(p));
+    return d !== null && d < 0;
+  });
+
+  return `
+  <div class="trip-context-card">
+    <div class="trip-context-title">&#128205; ${escHtml(rName)} — At a Glance</div>
+    <div class="trip-context-grid">
+      <div class="trip-context-stat">
+        <div class="trip-context-value">${lastVisitStr}</div>
+        <div class="trip-context-label">Last Visit${daysSince !== null ? ` (${daysSince}d ago)` : ''}</div>
+      </div>
+      <div class="trip-context-stat">
+        <div class="trip-context-value">${curQData.days}d / ${curQData.trips} trips</div>
+        <div class="trip-context-label">${escHtml(curQ)}</div>
+      </div>
+      <div class="trip-context-stat">
+        <div class="trip-context-value">${openTasks.length}</div>
+        <div class="trip-context-label">Open Tasks</div>
+      </div>
+      <div class="trip-context-stat">
+        <div class="trip-context-value ${overdueTasks.length > 0 ? 'danger' : ''}">${overdueTasks.length}</div>
+        <div class="trip-context-label">Overdue</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function buildAgendaSection(tripId) {
+  const trip = travelState.trips.find(t => t.id === tripId);
+  if (!trip) return '';
+
+  const blocks = travelState.agendaBlocks.filter(b => b.trip_id === tripId)
+    .sort((a, b) => {
+      if (a.date !== b.date) return a.date.localeCompare(b.date);
+      return (a.sort_order || 0) - (b.sort_order || 0);
+    });
+
+  // Group by date
+  const byDate = {};
+  blocks.forEach(b => {
+    if (!byDate[b.date]) byDate[b.date] = [];
+    byDate[b.date].push(b);
+  });
+
+  const datesHTML = Object.entries(byDate).map(([date, items]) => {
+    const dayItems = items.map(b => {
+      const timeRange = b.start_time && b.end_time
+        ? `<span class="ab-time">${b.start_time.slice(0,5)} – ${b.end_time.slice(0,5)}</span>`
+        : b.start_time ? `<span class="ab-time">${b.start_time.slice(0,5)}</span>` : '';
+      return `<div class="agenda-block-item ${b.completed ? 'done' : ''}">
+        <div class="ab-check ${b.completed ? 'done' : ''}" onclick="dbToggleAgendaComplete('${b.id}','${tripId}',${b.completed})"></div>
+        <div class="ab-icon">${agendaBlockTypeIcon(b.type)}</div>
+        <div class="ab-body">
+          <div class="ab-title ${b.completed ? 'done' : ''}">${escHtml(b.title)}</div>
+          <div class="ab-meta">${timeRange} <span class="ab-type-badge">${agendaBlockTypeLabel(b.type)}</span></div>
+          ${b.notes ? `<div class="ab-notes">${escHtml(b.notes)}</div>` : ''}
+        </div>
+        <div class="ab-actions">
+          <button class="itin-action-btn" onclick="openAgendaBlockModal('${b.id}','${tripId}')">Edit</button>
+          <button class="itin-action-btn del" onclick="dbDeleteAgendaBlock('${b.id}','${tripId}')">Del</button>
+        </div>
+      </div>`;
+    }).join('');
+
+    return `<div class="ab-date-group">
+      <div class="ab-date-header">${fmtDate(date)}</div>
+      ${dayItems}
+    </div>`;
+  }).join('');
+
+  // Template selector
+  const templates = travelState.agendaTemplates || [];
+  const tmplOpts = templates.map(t =>
+    `<option value="${t.id}">${escHtml(t.name)}${t.description ? ' — ' + escHtml(t.description) : ''}</option>`
+  ).join('');
+
+  const tmplSection = templates.length > 0 ? `
+  <div class="ab-template-row">
+    <select class="form-select" id="ab-template-select" style="flex:1;font-size:13px">
+      ${tmplOpts}
+    </select>
+    <input type="date" class="form-input" id="ab-template-date" value="${trip.start_date}" style="width:140px;font-size:13px">
+    <button class="btn-sm" onclick="applyAgendaTemplateFromModal('${tripId}')">Apply Template</button>
+  </div>` : '';
+
+  return `
+  <div class="trip-modal-section">
+    <div class="trip-modal-section-title">Agenda</div>
+    ${tmplSection}
+    <div class="agenda-blocks-list">
+      ${blocks.length === 0 ? '<p style="color:var(--warm-gray);font-size:14px;padding:8px 0">No agenda blocks yet. Apply a template or add blocks manually.</p>' : datesHTML}
+    </div>
+    <button class="btn-sm" style="margin-top:12px" onclick="openAgendaBlockModal(null,'${tripId}')">+ Add Block</button>
+  </div>`;
+}
+
+function applyAgendaTemplateFromModal(tripId) {
+  const sel = document.getElementById('ab-template-select');
+  const dateInput = document.getElementById('ab-template-date');
+  if (!sel || !dateInput || !dateInput.value) {
+    alert('Please select a template and date.');
+    return;
+  }
+  dbApplyAgendaTemplate(tripId, sel.value, dateInput.value);
+}
+
+function buildPreTripChecklist(trip) {
+  if (!trip || !trip.restaurantName) return '';
+
+  const rName = trip.restaurantName;
+  const openTasks = state.projects.filter(p =>
+    p.restaurant === rName && !p.complete && !p.archived
+  ).sort((a, b) => {
+    const da = daysUntil(dueDate(a));
+    const db2 = daysUntil(dueDate(b));
+    if (da === null && db2 === null) return 0;
+    if (da === null) return 1;
+    if (db2 === null) return -1;
+    return da - db2;
+  });
+
+  if (openTasks.length === 0) return '';
+
+  const tasksHTML = openTasks.map(p => {
+    const dd = dueDate(p);
+    const du = daysUntil(dd);
+    const overdue = du !== null && du < 0;
+    return `<div class="checklist-item">
+      <div class="checklist-title">${escHtml(p.title)}</div>
+      <div class="checklist-meta">
+        ${p.category ? `<span class="checklist-cat">${escHtml(p.category)}</span>` : ''}
+        ${p.owner ? `<span class="checklist-owner">${escHtml(p.owner)}</span>` : ''}
+        ${dd ? `<span class="checklist-due ${overdue ? 'overdue' : ''}">${overdue ? 'Overdue ' + Math.abs(du) + 'd' : 'Due ' + fmtDate(dd)}</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  return `
+  <div class="trip-modal-section">
+    <div class="trip-modal-section-title">&#9745; Open Tasks at ${escHtml(rName)} (${openTasks.length})</div>
+    <div class="checklist-list">${tasksHTML}</div>
+  </div>`;
+}
+
+// ---- Agenda Block Modal ----
+
+function openAgendaBlockModal(blockId, tripId) {
+  travelState.editAgendaBlockId = blockId;
+  travelState.editItinTripId = tripId; // reuse for context
+  document.getElementById('agenda-block-modal-overlay').classList.add('open');
+  renderAgendaBlockModal();
+}
+
+function closeAgendaBlockModal() {
+  document.getElementById('agenda-block-modal-overlay').classList.remove('open');
+  travelState.editAgendaBlockId = null;
+}
+
+function renderAgendaBlockModal() {
+  const blockId = travelState.editAgendaBlockId;
+  const tripId  = travelState.editItinTripId;
+  const block   = blockId ? travelState.agendaBlocks.find(b => b.id === blockId) : null;
+  const trip    = travelState.trips.find(t => t.id === tripId);
+
+  document.getElementById('agenda-block-modal-title').textContent = block ? 'Edit Agenda Block' : 'Add Agenda Block';
+
+  const typeOpts = [
+    ['tasting','🍷 Tasting'],['boh-walk','🔧 BOH Walk'],['service-obs','👁️ Service Observation'],
+    ['debrief','📋 Debrief'],['meeting','🤝 Meeting'],['training','📚 Training'],['other','📝 Other'],
+  ].map(([v,l]) => `<option value="${v}" ${block && block.type===v ? 'selected':''}>${l}</option>`).join('');
+
+  document.getElementById('agenda-block-modal-body').innerHTML = `
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Type <span class="required">*</span></label>
+        <select class="form-select" id="ab-type">${typeOpts}</select>
+      </div>
+      <div class="form-group">
+        <label>Date <span class="required">*</span></label>
+        <input type="date" class="form-input" id="ab-date" value="${block ? block.date : (trip ? trip.start_date : '')}">
+      </div>
+      <div class="form-group full">
+        <label>Title <span class="required">*</span></label>
+        <input type="text" class="form-input" id="ab-title" value="${block ? block.title.replace(/"/g,'&quot;') : ''}" placeholder="e.g. Morning Tasting">
+      </div>
+      <div class="form-group">
+        <label>Start Time</label>
+        <input type="time" class="form-input" id="ab-start-time" value="${block && block.start_time ? block.start_time.slice(0,5) : ''}">
+      </div>
+      <div class="form-group">
+        <label>End Time</label>
+        <input type="time" class="form-input" id="ab-end-time" value="${block && block.end_time ? block.end_time.slice(0,5) : ''}">
+      </div>
+      <div class="form-group full">
+        <label>Notes</label>
+        <textarea class="form-textarea" id="ab-notes" rows="3">${block ? (block.notes || '') : ''}</textarea>
+      </div>
+    </div>`;
+
+  document.getElementById('agenda-block-modal-footer').innerHTML = `
+    <button class="btn-cancel" onclick="closeAgendaBlockModal()">Cancel</button>
+    <button class="btn-primary" onclick="saveAgendaBlockModal()">Save Block</button>`;
+}
+
+async function saveAgendaBlockModal() {
+  const title = document.getElementById('ab-title').value.trim();
+  const date  = document.getElementById('ab-date').value;
+  if (!title || !date) { alert('Title and date are required.'); return; }
+
+  const block = {
+    id:         travelState.editAgendaBlockId || null,
+    trip_id:    travelState.editItinTripId,
+    date:       date,
+    start_time: document.getElementById('ab-start-time').value || null,
+    end_time:   document.getElementById('ab-end-time').value || null,
+    title:      title,
+    type:       document.getElementById('ab-type').value,
+    notes:      document.getElementById('ab-notes').value.trim() || null,
+  };
+
+  showLoading('Saving…');
+  await dbSaveAgendaBlock(block);
+  hideLoading();
+  closeAgendaBlockModal();
+}
+
 // ---- People Manager Modal ----
 
 function openPeopleModal() {
@@ -6879,6 +7718,479 @@ async function saveNewTraveler() {
   await dbSaveTraveler({ name, initials, color });
   hideLoading();
 }
+
+// ============================================================
+// SITE VISIT RECAP TOOL
+// ============================================================
+
+// ---- Recap DB layer ----
+
+async function dbSaveRecap(recap) {
+  const row = {
+    trip_id:         recap.trip_id,
+    restaurant_id:   recap.restaurant_id || null,
+    summary:         recap.summary || null,
+    next_visit_date: recap.next_visit_date || null,
+    followup_notes:  recap.followup_notes || null,
+    status:          recap.status || 'draft',
+  };
+  if (recap.id) {
+    await db.from('visit_recaps').update(row).eq('id', recap.id);
+  } else {
+    const { data, error } = await db.from('visit_recaps').insert(row).select().single();
+    if (error) throw error;
+    return data;
+  }
+  return recap;
+}
+
+async function dbDeleteRecap(id) {
+  if (!confirm('Delete this recap and all observations? This cannot be undone.')) return;
+  await db.from('visit_recaps').delete().eq('id', id);
+  await loadTravelData();
+  closeRecapModal();
+  renderTravelView();
+  showToast('Recap deleted');
+}
+
+async function dbFinalizeRecap(id) {
+  await db.from('visit_recaps').update({ status: 'final' }).eq('id', id);
+  await loadTravelData();
+  reopenRecapModal(id);
+  showToast('Recap marked as final');
+}
+
+async function dbSaveObservation(obs) {
+  const row = {
+    recap_id:  obs.recap_id,
+    category:  obs.category,
+    text:      obs.text,
+    sort_order: obs.sort_order || 0,
+  };
+  if (obs.id) {
+    await db.from('recap_observations').update(row).eq('id', obs.id);
+  } else {
+    await db.from('recap_observations').insert(row);
+  }
+  await loadTravelData();
+}
+
+async function dbDeleteObservation(id, recapId) {
+  await db.from('recap_observations').delete().eq('id', id);
+  await loadTravelData();
+  reopenRecapModal(recapId);
+}
+
+async function dbConvertObsToTask(obsId, recapId, restaurantName) {
+  const obs = travelState.recapObservations.find(o => o.id === obsId);
+  if (!obs) return;
+
+  showLoading('Creating task…');
+  const catMap = { 'culinary': 'Culinary', 'beverage': 'Beverage', 'service': 'Dining Room', 'facilities': 'Administrative' };
+  const newProject = {
+    id: uid(),
+    restaurant: restaurantName,
+    title: obs.text.length > 80 ? obs.text.substring(0, 77) + '...' : obs.text,
+    category: catMap[obs.category] || '',
+    type: '',
+    description: obs.text,
+    owner: '',
+    priority: 'Medium',
+    weeks: null,
+    dateAdded: today(),
+    complete: false,
+    link: '',
+    dueDate: null,
+    notes: [],
+    subtasks: [],
+    archived: false,
+    isComplex: false,
+  };
+  await dbUpsertProject(newProject);
+  state.projects.push(newProject);
+
+  // Update observation
+  await db.from('recap_observations').update({ converted_to_task_id: newProject.id }).eq('id', obsId);
+  await loadTravelData();
+  hideLoading();
+  render();
+  reopenRecapModal(recapId);
+  showToast('Observation converted to task');
+}
+
+// ---- Recap UI ----
+
+async function createRecapFromTrip(tripId) {
+  const trip = travelState.trips.find(t => t.id === tripId);
+  if (!trip) return;
+
+  showLoading('Creating recap…');
+  const recap = await dbSaveRecap({
+    trip_id: tripId,
+    restaurant_id: trip.restaurant_id || null,
+    status: 'draft',
+  });
+  await loadTravelData();
+  hideLoading();
+  closeTripModal();
+  openRecapModal(recap.id);
+}
+
+function openRecapModal(recapId) {
+  travelState.editRecapId = recapId;
+  document.getElementById('recap-modal-overlay').classList.add('open');
+  renderRecapModal();
+}
+
+function closeRecapModal() {
+  document.getElementById('recap-modal-overlay').classList.remove('open');
+  travelState.editRecapId = null;
+}
+
+function reopenRecapModal(recapId) {
+  travelState.editRecapId = recapId;
+  renderRecapModal();
+}
+
+// Active observation category tab
+let _recapObsTab = 'culinary';
+
+function renderRecapModal() {
+  const recapId = travelState.editRecapId;
+  const recap = travelState.recaps.find(r => r.id === recapId);
+  if (!recap) return;
+
+  const trip = travelState.trips.find(t => t.id === recap.trip_id);
+  const restaurantName = recap.restaurantName || (trip ? trip.restaurantName : '') || 'Unknown';
+
+  // Trip travelers
+  const travelerNames = trip ? trip.travelerIds.map(tid => {
+    const t = travelState.travelers.find(tr => tr.id === tid);
+    return t ? t.name : '';
+  }).filter(Boolean).join(', ') : '';
+
+  document.getElementById('recap-modal-title').textContent = 'Site Visit Recap';
+
+  // Header card
+  const headerHTML = `
+  <div class="recap-header-card">
+    <div class="recap-header-title">${escHtml(restaurantName)} — Site Visit Recap</div>
+    <div class="recap-header-meta">
+      ${trip ? `<strong>Trip:</strong> ${escHtml(trip.title)}<br>` : ''}
+      ${trip ? `<strong>Dates:</strong> ${fmtDate(trip.start_date)} — ${fmtDate(trip.end_date)}<br>` : ''}
+      ${trip ? `<strong>Destination:</strong> ${escHtml(trip.destination)}<br>` : ''}
+      ${travelerNames ? `<strong>Visitors:</strong> ${escHtml(travelerNames)}` : ''}
+    </div>
+    <div style="margin-top:8px">
+      <span class="recap-status-badge ${recap.status}">${recap.status}</span>
+    </div>
+  </div>`;
+
+  // Executive summary
+  const summaryHTML = `
+  <div class="recap-section">
+    <div class="recap-section-title">Executive Summary</div>
+    <textarea class="form-textarea" id="recap-summary" rows="4" placeholder="Write a brief overview of the visit findings…"
+      ${recap.status === 'final' ? 'disabled' : ''}>${recap.summary || ''}</textarea>
+  </div>`;
+
+  // Observations tabs
+  const categories = ['culinary', 'beverage', 'service', 'facilities'];
+  const catLabels = { culinary: 'Culinary', beverage: 'Beverage', service: 'Service', facilities: 'Facilities' };
+  const allObs = travelState.recapObservations.filter(o => o.recap_id === recapId);
+
+  const tabsHTML = categories.map(cat => {
+    const count = allObs.filter(o => o.category === cat).length;
+    return `<button class="recap-obs-tab ${_recapObsTab === cat ? 'active' : ''}" onclick="_recapObsTab='${cat}';renderRecapModal()">${catLabels[cat]} (${count})</button>`;
+  }).join('');
+
+  const catObs = allObs.filter(o => o.category === _recapObsTab);
+  const obsListHTML = catObs.map(obs => {
+    const isConverted = !!obs.converted_to_task_id;
+    return `<div class="recap-obs-item">
+      <div class="recap-obs-text ${isConverted ? 'converted' : ''}">${escHtml(obs.text)}</div>
+      <div class="recap-obs-actions">
+        ${!isConverted && recap.status !== 'final' ? `<button class="itin-action-btn" style="font-size:11px;white-space:nowrap" onclick="dbConvertObsToTask('${obs.id}','${recapId}','${escHtml(restaurantName)}')">→ Task</button>` : ''}
+        ${isConverted ? '<span style="font-size:11px;color:var(--sage)">✓ Task</span>' : ''}
+        ${recap.status !== 'final' ? `<button class="itin-action-btn del" onclick="dbDeleteObservation('${obs.id}','${recapId}')">Del</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  const addObsHTML = recap.status !== 'final' ? `
+  <div style="display:flex;gap:8px;margin-top:10px">
+    <input type="text" class="form-input" id="recap-new-obs" placeholder="Add observation…" style="flex:1" onkeypress="if(event.key==='Enter')addObservation('${recapId}')">
+    <button class="btn-sm" onclick="addObservation('${recapId}')">Add</button>
+  </div>` : '';
+
+  const observationsHTML = `
+  <div class="recap-section">
+    <div class="recap-section-title">Observations</div>
+    <div class="recap-obs-tabs">${tabsHTML}</div>
+    <div class="recap-obs-list">
+      ${catObs.length === 0 ? '<p style="color:var(--warm-gray);font-size:14px;padding:8px 0">No observations in this category yet.</p>' : obsListHTML}
+    </div>
+    ${addObsHTML}
+  </div>`;
+
+  // Action items — tasks created during trip window at this restaurant
+  let actionItemsHTML = '';
+  if (trip) {
+    const tripTasks = state.projects.filter(p =>
+      p.restaurant === restaurantName &&
+      p.dateAdded >= trip.start_date &&
+      p.dateAdded <= trip.end_date
+    );
+    const tasksListHTML = tripTasks.map(p => {
+      const dd = dueDate(p);
+      return `<div class="recap-action-item">
+        <div class="recap-action-title">${escHtml(p.title)}</div>
+        <div class="recap-action-meta">
+          ${p.owner ? escHtml(p.owner) : ''}
+          ${dd ? ' · Due ' + fmtDate(dd) : ''}
+          ${p.complete ? ' · ✓ Complete' : ''}
+        </div>
+      </div>`;
+    }).join('');
+
+    // Also include observations converted to tasks
+    const convObs = allObs.filter(o => o.converted_to_task_id);
+    const convTasksHTML = convObs.map(obs => {
+      const p = state.projects.find(pr => pr.id === obs.converted_to_task_id);
+      if (!p) return '';
+      const dd = dueDate(p);
+      return `<div class="recap-action-item">
+        <div class="recap-action-title">${escHtml(p.title)}</div>
+        <div class="recap-action-meta">
+          From observation · ${p.owner ? escHtml(p.owner) : ''}${dd ? ' · Due ' + fmtDate(dd) : ''}
+        </div>
+      </div>`;
+    }).filter(Boolean).join('');
+
+    const allActionItems = tasksListHTML + convTasksHTML;
+    actionItemsHTML = `
+    <div class="recap-section">
+      <div class="recap-section-title">Action Items</div>
+      ${allActionItems || '<p style="color:var(--warm-gray);font-size:14px;padding:8px 0">No tasks created during this trip window.</p>'}
+    </div>`;
+  }
+
+  // Follow-up
+  const followupHTML = `
+  <div class="recap-section">
+    <div class="recap-section-title">Follow-Up</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Next Visit Date</label>
+        <input type="date" class="form-input" id="recap-next-visit" value="${recap.next_visit_date || ''}" ${recap.status === 'final' ? 'disabled' : ''}>
+      </div>
+    </div>
+    <div class="form-group" style="margin-top:12px">
+      <label>30-Day Check-in Notes</label>
+      <textarea class="form-textarea" id="recap-followup" rows="3" placeholder="Items to review at the 30-day mark…"
+        ${recap.status === 'final' ? 'disabled' : ''}>${recap.followup_notes || ''}</textarea>
+    </div>
+  </div>`;
+
+  document.getElementById('recap-modal-body').innerHTML =
+    headerHTML + summaryHTML + observationsHTML + actionItemsHTML + followupHTML;
+
+  // Footer
+  const isFinal = recap.status === 'final';
+  document.getElementById('recap-modal-footer').innerHTML = `
+    <button class="btn-cancel" style="color:var(--rust);border-color:rgba(139,58,30,0.35)" onclick="dbDeleteRecap('${recapId}')">Delete</button>
+    ${!isFinal ? `<button class="btn-sm" onclick="saveRecapDraft('${recapId}')">Save Draft</button>` : ''}
+    ${!isFinal ? `<button class="btn-sm" style="background:var(--sage);color:white" onclick="dbFinalizeRecap('${recapId}')">Mark Final</button>` : ''}
+    <button class="btn-primary" onclick="printRecap('${recapId}')">&#128424; Export PDF</button>
+    <button class="btn-cancel" onclick="closeRecapModal()">Close</button>`;
+}
+
+async function addObservation(recapId) {
+  const input = document.getElementById('recap-new-obs');
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text) return;
+
+  const existingObs = travelState.recapObservations.filter(o => o.recap_id === recapId && o.category === _recapObsTab);
+  await dbSaveObservation({
+    recap_id:   recapId,
+    category:   _recapObsTab,
+    text:       text,
+    sort_order: existingObs.length + 1,
+  });
+  reopenRecapModal(recapId);
+}
+
+async function saveRecapDraft(recapId) {
+  const recap = travelState.recaps.find(r => r.id === recapId);
+  if (!recap) return;
+
+  showLoading('Saving…');
+  await dbSaveRecap({
+    id:              recapId,
+    trip_id:         recap.trip_id,
+    restaurant_id:   recap.restaurant_id,
+    summary:         document.getElementById('recap-summary').value.trim(),
+    next_visit_date: document.getElementById('recap-next-visit').value || null,
+    followup_notes:  document.getElementById('recap-followup').value.trim(),
+    status:          'draft',
+  });
+  await loadTravelData();
+  hideLoading();
+  reopenRecapModal(recapId);
+  showToast('Recap saved');
+}
+
+// ---- Recap History View ----
+
+function buildRecapHistoryHTML() {
+  const recaps = travelState.recaps || [];
+
+  if (recaps.length === 0) {
+    return '<p style="color:var(--warm-gray);font-size:14px;padding:20px 0">No recaps yet. Create one from a trip.</p>';
+  }
+
+  // Restaurant filter
+  const restaurants = [...new Set(recaps.map(r => r.restaurantName).filter(Boolean))];
+  const filterOpts = restaurants.map(r => `<option value="${r}">${r}</option>`).join('');
+  const filterHTML = `
+  <div style="margin-bottom:16px">
+    <select class="form-select" id="recap-history-filter" onchange="renderRecapHistoryFiltered()" style="font-size:13px">
+      <option value="">All Restaurants</option>
+      ${filterOpts}
+    </select>
+  </div>`;
+
+  const listHTML = recaps.map(r => {
+    const trip = travelState.trips.find(t => t.id === r.trip_id);
+    return `<div class="recap-history-item" data-restaurant="${escHtml(r.restaurantName || '')}" onclick="openRecapModal('${r.id}')">
+      <div class="recap-history-info">
+        <div class="recap-history-title">${escHtml(r.restaurantName || 'Unknown')} — ${trip ? escHtml(trip.title) : 'Trip'}</div>
+        <div class="recap-history-meta">${fmtDate(r.created_at ? r.created_at.split('T')[0] : '')} ${trip ? '· ' + fmtDate(trip.start_date) + ' – ' + fmtDate(trip.end_date) : ''}</div>
+      </div>
+      <span class="recap-status-badge ${r.status}">${r.status}</span>
+    </div>`;
+  }).join('');
+
+  return filterHTML + `<div class="recap-history-list" id="recap-history-list">${listHTML}</div>`;
+}
+
+function renderRecapHistoryFiltered() {
+  const filter = document.getElementById('recap-history-filter').value;
+  const items = document.querySelectorAll('.recap-history-item');
+  items.forEach(item => {
+    if (!filter || item.dataset.restaurant === filter) {
+      item.style.display = '';
+    } else {
+      item.style.display = 'none';
+    }
+  });
+}
+
+// ---- Recap PDF Export ----
+
+function printRecap(recapId) {
+  const recap = travelState.recaps.find(r => r.id === recapId);
+  if (!recap) return;
+
+  const trip = travelState.trips.find(t => t.id === recap.trip_id);
+  const restaurantName = recap.restaurantName || 'Unknown';
+  const travelerNames = trip ? trip.travelerIds.map(tid => {
+    const t = travelState.travelers.find(tr => tr.id === tid);
+    return t ? t.name : '';
+  }).filter(Boolean).join(', ') : '';
+
+  const allObs = travelState.recapObservations.filter(o => o.recap_id === recapId);
+  const categories = ['culinary', 'beverage', 'service', 'facilities'];
+  const catLabels = { culinary: 'Culinary', beverage: 'Beverage', service: 'Service / FOH', facilities: 'Facilities' };
+
+  // Observations by category
+  const obsHTML = categories.map(cat => {
+    const obs = allObs.filter(o => o.category === cat);
+    if (obs.length === 0) return '';
+    const items = obs.map(o => `<li style="margin-bottom:6px;line-height:1.6">${escHtml(o.text)}${o.converted_to_task_id ? ' <em style="color:#4A5C4A">(→ Task created)</em>' : ''}</li>`).join('');
+    return `<div style="margin-bottom:16px">
+      <h3 style="font-size:14px;font-weight:600;color:#1C1915;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.04em">${catLabels[cat]}</h3>
+      <ul style="margin:0;padding-left:20px;color:#3D3830">${items}</ul>
+    </div>`;
+  }).join('');
+
+  // Action items
+  let actionItemsHTML = '';
+  if (trip) {
+    const tripTasks = state.projects.filter(p =>
+      p.restaurant === restaurantName &&
+      p.dateAdded >= trip.start_date && p.dateAdded <= trip.end_date
+    );
+    const convTasks = allObs.filter(o => o.converted_to_task_id).map(o =>
+      state.projects.find(p => p.id === o.converted_to_task_id)
+    ).filter(Boolean);
+    const allTasks = [...tripTasks, ...convTasks.filter(ct => !tripTasks.some(tt => tt.id === ct.id))];
+
+    if (allTasks.length > 0) {
+      const rows = allTasks.map(p => {
+        const dd = dueDate(p);
+        return `<tr>
+          <td style="padding:6px 10px;border-bottom:1px solid #D4CBB8">${escHtml(p.title)}</td>
+          <td style="padding:6px 10px;border-bottom:1px solid #D4CBB8">${escHtml(p.owner || '—')}</td>
+          <td style="padding:6px 10px;border-bottom:1px solid #D4CBB8">${dd ? fmtDate(dd) : '—'}</td>
+          <td style="padding:6px 10px;border-bottom:1px solid #D4CBB8">${p.complete ? '✓' : '○'}</td>
+        </tr>`;
+      }).join('');
+      actionItemsHTML = `
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;margin:24px 0 12px;color:#1C1915">Action Items</h2>
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead><tr style="background:#EDE7DC">
+          <th style="padding:8px 10px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:#8C8278">Task</th>
+          <th style="padding:8px 10px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:#8C8278">Owner</th>
+          <th style="padding:8px 10px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:#8C8278">Due Date</th>
+          <th style="padding:8px 10px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:#8C8278">Status</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+    }
+  }
+
+  // Follow-up
+  const followupHTML = (recap.next_visit_date || recap.followup_notes) ? `
+  <h2 style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;margin:24px 0 12px;color:#1C1915">Follow-Up</h2>
+  ${recap.next_visit_date ? `<p style="font-size:14px;color:#3D3830"><strong>Next Visit:</strong> ${fmtDate(recap.next_visit_date)}</p>` : ''}
+  ${recap.followup_notes ? `<p style="font-size:14px;color:#3D3830;line-height:1.6"><strong>30-Day Check-in:</strong><br>${escHtml(recap.followup_notes).replace(/\n/g, '<br>')}</p>` : ''}` : '';
+
+  // Get logo from header
+  const logoEl = document.querySelector('.header-logos img');
+  const logoSrc = logoEl ? logoEl.src : '';
+
+  const html = `
+  <div style="font-family:'Instrument Sans',sans-serif;max-width:800px;margin:0 auto;padding:40px;color:#1C1915">
+    ${logoSrc ? `<div style="text-align:center;margin-bottom:24px"><img src="${logoSrc}" style="height:40px;opacity:0.8"></div>` : ''}
+    <div style="text-align:center;margin-bottom:32px">
+      <h1 style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;margin:0 0 8px">${escHtml(restaurantName)}</h1>
+      <div style="font-size:15px;color:#3D3830">Site Visit Recap</div>
+      ${trip ? `<div style="font-size:13px;color:#8C8278;margin-top:6px">${fmtDate(trip.start_date)} — ${fmtDate(trip.end_date)} · ${escHtml(trip.destination)}</div>` : ''}
+      ${travelerNames ? `<div style="font-size:13px;color:#8C8278;margin-top:4px">Visitors: ${escHtml(travelerNames)}</div>` : ''}
+    </div>
+    <hr style="border:none;border-top:1px solid #D4CBB8;margin:0 0 24px">
+    ${recap.summary ? `
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;margin:0 0 12px;color:#1C1915">Executive Summary</h2>
+    <p style="font-size:14px;line-height:1.7;color:#3D3830;margin-bottom:24px">${escHtml(recap.summary).replace(/\n/g, '<br>')}</p>` : ''}
+    ${obsHTML ? `
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;margin:0 0 16px;color:#1C1915">Observations</h2>
+    ${obsHTML}` : ''}
+    ${actionItemsHTML}
+    ${followupHTML}
+    <hr style="border:none;border-top:1px solid #D4CBB8;margin:32px 0 16px">
+    <div style="text-align:center;font-size:11px;color:#8C8278">
+      SC Culinary · ${escHtml(restaurantName)} · ${new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' })}
+    </div>
+  </div>`;
+
+  const printView = document.getElementById('print-view');
+  printView.innerHTML = html;
+  setTimeout(() => window.print(), 300);
+}
+
+// ---- Travel header — Recaps button ----
 
 // ---- Load restaurant ID map ----
 
