@@ -2053,6 +2053,7 @@
     color: var(--ink-light);
   }
   .ab-notes { font-size: 12px; color: var(--ink-light); margin-top: 4px; line-height: 1.5; }
+  .ab-linked-task { font-size: 11px; color: var(--sage); margin-top: 4px; font-style: italic; }
   .ab-actions { display: flex; gap: 4px; flex-shrink: 0; }
   .ab-template-row {
     display: flex;
@@ -2065,11 +2066,15 @@
   /* Pre-trip checklist */
   .checklist-list { display: flex; flex-direction: column; gap: 6px; }
   .checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     padding: 8px 12px;
     background: white;
     border: 1px solid var(--border);
     border-radius: 4px;
   }
+  .checklist-body { flex: 1; min-width: 0; }
   .checklist-title { font-weight: 600; font-size: 13px; color: var(--ink); }
   .checklist-meta { display: flex; gap: 8px; margin-top: 4px; flex-wrap: wrap; }
   .checklist-cat, .checklist-owner {
@@ -2081,6 +2086,18 @@
   }
   .checklist-due { font-size: 11px; color: var(--warm-gray); }
   .checklist-due.overdue { color: var(--overdue); font-weight: 600; }
+  .checklist-actions { flex-shrink: 0; }
+  .checklist-add-btn {
+    font-size: 11px !important;
+    padding: 4px 10px !important;
+    white-space: nowrap;
+  }
+  .checklist-on-agenda {
+    font-size: 11px;
+    color: var(--sage);
+    font-weight: 600;
+    white-space: nowrap;
+  }
 
   /* Recap modal styles */
   .recap-header-card {
@@ -7346,6 +7363,7 @@ async function dbSaveAgendaBlock(block) {
     notes:      block.notes || null,
     sort_order: block.sort_order || 0,
     completed:  block.completed || false,
+    project_id: block.project_id || null,
   };
   if (block.id) {
     await db.from('agenda_blocks').update(row).eq('id', block.id);
@@ -7459,6 +7477,7 @@ function buildAgendaSection(tripId) {
           <div class="ab-title ${b.completed ? 'done' : ''}">${escHtml(b.title)}</div>
           <div class="ab-meta">${timeRange} <span class="ab-type-badge">${agendaBlockTypeLabel(b.type)}</span></div>
           ${b.notes ? `<div class="ab-notes">${escHtml(b.notes)}</div>` : ''}
+          ${b.project_id ? (() => { const p = state.projects.find(pr => pr.id === b.project_id); return p ? `<div class="ab-linked-task">&#128204; ${escHtml(p.title)}</div>` : ''; })() : ''}
         </div>
         <div class="ab-actions">
           <button class="itin-action-btn" onclick="openAgendaBlockModal('${b.id}','${tripId}')">Edit</button>
@@ -7526,16 +7545,30 @@ function buildPreTripChecklist(trip) {
 
   if (openTasks.length === 0) return '';
 
+  // Check which tasks are already on the agenda for this trip
+  const agendaProjectIds = travelState.agendaBlocks
+    .filter(b => b.trip_id === trip.id && b.project_id)
+    .map(b => b.project_id);
+
   const tasksHTML = openTasks.map(p => {
     const dd = dueDate(p);
     const du = daysUntil(dd);
     const overdue = du !== null && du < 0;
+    const alreadyOnAgenda = agendaProjectIds.includes(p.id);
+
     return `<div class="checklist-item">
-      <div class="checklist-title">${escHtml(p.title)}</div>
-      <div class="checklist-meta">
-        ${p.category ? `<span class="checklist-cat">${escHtml(p.category)}</span>` : ''}
-        ${p.owner ? `<span class="checklist-owner">${escHtml(p.owner)}</span>` : ''}
-        ${dd ? `<span class="checklist-due ${overdue ? 'overdue' : ''}">${overdue ? 'Overdue ' + Math.abs(du) + 'd' : 'Due ' + fmtDate(dd)}</span>` : ''}
+      <div class="checklist-body">
+        <div class="checklist-title">${escHtml(p.title)}</div>
+        <div class="checklist-meta">
+          ${p.category ? `<span class="checklist-cat">${escHtml(p.category)}</span>` : ''}
+          ${p.owner ? `<span class="checklist-owner">${escHtml(p.owner)}</span>` : ''}
+          ${dd ? `<span class="checklist-due ${overdue ? 'overdue' : ''}">${overdue ? 'Overdue ' + Math.abs(du) + 'd' : 'Due ' + fmtDate(dd)}</span>` : ''}
+        </div>
+      </div>
+      <div class="checklist-actions">
+        ${alreadyOnAgenda
+          ? '<span class="checklist-on-agenda">&#10003; On Agenda</span>'
+          : `<button class="btn-sm checklist-add-btn" onclick="addTaskToAgenda('${trip.id}','${p.id}')">+ Agenda</button>`}
       </div>
     </div>`;
   }).join('');
@@ -7545,6 +7578,32 @@ function buildPreTripChecklist(trip) {
     <div class="trip-modal-section-title">&#9745; Open Tasks at ${escHtml(rName)} (${openTasks.length})</div>
     <div class="checklist-list">${tasksHTML}</div>
   </div>`;
+}
+
+async function addTaskToAgenda(tripId, projectId) {
+  const trip = travelState.trips.find(t => t.id === tripId);
+  const project = state.projects.find(p => p.id === projectId);
+  if (!trip || !project) return;
+
+  // Map project category to agenda block type
+  const catTypeMap = {
+    'Culinary': 'tasting',
+    'Beverage': 'tasting',
+    'Dining Room': 'service-obs',
+    'Administrative': 'meeting',
+    'Collateral/Menu': 'meeting',
+  };
+  const blockType = catTypeMap[project.category] || 'meeting';
+
+  await dbSaveAgendaBlock({
+    trip_id:    tripId,
+    date:       trip.start_date,
+    title:      project.title,
+    type:       blockType,
+    notes:      project.description || null,
+    project_id: projectId,
+    sort_order: travelState.agendaBlocks.filter(b => b.trip_id === tripId).length + 1,
+  });
 }
 
 // ---- Agenda Block Modal ----
