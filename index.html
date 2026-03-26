@@ -1208,6 +1208,8 @@
   .opening-subcat.open .opening-subcat-arrow { transform: rotate(180deg); }
   .opening-expand-btn { font-family: 'DM Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; background: none; border: 1px solid var(--warm-gray); color: var(--warm-gray); padding: 4px 14px; border-radius: 4px; cursor: pointer; transition: all 0.15s; }
   .opening-expand-btn:hover { border-color: var(--dark-brown); color: var(--dark-brown); }
+  .opening-date-edit { cursor: pointer; border-bottom: 1px dashed var(--warm-gray); }
+  .opening-date-edit:hover { color: var(--rust); border-color: var(--rust); }
   .opening-subcat .opening-task-list { display: none; }
   .opening-subcat.open .opening-task-list { display: block; }
 
@@ -5518,6 +5520,51 @@ function openAddModal(editId = null, prefill = null) {
   document.getElementById('project-modal').classList.add('open');
 }
 
+async function promptChangeOpeningDate(openingId, currentDate) {
+  const newDate = prompt(
+    'Enter new opening date (YYYY-MM-DD).\n\nAll task due dates will shift by the same number of days.',
+    currentDate
+  );
+  if (!newDate || newDate === currentDate) return;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(newDate)) {
+    alert('Invalid date format. Use YYYY-MM-DD.');
+    return;
+  }
+
+  const oldD = new Date(currentDate + 'T00:00:00');
+  const newD = new Date(newDate + 'T00:00:00');
+  const deltaDays = Math.round((newD - oldD) / 86400000);
+
+  if (deltaDays === 0) return;
+
+  const direction = deltaDays > 0 ? 'later' : 'earlier';
+  const absDays = Math.abs(deltaDays);
+  if (!confirm(`This will shift all task due dates ${absDays} day${absDays !== 1 ? 's' : ''} ${direction}. Continue?`)) return;
+
+  try {
+    // Update opening target date
+    const { error: openingErr } = await db.from('openings').update({ target_date: newDate }).eq('id', openingId);
+    if (openingErr) throw openingErr;
+
+    // Shift all task due dates for this opening
+    const tasks = state.projects.filter(p => p.openingId === openingId && p.dueDate);
+    const updates = tasks.map(t => {
+      const oldDue = new Date(t.dueDate + 'T00:00:00');
+      oldDue.setDate(oldDue.getDate() + deltaDays);
+      const newDue = oldDue.toISOString().split('T')[0];
+      return db.from('projects').update({ due_date: newDue }).eq('id', t.id);
+    });
+    await Promise.all(updates);
+
+    alert(`Opening date moved to ${newDate}. ${tasks.length} task${tasks.length !== 1 ? 's' : ''} shifted ${absDays} day${absDays !== 1 ? 's' : ''} ${direction}.`);
+    await loadAll();
+    render();
+  } catch (e) {
+    console.error('Error shifting dates:', e);
+    alert('Error updating dates: ' + e.message);
+  }
+}
+
 function openOpeningTaskModal(editId = null) {
   const opening = state.openings.find(o => o.id === state.activeOpeningId);
   if (!opening) return;
@@ -8801,7 +8848,7 @@ function renderOpeningDetail(el) {
         <div>
           <div class="opening-title">${opening.name}</div>
           <div class="opening-meta">
-            <span class="opening-meta-item">Opening: <strong>${targetStr}</strong></span>
+            <span class="opening-meta-item">Opening: <strong class="opening-date-edit" onclick="promptChangeOpeningDate('${opening.id}','${opening.targetDate}')" title="Click to change opening date">${targetStr}</strong> <span style="font-size:11px;cursor:pointer;color:var(--warm-gray)" onclick="promptChangeOpeningDate('${opening.id}','${opening.targetDate}')">&#9998;</span></span>
             ${daysLeft !== null ? '<span class="opening-meta-item"><strong>' + daysLeft + ' days</strong> remaining</span>' : ''}
             <span class="opening-meta-item"><strong>${total}</strong> tasks</span>
           </div>
