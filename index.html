@@ -1154,10 +1154,17 @@
   .opening-summary { background: var(--parchment); border: 1px solid var(--border); padding: 16px 24px; display: flex; gap: 32px; align-items: center; flex-wrap: wrap; margin-bottom: 24px; }
 
   /* Sub-tabs within an opening */
-  .opening-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 24px; }
+  .opening-tabs-row { display: flex; align-items: flex-end; gap: 16px; margin-bottom: 24px; }
+  .opening-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); flex: 1; }
   .opening-tab { padding: 10px 20px; font-family: 'DM Mono', monospace; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm-gray); cursor: pointer; border: none; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; background: none; }
   .opening-tab:hover { color: var(--ink); }
   .opening-tab.active { color: var(--rust); border-bottom-color: var(--rust); }
+  .opening-search-wrap { position: relative; flex-shrink: 0; margin-bottom: 2px; }
+  .opening-search { width: 200px; padding: 6px 28px 6px 10px; font-family: 'DM Sans', sans-serif; font-size: 13px; border: 1px solid var(--border); border-radius: 6px; background: white; color: var(--ink); outline: none; transition: border-color 0.2s; }
+  .opening-search:focus { border-color: var(--rust); }
+  .opening-search::placeholder { color: var(--warm-gray); }
+  .opening-search-clear { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 12px; color: var(--warm-gray); padding: 2px 4px; line-height: 1; }
+  .opening-search-clear:hover { color: var(--rust); }
 
   /* This Week / Phases section headers */
   .opening-section { margin-bottom: 28px; }
@@ -3465,6 +3472,7 @@ let state = {
   activeOpeningId: null,    // currently selected opening
   openingTab: 'thisweek',   // 'thisweek' | 'phases' | 'byowner' | 'gantt'
   _openingModalId: null,    // set when add/edit modal is in opening mode
+  _openingSearch: '',       // search query for opening tasks
 };
 
 // ============================================================
@@ -3803,13 +3811,20 @@ function renderSummary() {
 // ============================================================
 function renderTabs() {
   const wrapper = document.getElementById('tabs-wrapper');
-  const tabs = ['all', ...state.restaurants];
+  // Exclude restaurants that only exist as openings (no regular tasks)
+  const openingRestaurants = new Set(state.openings.map(o => o.restaurant));
+  const filteredRestaurants = state.restaurants.filter(r => {
+    if (!openingRestaurants.has(r)) return true;
+    // Keep if there are regular (non-opening) tasks for this restaurant
+    return state.projects.some(p => p.restaurant === r && !p.openingId && !p.archived);
+  });
+  const tabs = ['all', ...filteredRestaurants];
   const restaurantTabs = tabs.map(t => {
     const isAll  = t === 'all';
     const label  = isAll ? 'All Restaurants' : t;
     const count  = isAll
-      ? state.projects.filter(p => !p.complete).length
-      : state.projects.filter(p => p.restaurant === t && !p.complete).length;
+      ? state.projects.filter(p => !p.complete && !p.openingId).length
+      : state.projects.filter(p => p.restaurant === t && !p.complete && !p.openingId).length;
     return `<button class="tab ${state.activeTab === t ? 'active' : ''}" onclick="switchTab('${t}')">
       ${label} <span class="badge">${count}</span>
     </button>`;
@@ -8720,12 +8735,47 @@ function openOpeningDetail(id) {
 function closeOpeningDetail() {
   state.activeOpeningId = null;
   state.openingTab = 'thisweek';
+  state._openingSearch = '';
   renderOpeningsView();
 }
 
 function switchOpeningTab(tab) {
   state.openingTab = tab;
   renderOpeningsView();
+}
+
+function onOpeningSearch(val) {
+  state._openingSearch = val;
+  // Re-render only the tab content, not the whole view, to keep focus
+  const opening = state.openings.find(o => o.id === state.activeOpeningId);
+  if (!opening) return;
+  const tasks = getOpeningTasks(opening.id);
+  const searchQuery = (val || '').toLowerCase().trim();
+  const filteredTasks = searchQuery
+    ? tasks.filter(t => {
+        return (t.title || '').toLowerCase().includes(searchQuery)
+          || (t.phaseCategory || '').toLowerCase().includes(searchQuery)
+          || (t.owner || '').toLowerCase().includes(searchQuery)
+          || (t.description || '').toLowerCase().includes(searchQuery);
+      })
+    : tasks;
+  const contentEl = document.getElementById('opening-tab-content');
+  if (!contentEl) return;
+  const tabActive = state.openingTab || 'thisweek';
+  if (searchQuery && filteredTasks.length === 0) {
+    contentEl.innerHTML = '<div class="opening-empty"><strong>No matches</strong>No tasks match "' + escHtml(val) + '"</div>';
+  } else if (tabActive === 'thisweek') {
+    renderOpeningThisWeek(contentEl, filteredTasks);
+  } else if (tabActive === 'phases') {
+    renderOpeningPhases(contentEl, filteredTasks);
+  } else if (tabActive === 'byowner') {
+    renderOpeningByOwner(contentEl, filteredTasks);
+  } else if (tabActive === 'gantt') {
+    renderOpeningGantt(contentEl, filteredTasks, opening);
+  }
+  // Update clear button visibility
+  const clearBtn = document.querySelector('.opening-search-clear');
+  if (clearBtn) clearBtn.style.display = searchQuery ? '' : 'none';
 }
 
 function renderOpeningDetail(el) {
@@ -8771,11 +8821,17 @@ function renderOpeningDetail(el) {
       <div class="summary-stat"><span class="label">Progress</span><span class="value green">${pct}%</span></div>
     </div>
 
-    <div class="opening-tabs">
-      <button class="opening-tab ${tabActive === 'thisweek' ? 'active' : ''}" onclick="switchOpeningTab('thisweek')">Upcoming</button>
-      <button class="opening-tab ${tabActive === 'phases' ? 'active' : ''}" onclick="switchOpeningTab('phases')">Phases</button>
-      <button class="opening-tab ${tabActive === 'byowner' ? 'active' : ''}" onclick="switchOpeningTab('byowner')">By Owner</button>
-      <button class="opening-tab ${tabActive === 'gantt' ? 'active' : ''}" onclick="switchOpeningTab('gantt')">Gantt</button>
+    <div class="opening-tabs-row">
+      <div class="opening-tabs">
+        <button class="opening-tab ${tabActive === 'thisweek' ? 'active' : ''}" onclick="switchOpeningTab('thisweek')">Upcoming</button>
+        <button class="opening-tab ${tabActive === 'phases' ? 'active' : ''}" onclick="switchOpeningTab('phases')">Phases</button>
+        <button class="opening-tab ${tabActive === 'byowner' ? 'active' : ''}" onclick="switchOpeningTab('byowner')">By Owner</button>
+        <button class="opening-tab ${tabActive === 'gantt' ? 'active' : ''}" onclick="switchOpeningTab('gantt')">Gantt</button>
+      </div>
+      <div class="opening-search-wrap">
+        <input type="text" class="opening-search" id="opening-search" placeholder="Search tasks..." value="${state._openingSearch || ''}" oninput="onOpeningSearch(this.value)">
+        ${state._openingSearch ? '<button class="opening-search-clear" onclick="onOpeningSearch(\\'\\');document.getElementById(\\'opening-search\\').value=\\'\\'">&#10005;</button>' : ''}
+      </div>
     </div>
 
     <div id="opening-tab-content"></div>
@@ -8783,11 +8839,28 @@ function renderOpeningDetail(el) {
 
   el.innerHTML = html;
 
+  const searchQuery = (state._openingSearch || '').toLowerCase().trim();
+  const filteredTasks = searchQuery
+    ? tasks.filter(t => {
+        return (t.title || '').toLowerCase().includes(searchQuery)
+          || (t.phaseCategory || '').toLowerCase().includes(searchQuery)
+          || (t.owner || '').toLowerCase().includes(searchQuery)
+          || (t.description || '').toLowerCase().includes(searchQuery);
+      })
+    : tasks;
+
   const contentEl = document.getElementById('opening-tab-content');
-  if (tabActive === 'thisweek') renderOpeningThisWeek(contentEl, tasks);
-  else if (tabActive === 'phases') renderOpeningPhases(contentEl, tasks);
-  else if (tabActive === 'byowner') renderOpeningByOwner(contentEl, tasks);
-  else if (tabActive === 'gantt') renderOpeningGantt(contentEl, tasks, opening);
+  if (searchQuery && filteredTasks.length === 0) {
+    contentEl.innerHTML = '<div class="opening-empty"><strong>No matches</strong>No tasks match "' + escHtml(state._openingSearch) + '"</div>';
+  } else if (tabActive === 'thisweek') {
+    renderOpeningThisWeek(contentEl, filteredTasks);
+  } else if (tabActive === 'phases') {
+    renderOpeningPhases(contentEl, filteredTasks);
+  } else if (tabActive === 'byowner') {
+    renderOpeningByOwner(contentEl, filteredTasks);
+  } else if (tabActive === 'gantt') {
+    renderOpeningGantt(contentEl, filteredTasks, opening);
+  }
 }
 
 function openingTaskRow(p) {
@@ -9029,9 +9102,9 @@ function renderOpeningByOwner(el, tasks) {
   });
 
   ownerEntries.sort((a, b) => {
-    // Unassigned first
-    if (!a.owner && b.owner) return -1;
-    if (a.owner && !b.owner) return 1;
+    // Unassigned last
+    if (!a.owner && b.owner) return 1;
+    if (a.owner && !b.owner) return -1;
     // Then by overdue count desc
     if (a.overdue !== b.overdue) return b.overdue - a.overdue;
     // Then alphabetically
