@@ -1193,8 +1193,28 @@
   .opening-phase.open .opening-phase-arrow { transform: rotate(180deg); }
   .opening-phase-body { display: none; border-top: 1px solid var(--border); }
   .opening-phase.open .opening-phase-body { display: block; }
-  .opening-subcat-header { padding: 8px 20px; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm-gray); background: rgba(0,0,0,0.02); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+  .opening-subcat { border-bottom: 1px solid var(--border); }
+  .opening-subcat-header { padding: 8px 20px; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm-gray); background: rgba(0,0,0,0.02); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
+  .opening-subcat-header:hover { background: rgba(0,0,0,0.04); }
   .opening-subcat-count { font-size: 10px; color: var(--warm-gray); opacity: 0.7; }
+  .opening-subcat-arrow { font-size: 8px; color: var(--warm-gray); margin-left: auto; transition: transform 0.2s; }
+  .opening-subcat.open .opening-subcat-arrow { transform: rotate(180deg); }
+  .opening-subcat .opening-task-list { display: none; }
+  .opening-subcat.open .opening-task-list { display: block; }
+
+  /* By Owner view */
+  .opening-owner-group { margin-bottom: 16px; background: var(--cream); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .opening-owner-header { padding: 12px 20px; display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; }
+  .opening-owner-header:hover { background: rgba(0,0,0,0.02); }
+  .opening-owner-name { font-family: 'DM Serif Display', serif; font-size: 16px; color: var(--espresso); }
+  .opening-owner-stats { display: flex; gap: 12px; margin-left: auto; align-items: center; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--warm-gray); }
+  .opening-owner-stat { display: flex; align-items: center; gap: 4px; }
+  .opening-owner-stat .red { color: var(--rust); font-weight: 600; }
+  .opening-owner-stat .green { color: var(--forest); font-weight: 600; }
+  .opening-owner-arrow { font-size: 10px; color: var(--warm-gray); transition: transform 0.2s; }
+  .opening-owner-group.open .opening-owner-arrow { transform: rotate(180deg); }
+  .opening-owner-body { display: none; border-top: 1px solid var(--border); }
+  .opening-owner-group.open .opening-owner-body { display: block; }
 
   /* Opening Gantt */
   .opening-gantt-legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
@@ -3443,7 +3463,7 @@ let state = {
   pendingInboxItemId: null, // set before opening new-task modal from inbox
   openings: [],             // { id, restaurant, name, targetDate }
   activeOpeningId: null,    // currently selected opening
-  openingTab: 'thisweek',   // 'thisweek' | 'phases' | 'gantt'
+  openingTab: 'thisweek',   // 'thisweek' | 'phases' | 'byowner' | 'gantt'
   _openingModalId: null,    // set when add/edit modal is in opening mode
 };
 
@@ -8752,8 +8772,9 @@ function renderOpeningDetail(el) {
     </div>
 
     <div class="opening-tabs">
-      <button class="opening-tab ${tabActive === 'thisweek' ? 'active' : ''}" onclick="switchOpeningTab('thisweek')">This Week</button>
+      <button class="opening-tab ${tabActive === 'thisweek' ? 'active' : ''}" onclick="switchOpeningTab('thisweek')">Upcoming</button>
       <button class="opening-tab ${tabActive === 'phases' ? 'active' : ''}" onclick="switchOpeningTab('phases')">Phases</button>
+      <button class="opening-tab ${tabActive === 'byowner' ? 'active' : ''}" onclick="switchOpeningTab('byowner')">By Owner</button>
       <button class="opening-tab ${tabActive === 'gantt' ? 'active' : ''}" onclick="switchOpeningTab('gantt')">Gantt</button>
     </div>
 
@@ -8765,6 +8786,7 @@ function renderOpeningDetail(el) {
   const contentEl = document.getElementById('opening-tab-content');
   if (tabActive === 'thisweek') renderOpeningThisWeek(contentEl, tasks);
   else if (tabActive === 'phases') renderOpeningPhases(contentEl, tasks);
+  else if (tabActive === 'byowner') renderOpeningByOwner(contentEl, tasks);
   else if (tabActive === 'gantt') renderOpeningGantt(contentEl, tasks, opening);
 }
 
@@ -8779,6 +8801,7 @@ function openingTaskRow(p) {
       <div class="opening-task-info">
         <div class="opening-task-title">${escHtml(p.title)}</div>
         <div class="opening-task-meta">
+          ${p.phase != null ? '<span style="display:inline-block;width:7px;height:7px;border-radius:2px;background:' + PHASE_COLORS[p.phase] + ';vertical-align:middle;margin-right:2px"></span>' : ''}
           ${p.phaseCategory ? '<span class="opening-task-category">' + escHtml(p.phaseCategory) + '</span>' : ''}
           ${p.owner ? '<span class="opening-task-owner">' + escHtml(p.owner) + '</span>' : ''}
         </div>
@@ -8927,9 +8950,14 @@ function renderOpeningPhases(el, tasks) {
         </div>
         <div class="opening-phase-body">`;
 
-    catKeys.forEach(cat => {
+    catKeys.forEach((cat, ci) => {
       const catTasks = byCat[cat];
       const catDone = catTasks.filter(t => t.complete).length;
+      const catHasUrgent = catTasks.some(t => {
+        if (t.complete) return false;
+        const d = daysUntil(dueDate(t));
+        return d !== null && d < 14;
+      });
       // Sort: incomplete first (overdue first, then by due date), then complete
       catTasks.sort((a, b) => {
         if (a.complete !== b.complete) return a.complete ? 1 : -1;
@@ -8938,10 +8966,16 @@ function renderOpeningPhases(el, tasks) {
         return new Date(da + 'T00:00:00') - new Date(db + 'T00:00:00');
       });
 
+      const subcatId = 'subcat-' + ph + '-' + ci;
       html += `
-          <div class="opening-subcat-header">${escHtml(cat)} <span class="opening-subcat-count">${catDone}/${catTasks.length}</span></div>
-          <div class="opening-task-list">
-            ${catTasks.map(t => openingTaskRow(t)).join('')}
+          <div class="opening-subcat ${catHasUrgent ? 'open' : ''}" id="${subcatId}">
+            <div class="opening-subcat-header" onclick="toggleSubcat('${subcatId}')">
+              ${escHtml(cat)} <span class="opening-subcat-count">${catDone}/${catTasks.length}</span>
+              <span class="opening-subcat-arrow">&#9660;</span>
+            </div>
+            <div class="opening-task-list">
+              ${catTasks.map(t => openingTaskRow(t)).join('')}
+            </div>
           </div>`;
     });
 
@@ -8959,6 +8993,95 @@ function renderOpeningPhases(el, tasks) {
 
 function toggleOpeningPhase(ph) {
   const el = document.getElementById('opening-phase-' + ph);
+  if (el) el.classList.toggle('open');
+}
+
+function toggleSubcat(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('open');
+}
+
+// --- BY OWNER ---
+function renderOpeningByOwner(el, tasks) {
+  // Group by owner
+  const byOwner = {};
+  tasks.forEach(t => {
+    const owner = t.owner || '';
+    if (!byOwner[owner]) byOwner[owner] = [];
+    byOwner[owner].push(t);
+  });
+
+  // Sort: unassigned first, then by overdue count desc, then alpha
+  const ownerEntries = Object.entries(byOwner).map(([owner, ownerTasks]) => {
+    const done = ownerTasks.filter(t => t.complete).length;
+    const total = ownerTasks.length;
+    const overdue = ownerTasks.filter(t => {
+      if (t.complete) return false;
+      const d = daysUntil(dueDate(t));
+      return d !== null && d < 0;
+    }).length;
+    const dueSoon = ownerTasks.filter(t => {
+      if (t.complete) return false;
+      const d = daysUntil(dueDate(t));
+      return d !== null && d >= 0 && d <= 14;
+    }).length;
+    return { owner, tasks: ownerTasks, done, total, overdue, dueSoon };
+  });
+
+  ownerEntries.sort((a, b) => {
+    // Unassigned first
+    if (!a.owner && b.owner) return -1;
+    if (a.owner && !b.owner) return 1;
+    // Then by overdue count desc
+    if (a.overdue !== b.overdue) return b.overdue - a.overdue;
+    // Then alphabetically
+    return a.owner.localeCompare(b.owner);
+  });
+
+  let html = '';
+
+  ownerEntries.forEach((g, idx) => {
+    const displayName = g.owner || 'Unassigned';
+    const pct = g.total > 0 ? Math.round((g.done / g.total) * 100) : 0;
+    const hasUrgent = g.overdue > 0 || g.dueSoon > 0;
+    const groupId = 'owner-group-' + idx;
+
+    // Sort tasks: incomplete overdue first, then by due date, then complete
+    g.tasks.sort((a, b) => {
+      if (a.complete !== b.complete) return a.complete ? 1 : -1;
+      const da = dueDate(a), db = dueDate(b);
+      if (!da && !db) return 0; if (!da) return 1; if (!db) return -1;
+      return new Date(da + 'T00:00:00') - new Date(db + 'T00:00:00');
+    });
+
+    html += `
+      <div class="opening-owner-group ${hasUrgent ? 'open' : ''}" id="${groupId}">
+        <div class="opening-owner-header" onclick="toggleOwnerGroup('${groupId}')">
+          <div class="opening-owner-name">${escHtml(displayName)}</div>
+          <div class="opening-owner-stats">
+            ${g.overdue > 0 ? `<div class="opening-owner-stat"><span class="red">${g.overdue} overdue</span></div>` : ''}
+            ${g.dueSoon > 0 ? `<div class="opening-owner-stat">${g.dueSoon} due soon</div>` : ''}
+            <div class="opening-owner-stat"><span class="green">${g.done}/${g.total}</span> (${pct}%)</div>
+          </div>
+          <span class="opening-owner-arrow">&#9660;</span>
+        </div>
+        <div class="opening-owner-body">
+          <div class="opening-task-list">
+            ${g.tasks.map(t => openingTaskRow(t)).join('')}
+          </div>
+        </div>
+      </div>`;
+  });
+
+  if (!html) {
+    html = '<div class="opening-empty"><strong>No tasks</strong>No tasks found for this opening.</div>';
+  }
+
+  el.innerHTML = html;
+}
+
+function toggleOwnerGroup(id) {
+  const el = document.getElementById(id);
   if (el) el.classList.toggle('open');
 }
 
