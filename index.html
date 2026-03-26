@@ -3811,20 +3811,20 @@ function renderSummary() {
 // ============================================================
 function renderTabs() {
   const wrapper = document.getElementById('tabs-wrapper');
-  // Exclude restaurants that only exist as openings (no regular tasks)
-  const openingRestaurants = new Set(state.openings.map(o => o.restaurant));
-  const filteredRestaurants = state.restaurants.filter(r => {
-    if (!openingRestaurants.has(r)) return true;
-    // Keep if there are regular (non-opening) tasks for this restaurant
-    return state.projects.some(p => p.restaurant === r && !p.openingId && !p.archived);
+  // Exclude restaurants that ONLY exist as openings (no regular tasks at all)
+  const openingOnlyRestaurants = new Set();
+  state.openings.forEach(o => {
+    const hasRegularTasks = state.projects.some(p => p.restaurant === o.restaurant && !p.openingId);
+    if (!hasRegularTasks) openingOnlyRestaurants.add(o.restaurant);
   });
+  const filteredRestaurants = state.restaurants.filter(r => !openingOnlyRestaurants.has(r));
   const tabs = ['all', ...filteredRestaurants];
   const restaurantTabs = tabs.map(t => {
     const isAll  = t === 'all';
     const label  = isAll ? 'All Restaurants' : t;
     const count  = isAll
-      ? state.projects.filter(p => !p.complete && !p.openingId).length
-      : state.projects.filter(p => p.restaurant === t && !p.complete && !p.openingId).length;
+      ? state.projects.filter(p => !p.complete && !p.openingId && !p.archived).length
+      : state.projects.filter(p => p.restaurant === t && !p.complete && !p.openingId && !p.archived).length;
     return `<button class="tab ${state.activeTab === t ? 'active' : ''}" onclick="switchTab('${t}')">
       ${label} <span class="badge">${count}</span>
     </button>`;
