@@ -1123,6 +1123,90 @@
   .gantt-legend-dot { width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0; }
   .gantt-mobile-notice { display: none; }
 
+  /* ============================================================
+     OPENINGS VIEW
+     ============================================================ */
+  .openings-view { padding: 32px 40px; }
+
+  /* Opening selector cards */
+  .opening-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin-top: 8px; }
+  .opening-card { background: white; border: 1px solid var(--border); padding: 24px; cursor: pointer; transition: all 0.2s; }
+  .opening-card:hover { border-color: var(--rust); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .opening-card-name { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 400; margin-bottom: 4px; }
+  .opening-card-restaurant { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; }
+  .opening-card-date { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--ink-light); margin-bottom: 12px; }
+  .opening-card-progress-bar { height: 4px; background: var(--parchment); border-radius: 2px; overflow: hidden; }
+  .opening-card-progress-fill { height: 100%; background: var(--sage); border-radius: 2px; transition: width 0.3s; }
+  .opening-card-stats { display: flex; gap: 16px; margin-top: 8px; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--warm-gray); }
+  .opening-card-stats .stat-red { color: var(--rust); }
+
+  /* Opening detail header */
+  .opening-back { background: none; border: none; font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--warm-gray); cursor: pointer; padding: 4px 0; margin-bottom: 12px; transition: color 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+  .opening-back:hover { color: var(--rust); }
+  .opening-header { margin-bottom: 24px; }
+  .opening-header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .opening-title { font-family: 'Cormorant Garamond', serif; font-size: 34px; font-weight: 300; }
+  .opening-meta { display: flex; gap: 24px; margin-top: 8px; flex-wrap: wrap; }
+  .opening-meta-item { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--warm-gray); }
+  .opening-meta-item strong { color: var(--ink); font-weight: 500; }
+
+  /* Opening summary bar */
+  .opening-summary { background: var(--parchment); border: 1px solid var(--border); padding: 16px 24px; display: flex; gap: 32px; align-items: center; flex-wrap: wrap; margin-bottom: 24px; }
+
+  /* Sub-tabs within an opening */
+  .opening-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 24px; }
+  .opening-tab { padding: 10px 20px; font-family: 'DM Mono', monospace; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm-gray); cursor: pointer; border: none; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; background: none; }
+  .opening-tab:hover { color: var(--ink); }
+  .opening-tab.active { color: var(--rust); border-bottom-color: var(--rust); }
+
+  /* This Week / Phases section headers */
+  .opening-section { margin-bottom: 28px; }
+  .opening-section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .opening-section-title { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 400; }
+  .opening-section-count { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--warm-gray); background: rgba(0,0,0,0.04); padding: 2px 8px; border-radius: 2px; }
+  .opening-section-title.overdue { color: var(--rust); }
+
+  /* Task rows (shared by This Week + Phases) */
+  .opening-task-list { border: 1px solid var(--border); background: white; }
+  .opening-task-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.15s; }
+  .opening-task-row:last-child { border-bottom: none; }
+  .opening-task-row:hover { background: rgba(196,154,60,0.06); }
+  .opening-task-row.done { opacity: 0.5; }
+  .opening-task-info { flex: 1; min-width: 0; }
+  .opening-task-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; line-height: 1.3; }
+  .opening-task-meta { display: flex; gap: 8px; margin-top: 3px; align-items: center; flex-wrap: wrap; }
+  .opening-task-category { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--warm-gray); }
+  .opening-task-owner { font-size: 13px; color: var(--ink-light); }
+  .opening-task-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+
+  /* Phase accordion sections */
+  .opening-phase { margin-bottom: 8px; border: 1px solid var(--border); background: white; }
+  .opening-phase-header { display: flex; align-items: center; gap: 12px; padding: 14px 20px; cursor: pointer; transition: background 0.15s; user-select: none; }
+  .opening-phase-header:hover { background: var(--parchment); }
+  .opening-phase-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+  .opening-phase-name { font-family: 'Instrument Sans', sans-serif; font-size: 15px; font-weight: 600; flex: 1; }
+  .opening-phase-stats { display: flex; align-items: center; gap: 12px; }
+  .opening-phase-progress { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--warm-gray); }
+  .opening-phase-progress-bar { width: 80px; height: 4px; background: var(--parchment); border-radius: 2px; overflow: hidden; }
+  .opening-phase-progress-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+  .opening-phase-arrow { color: var(--warm-gray); font-size: 12px; transition: transform 0.2s; }
+  .opening-phase.open .opening-phase-arrow { transform: rotate(180deg); }
+  .opening-phase-body { display: none; border-top: 1px solid var(--border); }
+  .opening-phase.open .opening-phase-body { display: block; }
+  .opening-subcat-header { padding: 8px 20px; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm-gray); background: rgba(0,0,0,0.02); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+  .opening-subcat-count { font-size: 10px; color: var(--warm-gray); opacity: 0.7; }
+
+  /* Opening Gantt */
+  .opening-gantt-legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+  .opening-gantt-legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-light); }
+  .opening-gantt-legend-dot { width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0; }
+  .opening-gantt-milestone { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--gold); z-index: 4; pointer-events: none; }
+  .opening-gantt-milestone::before { content: 'OPENING DAY'; position: absolute; top: -18px; left: 4px; font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.1em; color: var(--gold); white-space: nowrap; }
+
+  /* No tasks empty state */
+  .opening-empty { padding: 40px; text-align: center; color: var(--warm-gray); font-size: 15px; }
+  .opening-empty strong { display: block; font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--ink-light); margin-bottom: 4px; font-weight: 300; }
+
   .admin-view { display: none; padding: 32px 40px; }
   .admin-view.active { display: block; }
   .projects-view { display: block; }
@@ -1609,7 +1693,7 @@
     .header-sub { display: none; }
     .header-actions { margin-left: auto; gap: 6px; flex-shrink: 0; }
     /* Hide text buttons in header; keep + New Task and hamburger */
-    #btn-add-restaurant, #btn-print-report { display: none; }
+    #btn-add-restaurant, #btn-print-report, #btn-export-tasks { display: none; }
     .header-actions .btn-ghost[onclick*="logout"] { display: none; }
     .btn-primary, .btn-ghost { min-height: 44px; min-width: 44px; padding: 8px 14px; font-size: 11px; }
 
@@ -2722,6 +2806,7 @@
     <button class="btn-primary" id="btn-new-project" onclick="openAddModal()">+ New Task</button>
     <span class="overdue-badge" id="overdue-badge" style="display:none" title="Show overdue tasks" onclick="showOverdueTasks()"></span>
     <button class="btn-ghost" id="btn-print-report" onclick="printReport()" title="Print / Save as PDF">&#128438; Weekly Report</button>
+    <button class="btn-ghost" id="btn-export-tasks" onclick="exportRestaurantTasks()" title="Export open tasks to CSV">&#128229; Export Tasks</button>
     <button class="btn-ghost" onclick="logout()" style="margin-left:4px;font-size:11px;opacity:0.7">Sign Out</button>
     <button class="mobile-menu-btn" id="mobile-menu-btn" onclick="toggleMobileNav()" aria-label="Open navigation menu">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
@@ -2740,6 +2825,7 @@
   <div style="padding:16px 20px;margin-top:auto;border-top:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;gap:8px;">
     <button class="mobile-nav-item" onclick="openRestaurantModal();closeMobileNav()">+ Restaurant</button>
     <button class="mobile-nav-item" onclick="printReport();closeMobileNav()">&#128438; Weekly Report</button>
+    <button class="mobile-nav-item" onclick="exportRestaurantTasks();closeMobileNav()">&#128229; Export Tasks</button>
     <button class="mobile-nav-item" onclick="logout()" style="color:var(--warm-gray);font-size:11px;">Sign Out</button>
   </div>
 </div>
@@ -2894,6 +2980,11 @@
 <div class="gantt-view" id="gantt-view" style="display:none; padding: 32px 40px;">
   <div class="gantt-mobile-notice">&#9888; Gantt chart is best viewed on a desktop or larger screen.</div>
   <div id="gantt-content"></div>
+</div>
+
+<!-- OPENINGS VIEW -->
+<div class="openings-view" id="openings-view" style="display:none">
+  <div id="openings-content"></div>
 </div>
 
 <!-- TRAVEL CALENDAR VIEW -->
@@ -3333,6 +3424,9 @@ let state = {
   agendaItems: [],
   restaurantMeta: {},       // { 'LEOLA': { next_meeting_date: '2026-03-20' }, ... }
   pendingInboxItemId: null, // set before opening new-task modal from inbox
+  openings: [],             // { id, restaurant, name, targetDate }
+  activeOpeningId: null,    // currently selected opening
+  openingTab: 'thisweek',   // 'thisweek' | 'phases' | 'gantt'
 };
 
 // ============================================================
@@ -3365,6 +3459,7 @@ async function loadAll() {
     { data: subtasks    },
     { data: agendaItems },
     { data: inboxRequests },
+    { data: openingsData },
   ] = await Promise.all([
     db.from('restaurants').select('name, next_meeting_date').order('sort_order'),
     db.from('categories' ).select('name').order('sort_order'),
@@ -3375,12 +3470,19 @@ async function loadAll() {
     db.from('subtasks'   ).select('*').order('sort_order'),
     db.from('agenda_items').select('*').order('created_at'),
     db.from('inbox_requests').select('*').order('created_at', { ascending: false }),
+    db.from('openings'   ).select('*').order('created_at'),
   ]);
 
   state.restaurants = (restaurants || []).map(r => r.name);
   state.categories  = (categories  || []).map(c => c.name);
   state.types       = (types       || []).map(t => t.name);
   state.owners      = (owners      || []).map(o => o.name);
+
+  // Load openings
+  state.openings = (openingsData || []).map(o => ({
+    id: o.id, restaurant: o.restaurant, name: o.name,
+    targetDate: o.target_date, createdAt: o.created_at,
+  }));
 
   // Build restaurant meta (next_meeting_date, etc.)
   state.restaurantMeta = {};
@@ -3413,27 +3515,38 @@ async function loadAll() {
     });
   });
 
-  state.projects = (projects || []).map(p => ({
-    id:          p.id,
-    restaurant:  p.restaurant,
-    title:       p.title,
-    category:    p.category   || '',
-    type:        p.type       || '',
-    description: p.description|| '',
-    owner:       p.owner      || '',
-    priority:    p.priority   || 'Medium',
-    weeks:       p.weeks,
-    dateAdded:   p.date_added,
-    complete:    p.complete   || false,
-    link:        p.link       || '',
-    dueDate:     p.due_date   || null,
-    updatedAt:   p.updated_at  || null,
-    createdAt:   p.created_at  || null,
-    archived:    p.archived    || false,
-    isComplex:   p.is_complex  || false,
-    notes:       notesByProject[p.id] || [],
-    subtasks:    [],
-  }));
+  state.projects = (projects || []).map(p => {
+    // Parse phase sub-category from description: [Phase N -- Category Name]
+    let phaseCategory = '';
+    if (p.opening_id && p.description) {
+      const m = p.description.match(/\[Phase \d+ -- ([^\]]+)\]/);
+      if (m) phaseCategory = m[1].trim();
+    }
+    return {
+      id:          p.id,
+      restaurant:  p.restaurant,
+      title:       p.title,
+      category:    p.category   || '',
+      type:        p.type       || '',
+      description: p.description|| '',
+      owner:       p.owner      || '',
+      priority:    p.priority   || 'Medium',
+      weeks:       p.weeks,
+      dateAdded:   p.date_added,
+      complete:    p.complete   || false,
+      link:        p.link       || '',
+      dueDate:     p.due_date   || null,
+      updatedAt:   p.updated_at  || null,
+      createdAt:   p.created_at  || null,
+      archived:    p.archived    || false,
+      isComplex:   p.is_complex  || false,
+      openingId:   p.opening_id  || null,
+      phase:       p.phase != null ? p.phase : null,
+      phaseCategory: phaseCategory,
+      notes:       notesByProject[p.id] || [],
+      subtasks:    [],
+    };
+  });
 
   // Merge subtasks into projects
   const subtasksByProject = {};
@@ -3455,7 +3568,7 @@ async function loadAll() {
 }
 
 async function dbUpsertProject(p) {
-  const { error } = await db.from('projects').upsert({
+  const row = {
     id:          p.id,
     restaurant:  p.restaurant,
     title:       p.title,
@@ -3471,7 +3584,10 @@ async function dbUpsertProject(p) {
     link:        p.link       || null,
     is_complex:  p.isComplex  || false,
     archived:    p.archived   || false,
-  });
+    opening_id:  p.openingId  || null,
+    phase:       p.phase != null ? p.phase : null,
+  };
+  const { error } = await db.from('projects').upsert(row);
   if (error) throw error;
 }
 
@@ -3625,7 +3741,7 @@ function showToast(message, type = 'success') {
 // ============================================================
 function renderSummary() {
   const ownRest = state.session && state.session.role === 'restaurant' ? state.session.restaurant : null;
-  const baseProjects = state.projects.filter(p => !p.archived && (!ownRest || p.restaurant === ownRest));
+  const baseProjects = state.projects.filter(p => !p.archived && !p.openingId && (!ownRest || p.restaurant === ownRest));
   const open    = baseProjects.filter(p => !p.complete);
   const overdue = open.filter(p => { const d = daysUntil(dueDate(p)); return d !== null && d < 0; }).length;
   const soon    = open.filter(p => { const d = daysUntil(dueDate(p)); return d !== null && d >= 0 && d <= 7; }).length;
@@ -3687,6 +3803,7 @@ function renderTabs() {
   }
 
   const travelTab = `<button class="tab ${state.activeTab === '__travel__' ? 'active' : ''}" onclick="switchTab('__travel__')">&#9992; Travel</button>`;
+  const openingsTab = isAdmin && state.openings.length > 0 ? `<button class="tab ${state.activeTab === '__openings__' ? 'active' : ''}" onclick="switchTab('__openings__')">&#127959; Openings</button>` : '';
   const isRestaurant = state.session && state.session.role === 'restaurant';
   const inboxTab = isRestaurant ? `<button class="tab ${state.activeTab === '__inbox__' ? 'active' : ''}" onclick="switchTab('__inbox__')">&#128235; Submit New Task Request</button>` : '';
 
@@ -3696,7 +3813,7 @@ function renderTabs() {
   // Utility tabs go in secondary row
   const utilityWrapper = document.getElementById('tabs-utility');
   if (utilityWrapper) {
-    utilityWrapper.innerHTML = (isAdmin ? adminInboxTab : '') + ganttTab + recentTab + (isAdmin ? travelTab : '') + (isAdmin ? analyticsTab : '') + inboxTab + (isAdmin ? adminTab : '');
+    utilityWrapper.innerHTML = (isAdmin ? adminInboxTab : '') + (isAdmin ? openingsTab : '') + ganttTab + recentTab + (isAdmin ? travelTab : '') + (isAdmin ? analyticsTab : '') + inboxTab + (isAdmin ? adminTab : '');
   }
 
   // Also update mobile nav drawer
@@ -3744,6 +3861,7 @@ function renderMobileNav() {
   html += `<button class="mobile-nav-item ${state.activeTab === '__gantt__' ? 'active' : ''}" onclick="switchTab('__gantt__');closeMobileNav()">&#9638; Gantt</button>`;
   html += `<button class="mobile-nav-item ${state.activeTab === '__recent__' ? 'active' : ''}" onclick="switchTab('__recent__');closeMobileNav()">&#128197; Recent</button>`;
   if (isAdmin) {
+    if (state.openings.length > 0) html += `<button class="mobile-nav-item ${state.activeTab === '__openings__' ? 'active' : ''}" onclick="switchTab('__openings__');closeMobileNav()">&#127959; Openings</button>`;
     html += `<button class="mobile-nav-item ${state.activeTab === '__travel__' ? 'active' : ''}" onclick="switchTab('__travel__');closeMobileNav()">&#9992; Travel</button>`;
     html += `<button class="mobile-nav-item ${state.activeTab === '__analytics__' ? 'active' : ''}" onclick="switchTab('__analytics__');closeMobileNav()">&#128200; Analytics</button>`;
     html += `<button class="mobile-nav-item ${state.activeTab === '__admin__' ? 'active' : ''}" onclick="switchTab('__admin__');closeMobileNav()">&#9881; Admin</button>`;
@@ -3823,6 +3941,7 @@ function switchTab(tab) {
   const adminInboxEl  = document.getElementById('admin-inbox-view');
   const recentEl      = document.getElementById('recent-view');
   const agendaEl      = document.getElementById('agenda-restaurant-view');
+  const openingsEl    = document.getElementById('openings-view');
 
   projectsEl.style.display = 'none';
   if (filterBar)     filterBar.style.display     = 'none';
@@ -3836,8 +3955,12 @@ function switchTab(tab) {
   if (inboxEl) inboxEl.style.display = 'none';
   if (adminInboxEl) adminInboxEl.style.display = 'none';
   if (agendaEl) agendaEl.style.display = 'none';
+  if (openingsEl) openingsEl.style.display = 'none';
 
-  if (tab === '__recent__') {
+  if (tab === '__openings__') {
+    if (openingsEl) openingsEl.style.display = 'block';
+    renderOpeningsView();
+  } else if (tab === '__recent__') {
     renderRecentView();
   } else if (tab === '__admin__') {
     adminEl.style.display = 'block';
@@ -3890,7 +4013,7 @@ function restaurantColorIndex(name) {
 function getFilteredProjects() {
   // Restrict to own restaurant for restaurant role
   const ownRest = state.session && state.session.role === 'restaurant' ? state.session.restaurant : null;
-  let projects = state.projects.filter(p => !p.archived);
+  let projects = state.projects.filter(p => !p.archived && !p.openingId);
   projects = state.activeTab === 'all'
     ? (ownRest ? projects.filter(p => p.restaurant === ownRest) : projects)
     : projects.filter(p => p.restaurant === state.activeTab);
@@ -5151,11 +5274,16 @@ function closeDetail() {
   document.getElementById('detail-overlay').classList.remove('open');
   document.getElementById('detail-panel').classList.remove('open');
   state.detailProjectId = null;
+  // Refresh openings view if active
+  if (state.activeTab === '__openings__') renderOpeningsView();
 }
 
 function toggleCompleteFromPanel() {
   if (state.detailProjectId) {
-    toggleComplete(state.detailProjectId).then(() => openDetail(state.detailProjectId));
+    toggleComplete(state.detailProjectId).then(() => {
+      openDetail(state.detailProjectId);
+      if (state.activeTab === '__openings__') renderOpeningsView();
+    });
   }
 }
 
@@ -6095,6 +6223,67 @@ function exportData() {
   URL.revokeObjectURL(url);
 }
 
+function exportRestaurantTasks() {
+  const ownRest = state.session && state.session.role === 'restaurant' ? state.session.restaurant : null;
+  const tab = state.activeTab;
+  const isSpecific = tab !== 'all' && tab !== '__gantt__' && tab !== '__recent__' && tab !== '__analytics__' && tab !== '__admin__' && tab !== '__admin_inbox__' && tab !== '__travel__' && tab !== '__inbox__';
+  const restaurant = isSpecific ? tab : ownRest;
+
+  let projects = state.projects.filter(p => !p.archived && !p.complete);
+  if (restaurant) {
+    projects = projects.filter(p => p.restaurant === restaurant);
+  }
+
+  projects = projects.sort((a, b) => {
+    const da = dueDate(a) || '9999-12-31';
+    const db = dueDate(b) || '9999-12-31';
+    return da.localeCompare(db);
+  });
+
+  const csvEscape = v => {
+    const s = String(v == null ? '' : v);
+    return s.includes(',') || s.includes('"') || s.includes('\n') ? '"' + s.replace(/"/g, '""') + '"' : s;
+  };
+
+  const headers = ['Restaurant', 'Project', 'Category', 'Type', 'Owner', 'Priority', 'Due Date', 'Status', 'Latest Note'];
+  const rows = [headers.join(',')];
+
+  projects.forEach(p => {
+    const due = dueDate(p);
+    const days = daysUntil(due);
+    let status = '';
+    if (days !== null && days < 0) status = 'Overdue';
+    else if (days !== null && days <= 7) status = 'Due Soon';
+    else if (days !== null) status = 'On Track';
+    else status = 'No Due Date';
+
+    const latestNote = p.notes && p.notes.length > 0 ? p.notes[p.notes.length - 1].text : '';
+
+    rows.push([
+      csvEscape(p.restaurant),
+      csvEscape(p.title),
+      csvEscape(p.category),
+      csvEscape(p.type),
+      csvEscape(p.owner),
+      csvEscape(p.priority),
+      csvEscape(due ? formatDate(due) : ''),
+      csvEscape(status),
+      csvEscape(latestNote)
+    ].join(','));
+  });
+
+  const csv = rows.join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const label = restaurant ? restaurant.replace(/\s+/g, '-').toLowerCase() : 'all-restaurants';
+  a.download = `open-tasks-${label}-${today()}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast(`Exported ${projects.length} open task${projects.length !== 1 ? 's' : ''}`, 'success');
+}
+
 async function importData(input) {
   const file = input.files[0];
   if (!file) return;
@@ -6183,8 +6372,8 @@ function renderGanttView() {
   for (let d = new Date(todayDate); d <= endDate; d.setDate(d.getDate()+1)) days.push(new Date(d));
 
   const ganttBase = state.session && state.session.role === 'restaurant'
-    ? state.projects.filter(p => p.restaurant === state.session.restaurant)
-    : state.projects;
+    ? state.projects.filter(p => !p.openingId && p.restaurant === state.session.restaurant)
+    : state.projects.filter(p => !p.openingId);
   let projects = ganttBase.filter(p => {
     if (!p.dateAdded) return false;
     const due = getDueDate(p);
@@ -8276,10 +8465,12 @@ function applySessionGating() {
   if (btnNew)    btnNew.style.display    = isAdmin ? '' : 'none';
   if (btnRest)   btnRest.style.display   = isAdmin ? '' : 'none';
   if (btnReport) btnReport.style.display = isAdmin ? '' : 'none';
+  var btnExport = document.getElementById('btn-export-tasks');
+  if (btnExport) btnExport.style.display = (isAdmin || (state.session && state.session.role === 'restaurant')) ? '' : 'none';
   // Overdue badge — respects restaurant role filter, excludes archived
   var visibleProjects = state.session && state.session.role === 'restaurant'
-    ? state.projects.filter(function(p){ return !p.archived && p.restaurant === state.session.restaurant; })
-    : state.projects.filter(function(p){ return !p.archived; });
+    ? state.projects.filter(function(p){ return !p.archived && !p.openingId && p.restaurant === state.session.restaurant; })
+    : state.projects.filter(function(p){ return !p.archived && !p.openingId; });
   var overdueCount = visibleProjects.filter(function(p) {
     if (p.complete) return false;
     var d = daysUntil(dueDate(p));
@@ -8303,6 +8494,489 @@ function renderFilterDropdowns() {
   const usedOwners= [...new Set(state.projects.map(p => p.owner).filter(Boolean))].sort();
   ownerSel.innerHTML = '<option value="">All</option>' +
     usedOwners.map(o => `<option value="${o}" ${o === curOwner ? 'selected' : ''}>${o}</option>`).join('');
+}
+
+// ============================================================
+// OPENINGS VIEW
+// ============================================================
+const PHASE_COLORS = ['#8B3A1E', '#3A5C6B', '#5C4A2E', '#3B5241'];
+const PHASE_LABELS = ['Phase 0', 'Phase 1', 'Phase 2', 'Phase 3'];
+
+function getOpeningTasks(openingId) {
+  return state.projects.filter(p => p.openingId === openingId && !p.archived);
+}
+
+function renderOpeningsView() {
+  const el = document.getElementById('openings-content');
+  if (!el) return;
+
+  if (state.activeOpeningId) {
+    renderOpeningDetail(el);
+  } else {
+    renderOpeningSelector(el);
+  }
+}
+
+function renderOpeningSelector(el) {
+  let html = '<div class="page-title">Openings</div><div class="opening-cards">';
+
+  state.openings.forEach(o => {
+    const tasks = getOpeningTasks(o.id);
+    const total = tasks.length;
+    const done = tasks.filter(t => t.complete).length;
+    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+    const overdue = tasks.filter(t => {
+      if (t.complete) return false;
+      const d = daysUntil(dueDate(t));
+      return d !== null && d < 0;
+    }).length;
+    const targetStr = new Date(o.targetDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    const daysLeft = daysUntil(o.targetDate);
+
+    html += `
+      <div class="opening-card" onclick="openOpeningDetail('${o.id}')">
+        <div class="opening-card-restaurant">${o.restaurant}</div>
+        <div class="opening-card-name">${o.name}</div>
+        <div class="opening-card-date">Target: ${targetStr}${daysLeft !== null ? ' &middot; ' + daysLeft + ' days' : ''}</div>
+        <div class="opening-card-progress-bar"><div class="opening-card-progress-fill" style="width:${pct}%"></div></div>
+        <div class="opening-card-stats">
+          <span>${done}/${total} complete (${pct}%)</span>
+          ${overdue > 0 ? '<span class="stat-red">' + overdue + ' overdue</span>' : ''}
+        </div>
+      </div>`;
+  });
+
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+function openOpeningDetail(id) {
+  state.activeOpeningId = id;
+  renderOpeningsView();
+}
+
+function closeOpeningDetail() {
+  state.activeOpeningId = null;
+  state.openingTab = 'thisweek';
+  renderOpeningsView();
+}
+
+function switchOpeningTab(tab) {
+  state.openingTab = tab;
+  renderOpeningsView();
+}
+
+function renderOpeningDetail(el) {
+  const opening = state.openings.find(o => o.id === state.activeOpeningId);
+  if (!opening) { closeOpeningDetail(); return; }
+
+  const tasks = getOpeningTasks(opening.id);
+  const total = tasks.length;
+  const done = tasks.filter(t => t.complete).length;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  const overdue = tasks.filter(t => !t.complete && daysUntil(dueDate(t)) !== null && daysUntil(dueDate(t)) < 0).length;
+  const dueSoon = tasks.filter(t => !t.complete && daysUntil(dueDate(t)) !== null && daysUntil(dueDate(t)) >= 0 && daysUntil(dueDate(t)) <= 14).length;
+  const high = tasks.filter(t => !t.complete && t.priority === 'High').length;
+  const targetStr = new Date(opening.targetDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  const daysLeft = daysUntil(opening.targetDate);
+
+  const tabActive = state.openingTab || 'thisweek';
+
+  let html = `
+    <button class="opening-back" onclick="closeOpeningDetail()">&larr; All Openings</button>
+    <div class="opening-header">
+      <div class="opening-header-top">
+        <div>
+          <div class="opening-title">${opening.name}</div>
+          <div class="opening-meta">
+            <span class="opening-meta-item">Opening: <strong>${targetStr}</strong></span>
+            ${daysLeft !== null ? '<span class="opening-meta-item"><strong>' + daysLeft + ' days</strong> remaining</span>' : ''}
+            <span class="opening-meta-item"><strong>${total}</strong> tasks</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="opening-summary">
+      <div class="summary-stat"><span class="label">Complete</span><span class="value green">${done}/${total}</span></div>
+      <div class="divider"></div>
+      <div class="summary-stat"><span class="label">Overdue</span><span class="value red">${overdue}</span></div>
+      <div class="summary-stat"><span class="label">Due ≤ 14 days</span><span class="value orange">${dueSoon}</span></div>
+      <div class="divider"></div>
+      <div class="summary-stat"><span class="label">High Priority</span><span class="value">${high}</span></div>
+      <div class="divider"></div>
+      <div class="summary-stat"><span class="label">Progress</span><span class="value green">${pct}%</span></div>
+    </div>
+
+    <div class="opening-tabs">
+      <button class="opening-tab ${tabActive === 'thisweek' ? 'active' : ''}" onclick="switchOpeningTab('thisweek')">This Week</button>
+      <button class="opening-tab ${tabActive === 'phases' ? 'active' : ''}" onclick="switchOpeningTab('phases')">Phases</button>
+      <button class="opening-tab ${tabActive === 'gantt' ? 'active' : ''}" onclick="switchOpeningTab('gantt')">Gantt</button>
+    </div>
+
+    <div id="opening-tab-content"></div>
+  `;
+
+  el.innerHTML = html;
+
+  const contentEl = document.getElementById('opening-tab-content');
+  if (tabActive === 'thisweek') renderOpeningThisWeek(contentEl, tasks);
+  else if (tabActive === 'phases') renderOpeningPhases(contentEl, tasks);
+  else if (tabActive === 'gantt') renderOpeningGantt(contentEl, tasks, opening);
+}
+
+function openingTaskRow(p) {
+  const isComplete = p.complete;
+  const isAdmin = state.session && state.session.role === 'admin';
+  return `
+    <div class="opening-task-row ${isComplete ? 'done' : ''}" onclick="openDetail('${p.id}')">
+      <div onclick="event.stopPropagation()">
+        ${isAdmin ? '<div class="complete-toggle ' + (isComplete ? 'done' : '') + '" onclick="toggleOpeningComplete(\'' + p.id + '\')"></div>' : '<div style="width:18px"></div>'}
+      </div>
+      <div class="opening-task-info">
+        <div class="opening-task-title">${escHtml(p.title)}</div>
+        <div class="opening-task-meta">
+          ${p.phaseCategory ? '<span class="opening-task-category">' + escHtml(p.phaseCategory) + '</span>' : ''}
+          ${p.owner ? '<span class="opening-task-owner">' + escHtml(p.owner) + '</span>' : ''}
+        </div>
+      </div>
+      <div class="opening-task-right">
+        ${dueBadge(p)}
+        ${p.priority ? '<span class="priority-badge ' + p.priority.toLowerCase() + '">' + p.priority + '</span>' : ''}
+      </div>
+    </div>`;
+}
+
+async function toggleOpeningComplete(id) {
+  await toggleComplete(id);
+  renderOpeningsView();
+}
+
+// --- THIS WEEK ---
+function renderOpeningThisWeek(el, tasks) {
+  const todayStr = today();
+  const now = new Date(todayStr + 'T00:00:00');
+
+  // Overdue tasks (not complete, due date in past)
+  const overdueTasks = tasks.filter(t => {
+    if (t.complete) return false;
+    const d = daysUntil(dueDate(t));
+    return d !== null && d < 0;
+  }).sort((a, b) => {
+    const da = new Date(dueDate(a) + 'T00:00:00'), db = new Date(dueDate(b) + 'T00:00:00');
+    return da - db;
+  });
+
+  // Due within 14 days (not complete, due in 0-14 days)
+  const upcomingTasks = tasks.filter(t => {
+    if (t.complete) return false;
+    const d = daysUntil(dueDate(t));
+    return d !== null && d >= 0 && d <= 14;
+  }).sort((a, b) => {
+    const da = new Date(dueDate(a) + 'T00:00:00'), db = new Date(dueDate(b) + 'T00:00:00');
+    return da - db;
+  });
+
+  let html = '';
+
+  if (overdueTasks.length === 0 && upcomingTasks.length === 0) {
+    html = '<div class="opening-empty"><strong>All clear</strong>No overdue or upcoming tasks in the next two weeks.</div>';
+    el.innerHTML = html;
+    return;
+  }
+
+  // Overdue section
+  if (overdueTasks.length > 0) {
+    html += `
+      <div class="opening-section">
+        <div class="opening-section-header">
+          <div class="opening-section-title overdue">Overdue</div>
+          <span class="opening-section-count">${overdueTasks.length}</span>
+        </div>
+        <div class="opening-task-list">
+          ${overdueTasks.map(t => openingTaskRow(t)).join('')}
+        </div>
+      </div>`;
+  }
+
+  // Upcoming — group by phase
+  if (upcomingTasks.length > 0) {
+    // Group by phase
+    const byPhase = {};
+    upcomingTasks.forEach(t => {
+      const ph = t.phase != null ? t.phase : -1;
+      if (!byPhase[ph]) byPhase[ph] = [];
+      byPhase[ph].push(t);
+    });
+
+    html += `
+      <div class="opening-section">
+        <div class="opening-section-header">
+          <div class="opening-section-title">Due Next 14 Days</div>
+          <span class="opening-section-count">${upcomingTasks.length}</span>
+        </div>`;
+
+    Object.keys(byPhase).sort((a, b) => a - b).forEach(ph => {
+      const phTasks = byPhase[ph];
+      const phLabel = ph >= 0 ? PHASE_LABELS[ph] || 'Phase ' + ph : 'No Phase';
+      const color = ph >= 0 ? PHASE_COLORS[ph] || '#888' : '#888';
+      html += `
+        <div style="margin-bottom:4px">
+          <div style="display:flex;align-items:center;gap:8px;padding:6px 0;margin-bottom:2px">
+            <div style="width:8px;height:8px;border-radius:2px;background:${color};flex-shrink:0"></div>
+            <span style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--warm-gray)">${phLabel}</span>
+          </div>
+          <div class="opening-task-list">
+            ${phTasks.map(t => openingTaskRow(t)).join('')}
+          </div>
+        </div>`;
+    });
+
+    html += '</div>';
+  }
+
+  el.innerHTML = html;
+}
+
+// --- PHASES ---
+function renderOpeningPhases(el, tasks) {
+  const phases = [0, 1, 2, 3];
+  let html = '';
+
+  phases.forEach(ph => {
+    const phaseTasks = tasks.filter(t => t.phase === ph);
+    if (phaseTasks.length === 0) return;
+
+    const done = phaseTasks.filter(t => t.complete).length;
+    const total = phaseTasks.length;
+    const pct = Math.round((done / total) * 100);
+    const color = PHASE_COLORS[ph];
+
+    // Group by phaseCategory
+    const byCat = {};
+    phaseTasks.forEach(t => {
+      const cat = t.phaseCategory || 'General';
+      if (!byCat[cat]) byCat[cat] = [];
+      byCat[cat].push(t);
+    });
+    const catKeys = Object.keys(byCat).sort();
+
+    // Auto-open phases that have overdue or upcoming work
+    const hasUrgent = phaseTasks.some(t => {
+      if (t.complete) return false;
+      const d = daysUntil(dueDate(t));
+      return d !== null && d < 14;
+    });
+
+    html += `
+      <div class="opening-phase ${hasUrgent ? 'open' : ''}" id="opening-phase-${ph}">
+        <div class="opening-phase-header" onclick="toggleOpeningPhase(${ph})">
+          <div class="opening-phase-dot" style="background:${color}"></div>
+          <div class="opening-phase-name">${PHASE_LABELS[ph]}</div>
+          <div class="opening-phase-stats">
+            <span class="opening-phase-progress">${done}/${total}</span>
+            <div class="opening-phase-progress-bar">
+              <div class="opening-phase-progress-fill" style="width:${pct}%;background:${color}"></div>
+            </div>
+            <span class="opening-phase-progress">${pct}%</span>
+          </div>
+          <span class="opening-phase-arrow">&#9660;</span>
+        </div>
+        <div class="opening-phase-body">`;
+
+    catKeys.forEach(cat => {
+      const catTasks = byCat[cat];
+      const catDone = catTasks.filter(t => t.complete).length;
+      // Sort: incomplete first (overdue first, then by due date), then complete
+      catTasks.sort((a, b) => {
+        if (a.complete !== b.complete) return a.complete ? 1 : -1;
+        const da = dueDate(a), db = dueDate(b);
+        if (!da && !db) return 0; if (!da) return 1; if (!db) return -1;
+        return new Date(da + 'T00:00:00') - new Date(db + 'T00:00:00');
+      });
+
+      html += `
+          <div class="opening-subcat-header">${escHtml(cat)} <span class="opening-subcat-count">${catDone}/${catTasks.length}</span></div>
+          <div class="opening-task-list">
+            ${catTasks.map(t => openingTaskRow(t)).join('')}
+          </div>`;
+    });
+
+    html += `
+        </div>
+      </div>`;
+  });
+
+  if (!html) {
+    html = '<div class="opening-empty"><strong>No tasks</strong>No tasks found for this opening.</div>';
+  }
+
+  el.innerHTML = html;
+}
+
+function toggleOpeningPhase(ph) {
+  const el = document.getElementById('opening-phase-' + ph);
+  if (el) el.classList.toggle('open');
+}
+
+// --- GANTT ---
+function renderOpeningGantt(el, tasks, opening) {
+  const todayDate = new Date(today() + 'T00:00:00');
+  const targetDate = new Date(opening.targetDate + 'T00:00:00');
+
+  // Timeline: from today to target date + 7 days buffer
+  const endDate = new Date(targetDate);
+  endDate.setDate(endDate.getDate() + 7);
+
+  const days = [];
+  for (let d = new Date(todayDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+    days.push(new Date(d));
+  }
+
+  const DAY_W = 22;
+
+  // Legend
+  let legendHtml = '<div class="opening-gantt-legend">';
+  PHASE_LABELS.forEach((label, i) => {
+    legendHtml += `<div class="opening-gantt-legend-item"><div class="opening-gantt-legend-dot" style="background:${PHASE_COLORS[i]}"></div>${label}</div>`;
+  });
+  legendHtml += `<div class="opening-gantt-legend-item" style="margin-left:16px"><div class="opening-gantt-legend-dot" style="background:var(--rust);border-radius:50%"></div>Today</div>`;
+  legendHtml += `<div class="opening-gantt-legend-item"><div class="opening-gantt-legend-dot" style="background:var(--gold)"></div>Opening Day</div>`;
+  legendHtml += '</div>';
+
+  // Month headers
+  const monthHeaders = [];
+  let curMonth = null, curSpan = 0;
+  days.forEach(d => {
+    const m = d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    if (m !== curMonth) {
+      if (curMonth) monthHeaders.push({ label: curMonth, span: curSpan });
+      curMonth = m; curSpan = 1;
+    } else { curSpan++; }
+  });
+  if (curMonth) monthHeaders.push({ label: curMonth, span: curSpan });
+
+  const monthRow = monthHeaders.map(m => `<th colspan="${m.span}" style="text-align:left;padding-left:8px">${m.label}</th>`).join('');
+  const dayRow = days.map(d => {
+    const isToday = d.toISOString().split('T')[0] === todayDate.toISOString().split('T')[0];
+    const isWeekend = d.getDay() === 0 || d.getDay() === 6;
+    return `<th class="gantt-day-cell ${isToday ? 'today-col' : ''} ${isWeekend ? 'weekend' : ''}" style="min-width:${DAY_W}px">${d.getDate()}</th>`;
+  }).join('');
+
+  // Group by phase
+  const phases = [0, 1, 2, 3];
+  let tableRows = '';
+  const orderedTasks = [];
+
+  phases.forEach(ph => {
+    const phaseTasks = tasks.filter(t => t.phase === ph);
+    if (phaseTasks.length === 0) return;
+
+    // Sort by due date
+    phaseTasks.sort((a, b) => {
+      if (a.complete !== b.complete) return a.complete ? 1 : -1;
+      const da = getDueDate(a), db = getDueDate(b);
+      if (!da && !db) return 0; if (!da) return 1; if (!db) return -1;
+      return da - db;
+    });
+
+    tableRows += `<tr class="gantt-group-row"><td colspan="${days.length + 1}">${PHASE_LABELS[ph]}</td></tr>`;
+
+    phaseTasks.forEach(p => {
+      const due = getDueDate(p);
+      const dueStr = due ? due.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+      tableRows += `<tr class="gantt-row" data-id="${p.id}" onclick="openDetail('${p.id}')" style="cursor:pointer">
+        <td class="gantt-label-cell ${p.complete ? 'complete' : ''}">
+          <div class="gantt-label-name" title="${escHtml(p.title)}">${escHtml(p.title)}</div>
+          <div class="gantt-label-meta">${p.phaseCategory || ''} &middot; ${dueStr}</div>
+        </td>
+        ${days.map(d => {
+          const isToday = d.toISOString().split('T')[0] === todayDate.toISOString().split('T')[0];
+          const isWeekend = d.getDay() === 0 || d.getDay() === 6;
+          return `<td class="gantt-bar-cell gantt-day-cell ${isToday ? 'today-col' : ''} ${isWeekend ? 'weekend' : ''}"></td>`;
+        }).join('')}
+      </tr>`;
+      orderedTasks.push(p);
+    });
+  });
+
+  el.innerHTML = legendHtml + `
+    <div class="gantt-scroll-wrap" id="opening-gantt-scroll">
+      <table class="gantt-table" id="opening-gantt-table">
+        <thead>
+          <tr class="gantt-header-row"><th class="label-col"></th>${monthRow}</tr>
+          <tr class="gantt-header-row"><th class="label-col">Task</th>${dayRow}</tr>
+        </thead>
+        <tbody>${tableRows}</tbody>
+      </table>
+    </div>`;
+
+  // Draw bars
+  const rows = document.querySelectorAll('#opening-gantt-table .gantt-row');
+  rows.forEach((row, i) => {
+    const p = orderedTasks[i];
+    if (!p) return;
+    const due = getDueDate(p);
+    if (!due) return;
+
+    const start = new Date(p.dateAdded + 'T00:00:00');
+    const barStart = start < todayDate ? todayDate : start;
+    const barEnd = due > endDate ? endDate : due;
+    if (barStart > barEnd) return;
+
+    const startOffset = Math.round((barStart - todayDate) / 86400000);
+    const barDays = Math.round((barEnd - barStart) / 86400000) + 1;
+    const labelCell = row.querySelector('.gantt-label-cell');
+    const labelWidth = labelCell ? labelCell.offsetWidth : 220;
+    const leftPx = startOffset * DAY_W + 1;
+    const widthPx = Math.max(barDays * DAY_W - 2, 6);
+
+    const barColor = PHASE_COLORS[p.phase != null ? p.phase : 0];
+    const isOverdue = due < todayDate && !p.complete;
+    const dueStr = due.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:absolute;top:0;bottom:0;left:0;right:0;pointer-events:none;';
+
+    const bar = document.createElement('div');
+    bar.className = 'gantt-bar' + (p.complete ? ' complete' : '') + (isOverdue ? ' overdue' : '');
+    bar.style.cssText = `left:${labelWidth + leftPx}px;width:${widthPx}px;background:${barColor};`;
+    bar.title = `${p.title} — Due: ${dueStr}${p.complete ? ' (Complete)' : isOverdue ? ' (OVERDUE)' : ''}`;
+    bar.innerHTML = widthPx > 50 ? `<span class="gantt-bar-label">${dueStr}</span>` : '';
+    bar.style.pointerEvents = 'auto';
+    overlay.appendChild(bar);
+    row.style.position = 'relative';
+    row.appendChild(overlay);
+  });
+
+  // Today line
+  const wrap = document.getElementById('opening-gantt-scroll');
+  const table = document.getElementById('opening-gantt-table');
+  if (wrap && table) {
+    const labelCell = table.querySelector('.gantt-label-cell');
+    const labelW = labelCell ? labelCell.offsetWidth : 220;
+    const todayLine = document.createElement('div');
+    todayLine.className = 'gantt-today-line';
+    todayLine.style.left = (labelW + 1) + 'px';
+    todayLine.style.position = 'absolute';
+    todayLine.style.top = '0';
+    todayLine.style.bottom = '0';
+    todayLine.style.width = '2px';
+    wrap.style.position = 'relative';
+    wrap.appendChild(todayLine);
+
+    // Opening day line
+    const targetOffset = Math.round((targetDate - todayDate) / 86400000);
+    if (targetOffset >= 0 && targetOffset <= days.length) {
+      const openingLine = document.createElement('div');
+      openingLine.className = 'opening-gantt-milestone';
+      openingLine.style.left = (labelW + targetOffset * DAY_W + 1) + 'px';
+      openingLine.style.position = 'absolute';
+      openingLine.style.top = '0';
+      openingLine.style.bottom = '0';
+      wrap.appendChild(openingLine);
+    }
+  }
 }
 
 // ============================================================

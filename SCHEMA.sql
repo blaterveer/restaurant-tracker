@@ -30,6 +30,18 @@ create table if not exists owners (
 );
 
 -- ============================================================
+-- OPENINGS (restaurant pre-opening projects)
+-- ============================================================
+
+create table if not exists openings (
+  id          uuid primary key default gen_random_uuid(),
+  restaurant  text not null,
+  name        text not null,
+  target_date date not null,
+  created_at  timestamptz not null default now()
+);
+
+-- ============================================================
 -- PROJECTS
 -- ============================================================
 
@@ -46,9 +58,13 @@ create table if not exists projects (
   date_added  date,
   complete    boolean not null default false,
   link        text,
+  opening_id  uuid references openings(id) on delete set null,
+  phase       integer,
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now()
 );
+
+create index if not exists idx_projects_opening_id on projects(opening_id);
 
 -- Auto-update updated_at on every row change
 create or replace function set_updated_at()
@@ -107,6 +123,7 @@ alter table restaurants  enable row level security;
 alter table categories   enable row level security;
 alter table types        enable row level security;
 alter table owners       enable row level security;
+alter table openings     enable row level security;
 alter table projects     enable row level security;
 alter table notes           enable row level security;
 alter table inbox_requests  enable row level security;
@@ -116,6 +133,7 @@ create policy "anon all" on restaurants  for all using (true) with check (true);
 create policy "anon all" on categories   for all using (true) with check (true);
 create policy "anon all" on types        for all using (true) with check (true);
 create policy "anon all" on owners       for all using (true) with check (true);
+create policy "anon all" on openings     for all using (true) with check (true);
 create policy "anon all" on projects     for all using (true) with check (true);
 create policy "anon all" on notes           for all using (true) with check (true);
 create policy "anon all" on inbox_requests  for all using (true) with check (true);
