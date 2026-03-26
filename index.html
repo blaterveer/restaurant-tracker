@@ -8828,12 +8828,16 @@ function renderOpeningGantt(el, tasks, opening) {
   const endDate = new Date(targetDate);
   endDate.setDate(endDate.getDate() + 7);
 
-  const days = [];
-  for (let d = new Date(todayDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-    days.push(new Date(d));
+  // Use week-level granularity for a cleaner, faster view
+  // Build weeks array (each entry = Monday of that week)
+  const weeks = [];
+  const firstMonday = new Date(todayDate);
+  firstMonday.setDate(firstMonday.getDate() - ((firstMonday.getDay() + 6) % 7)); // roll back to Monday
+  for (let d = new Date(firstMonday); d <= endDate; d.setDate(d.getDate() + 7)) {
+    weeks.push(new Date(d));
   }
 
-  const DAY_W = 22;
+  const WEEK_W = 36;
 
   // Legend
   let legendHtml = '<div class="opening-gantt-legend">';
@@ -8847,8 +8851,8 @@ function renderOpeningGantt(el, tasks, opening) {
   // Month headers
   const monthHeaders = [];
   let curMonth = null, curSpan = 0;
-  days.forEach(d => {
-    const m = d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  weeks.forEach(w => {
+    const m = w.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
     if (m !== curMonth) {
       if (curMonth) monthHeaders.push({ label: curMonth, span: curSpan });
       curMonth = m; curSpan = 1;
@@ -8857,46 +8861,67 @@ function renderOpeningGantt(el, tasks, opening) {
   if (curMonth) monthHeaders.push({ label: curMonth, span: curSpan });
 
   const monthRow = monthHeaders.map(m => `<th colspan="${m.span}" style="text-align:left;padding-left:8px">${m.label}</th>`).join('');
-  const dayRow = days.map(d => {
-    const isToday = d.toISOString().split('T')[0] === todayDate.toISOString().split('T')[0];
-    const isWeekend = d.getDay() === 0 || d.getDay() === 6;
-    return `<th class="gantt-day-cell ${isToday ? 'today-col' : ''} ${isWeekend ? 'weekend' : ''}" style="min-width:${DAY_W}px">${d.getDate()}</th>`;
+  const weekRow = weeks.map((w, idx) => {
+    const wEnd = new Date(w); wEnd.setDate(wEnd.getDate() + 6);
+    const todayInWeek = todayDate >= w && todayDate <= wEnd;
+    const label = w.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' });
+    return `<th class="gantt-day-cell ${todayInWeek ? 'today-col' : ''}" style="min-width:${WEEK_W}px;font-size:9px">${label}</th>`;
   }).join('');
 
-  // Group by phase
+  // Build grouped rows: phase > sub-category
+  // Each row = one phase sub-category with aggregated date range + progress
   const phases = [0, 1, 2, 3];
   let tableRows = '';
-  const orderedTasks = [];
+  const orderedGroups = []; // { phase, cat, earliest, latest, total, done, hasOverdue }
 
   phases.forEach(ph => {
     const phaseTasks = tasks.filter(t => t.phase === ph);
     if (phaseTasks.length === 0) return;
 
-    // Sort by due date
-    phaseTasks.sort((a, b) => {
-      if (a.complete !== b.complete) return a.complete ? 1 : -1;
-      const da = getDueDate(a), db = getDueDate(b);
-      if (!da && !db) return 0; if (!da) return 1; if (!db) return -1;
-      return da - db;
+    // Group by phaseCategory
+    const byCat = {};
+    phaseTasks.forEach(t => {
+      const cat = t.phaseCategory || 'General';
+      if (!byCat[cat]) byCat[cat] = [];
+      byCat[cat].push(t);
     });
 
-    tableRows += `<tr class="gantt-group-row"><td colspan="${days.length + 1}">${PHASE_LABELS[ph]}</td></tr>`;
+    // Sort categories by earliest due date
+    const catEntries = Object.entries(byCat).map(([cat, catTasks]) => {
+      let earliest = null, latest = null;
+      catTasks.forEach(t => {
+        const due = getDueDate(t);
+        if (!due) return;
+        if (!earliest || due < earliest) earliest = due;
+        if (!latest || due > latest) latest = due;
+      });
+      const done = catTasks.filter(t => t.complete).length;
+      const hasOverdue = catTasks.some(t => !t.complete && getDueDate(t) && getDueDate(t) < todayDate);
+      return { cat, tasks: catTasks, earliest, latest, total: catTasks.length, done, hasOverdue };
+    });
+    catEntries.sort((a, b) => (a.earliest || Infinity) - (b.earliest || Infinity));
 
-    phaseTasks.forEach(p => {
-      const due = getDueDate(p);
-      const dueStr = due ? due.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
-      tableRows += `<tr class="gantt-row" data-id="${p.id}" onclick="openDetail('${p.id}')" style="cursor:pointer">
-        <td class="gantt-label-cell ${p.complete ? 'complete' : ''}">
-          <div class="gantt-label-name" title="${escHtml(p.title)}">${escHtml(p.title)}</div>
-          <div class="gantt-label-meta">${p.phaseCategory || ''} &middot; ${dueStr}</div>
+    tableRows += `<tr class="gantt-group-row"><td colspan="${weeks.length + 1}">${PHASE_LABELS[ph]}</td></tr>`;
+
+    catEntries.forEach(g => {
+      const pct = g.total > 0 ? Math.round((g.done / g.total) * 100) : 0;
+      const allDone = g.done === g.total;
+      const dateRange = g.earliest && g.latest
+        ? g.earliest.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' — ' + g.latest.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        : '';
+
+      tableRows += `<tr class="gantt-row" style="cursor:default">
+        <td class="gantt-label-cell ${allDone ? 'complete' : ''}">
+          <div class="gantt-label-name">${escHtml(g.cat)}</div>
+          <div class="gantt-label-meta">${g.done}/${g.total} complete &middot; ${dateRange}</div>
         </td>
-        ${days.map(d => {
-          const isToday = d.toISOString().split('T')[0] === todayDate.toISOString().split('T')[0];
-          const isWeekend = d.getDay() === 0 || d.getDay() === 6;
-          return `<td class="gantt-bar-cell gantt-day-cell ${isToday ? 'today-col' : ''} ${isWeekend ? 'weekend' : ''}"></td>`;
+        ${weeks.map((w) => {
+          const wEnd = new Date(w); wEnd.setDate(wEnd.getDate() + 6);
+          const todayInWeek = todayDate >= w && todayDate <= wEnd;
+          return `<td class="gantt-bar-cell gantt-day-cell ${todayInWeek ? 'today-col' : ''}" style="height:42px"></td>`;
         }).join('')}
       </tr>`;
-      orderedTasks.push(p);
+      orderedGroups.push({ ...g, phase: ph });
     });
   });
 
@@ -8905,75 +8930,89 @@ function renderOpeningGantt(el, tasks, opening) {
       <table class="gantt-table" id="opening-gantt-table">
         <thead>
           <tr class="gantt-header-row"><th class="label-col"></th>${monthRow}</tr>
-          <tr class="gantt-header-row"><th class="label-col">Task</th>${dayRow}</tr>
+          <tr class="gantt-header-row"><th class="label-col" style="font-size:10px">Category</th>${weekRow}</tr>
         </thead>
         <tbody>${tableRows}</tbody>
       </table>
     </div>`;
 
-  // Draw bars
+  // Draw grouped bars
+  const timelineStart = weeks[0];
+  const totalMs = endDate - timelineStart;
   const rows = document.querySelectorAll('#opening-gantt-table .gantt-row');
   rows.forEach((row, i) => {
-    const p = orderedTasks[i];
-    if (!p) return;
-    const due = getDueDate(p);
-    if (!due) return;
+    const g = orderedGroups[i];
+    if (!g || !g.earliest || !g.latest) return;
 
-    const start = new Date(p.dateAdded + 'T00:00:00');
-    const barStart = start < todayDate ? todayDate : start;
-    const barEnd = due > endDate ? endDate : due;
-    if (barStart > barEnd) return;
+    const barStartDate = g.earliest < timelineStart ? timelineStart : g.earliest;
+    const barEndDate = g.latest > endDate ? endDate : g.latest;
+    if (barStartDate > barEndDate) return;
 
-    const startOffset = Math.round((barStart - todayDate) / 86400000);
-    const barDays = Math.round((barEnd - barStart) / 86400000) + 1;
+    const startWeeks = (barStartDate - timelineStart) / (7 * 86400000);
+    const endWeeks = (barEndDate - timelineStart) / (7 * 86400000);
     const labelCell = row.querySelector('.gantt-label-cell');
     const labelWidth = labelCell ? labelCell.offsetWidth : 220;
-    const leftPx = startOffset * DAY_W + 1;
-    const widthPx = Math.max(barDays * DAY_W - 2, 6);
+    const leftPx = Math.round(startWeeks * WEEK_W) + 1;
+    const widthPx = Math.max(Math.round((endWeeks - startWeeks) * WEEK_W), 8);
 
-    const barColor = PHASE_COLORS[p.phase != null ? p.phase : 0];
-    const isOverdue = due < todayDate && !p.complete;
-    const dueStr = due.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const barColor = PHASE_COLORS[g.phase];
+    const pct = g.total > 0 ? Math.round((g.done / g.total) * 100) : 0;
 
     const overlay = document.createElement('div');
     overlay.style.cssText = 'position:absolute;top:0;bottom:0;left:0;right:0;pointer-events:none;';
 
+    // Background bar (full span)
     const bar = document.createElement('div');
-    bar.className = 'gantt-bar' + (p.complete ? ' complete' : '') + (isOverdue ? ' overdue' : '');
-    bar.style.cssText = `left:${labelWidth + leftPx}px;width:${widthPx}px;background:${barColor};`;
-    bar.title = `${p.title} — Due: ${dueStr}${p.complete ? ' (Complete)' : isOverdue ? ' (OVERDUE)' : ''}`;
-    bar.innerHTML = widthPx > 50 ? `<span class="gantt-bar-label">${dueStr}</span>` : '';
+    bar.className = 'gantt-bar' + (g.done === g.total ? ' complete' : '') + (g.hasOverdue ? ' overdue' : '');
+    bar.style.cssText = `left:${labelWidth + leftPx}px;width:${widthPx}px;background:${barColor};opacity:0.3;`;
+    bar.title = `${g.cat} — ${g.done}/${g.total} (${pct}%)`;
     bar.style.pointerEvents = 'auto';
     overlay.appendChild(bar);
+
+    // Progress fill bar
+    if (pct > 0 && pct < 100) {
+      const fillBar = document.createElement('div');
+      fillBar.className = 'gantt-bar';
+      fillBar.style.cssText = `left:${labelWidth + leftPx}px;width:${Math.round(widthPx * pct / 100)}px;background:${barColor};`;
+      overlay.appendChild(fillBar);
+    } else if (pct === 100) {
+      bar.style.opacity = '0.5';
+    }
+
+    // Label on bar
+    if (widthPx > 60) {
+      const labelSpan = document.createElement('span');
+      labelSpan.className = 'gantt-bar-label';
+      labelSpan.style.cssText = `position:absolute;left:${labelWidth + leftPx + 6}px;top:50%;transform:translateY(-50%);font-size:10px;color:white;white-space:nowrap;font-family:'DM Mono',monospace;pointer-events:none;z-index:1;`;
+      labelSpan.textContent = `${g.done}/${g.total}`;
+      overlay.appendChild(labelSpan);
+    }
+
     row.style.position = 'relative';
     row.appendChild(overlay);
   });
 
-  // Today line
+  // Today line + Opening day line
   const wrap = document.getElementById('opening-gantt-scroll');
   const table = document.getElementById('opening-gantt-table');
   if (wrap && table) {
     const labelCell = table.querySelector('.gantt-label-cell');
     const labelW = labelCell ? labelCell.offsetWidth : 220;
+    wrap.style.position = 'relative';
+
+    // Today line
+    const todayWeeks = (todayDate - timelineStart) / (7 * 86400000);
     const todayLine = document.createElement('div');
     todayLine.className = 'gantt-today-line';
-    todayLine.style.left = (labelW + 1) + 'px';
-    todayLine.style.position = 'absolute';
-    todayLine.style.top = '0';
-    todayLine.style.bottom = '0';
-    todayLine.style.width = '2px';
-    wrap.style.position = 'relative';
+    todayLine.style.cssText = `position:absolute;top:0;bottom:0;width:2px;left:${labelW + Math.round(todayWeeks * WEEK_W) + 1}px;`;
     wrap.appendChild(todayLine);
 
     // Opening day line
-    const targetOffset = Math.round((targetDate - todayDate) / 86400000);
-    if (targetOffset >= 0 && targetOffset <= days.length) {
+    const targetWeeks = (targetDate - timelineStart) / (7 * 86400000);
+    if (targetWeeks >= 0 && targetWeeks <= weeks.length) {
       const openingLine = document.createElement('div');
       openingLine.className = 'opening-gantt-milestone';
-      openingLine.style.left = (labelW + targetOffset * DAY_W + 1) + 'px';
-      openingLine.style.position = 'absolute';
-      openingLine.style.top = '0';
-      openingLine.style.bottom = '0';
+      openingLine.style.cssText = `position:absolute;top:0;bottom:0;left:${labelW + Math.round(targetWeeks * WEEK_W) + 1}px;`;
       wrap.appendChild(openingLine);
     }
   }
