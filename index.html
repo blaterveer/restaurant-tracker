@@ -1144,7 +1144,7 @@
   .opening-back { background: none; border: none; font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--warm-gray); cursor: pointer; padding: 4px 0; margin-bottom: 12px; transition: color 0.2s; display: inline-flex; align-items: center; gap: 6px; }
   .opening-back:hover { color: var(--rust); }
   .opening-header { margin-bottom: 24px; }
-  .opening-header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .opening-header-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
   .opening-title { font-family: 'Cormorant Garamond', serif; font-size: 34px; font-weight: 300; }
   .opening-meta { display: flex; gap: 24px; margin-top: 8px; flex-wrap: wrap; }
   .opening-meta-item { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--warm-gray); }
@@ -2803,7 +2803,7 @@
   <span class="header-sub" id="today-display"></span>
   <div class="header-actions">
     <button class="btn-ghost" id="btn-add-restaurant" onclick="openRestaurantModal()">+ Restaurant</button>
-    <button class="btn-primary" id="btn-new-project" onclick="openAddModal()">+ New Task</button>
+    <button class="btn-primary" id="btn-new-project" onclick="handleNewTaskClick()">+ New Task</button>
     <span class="overdue-badge" id="overdue-badge" style="display:none" title="Show overdue tasks" onclick="showOverdueTasks()"></span>
     <button class="btn-ghost" id="btn-print-report" onclick="printReport()" title="Print / Save as PDF">&#128438; Weekly Report</button>
     <button class="btn-ghost" id="btn-export-tasks" onclick="exportRestaurantTasks()" title="Export open tasks to CSV">&#128229; Export Tasks</button>
@@ -3196,19 +3196,36 @@
           <label>Description</label>
           <textarea class="form-textarea" id="f-description" placeholder="What is this project about?"></textarea>
         </div>
-        <div class="form-group">
+        <div class="form-group" id="fg-category">
           <label>Category <span class="required">*</span></label>
           <select class="form-select" id="f-category" onchange="checkNewOption(this, 'new-category-input')">
             <option value="">Select or create…</option>
           </select>
           <input type="text" class="form-input new-option-input" id="new-category-input" placeholder="New category name…">
         </div>
-        <div class="form-group">
+        <div class="form-group" id="fg-type">
           <label>Type</label>
           <select class="form-select" id="f-type" onchange="checkNewOption(this, 'new-type-input')">
             <option value="">Select or create…</option>
           </select>
           <input type="text" class="form-input new-option-input" id="new-type-input" placeholder="New type name…">
+        </div>
+        <div class="form-group" id="fg-phase" style="display:none">
+          <label>Phase <span class="required">*</span></label>
+          <select class="form-select" id="f-phase" onchange="onPhaseChange()">
+            <option value="">Select phase…</option>
+            <option value="0">Phase 0</option>
+            <option value="1">Phase 1</option>
+            <option value="2">Phase 2</option>
+            <option value="3">Phase 3</option>
+          </select>
+        </div>
+        <div class="form-group" id="fg-phase-category" style="display:none">
+          <label>Sub-Category <span class="required">*</span></label>
+          <select class="form-select" id="f-phase-category" onchange="checkNewOption(this, 'new-phase-category-input')">
+            <option value="">Select or create…</option>
+          </select>
+          <input type="text" class="form-input new-option-input" id="new-phase-category-input" placeholder="New sub-category name…">
         </div>
         <div class="form-group">
           <label>Owner</label>
@@ -3427,6 +3444,7 @@ let state = {
   openings: [],             // { id, restaurant, name, targetDate }
   activeOpeningId: null,    // currently selected opening
   openingTab: 'thisweek',   // 'thisweek' | 'phases' | 'gantt'
+  _openingModalId: null,    // set when add/edit modal is in opening mode
 };
 
 // ============================================================
@@ -5103,11 +5121,15 @@ function openDetail(id) {
   document.getElementById('dp-meta').innerHTML = `
     ${p.priority ? `<span class="priority-badge ${p.priority.toLowerCase()}">${p.priority}</span>` : ''}
     ${dueBadge(p)}
-    ${p.category ? `<span class="category-tag ${categoryClass(p.category)}">${p.category}</span>` : ''}
+    ${p.openingId && p.phase != null ? `<span class="category-tag" style="background:${PHASE_COLORS[p.phase]}22;color:${PHASE_COLORS[p.phase]};border:1px solid ${PHASE_COLORS[p.phase]}44">Phase ${p.phase}</span>` : ''}
+    ${p.openingId && p.phaseCategory ? `<span class="category-tag">${p.phaseCategory}</span>` : ''}
+    ${!p.openingId && p.category ? `<span class="category-tag ${categoryClass(p.category)}">${p.category}</span>` : ''}
   `;
   document.getElementById('dp-details').innerHTML = `
+    ${p.openingId && p.phase != null ? `<div class="detail-row"><span class="key">Phase</span><span class="val">${PHASE_LABELS[p.phase] || 'Phase ' + p.phase}</span></div>` : ''}
+    ${p.openingId && p.phaseCategory ? `<div class="detail-row"><span class="key">Sub-Category</span><span class="val">${p.phaseCategory}</span></div>` : ''}
     <div class="detail-row"><span class="key">Owner</span><span class="val">${p.owner || '""'}</span></div>
-    <div class="detail-row"><span class="key">Type</span><span class="val">${p.type || '""'}</span></div>
+    ${!p.openingId ? `<div class="detail-row"><span class="key">Type</span><span class="val">${p.type || '""'}</span></div>` : ''}
     <div class="detail-row"><span class="key">Date Added</span><span class="val">${formatDate(p.dateAdded)}</span></div>
     <div class="detail-row"><span class="key">Weeks to Complete</span><span class="val">${p.weeks || '""'}</span></div>
     <div class="detail-row"><span class="key">Due By</span><span class="val">${due ? formatDate(due) : '""'}</span></div>
@@ -5290,8 +5312,15 @@ function toggleCompleteFromPanel() {
 function editFromPanel() {
   if (state.detailProjectId) {
     const idToEdit = state.detailProjectId;
+    const p = state.projects.find(x => x.id === idToEdit);
     closeDetail();
-    openAddModal(idToEdit);
+    if (p && p.openingId) {
+      // Ensure we're in the opening context for the modal
+      state.activeOpeningId = p.openingId;
+      openOpeningTaskModal(idToEdit);
+    } else {
+      openAddModal(idToEdit);
+    }
   }
 }
 
@@ -5387,6 +5416,14 @@ async function archiveFromPanel() {
 // ============================================================
 // ADD/EDIT MODAL
 // ============================================================
+function handleNewTaskClick() {
+  if (state.activeTab === '__openings__' && state.activeOpeningId) {
+    showToast('For openings, use the + Add Task button in the opening view.', 'warning');
+    return;
+  }
+  openAddModal();
+}
+
 function openAddModal(editId = null, prefill = null) {
   state.editProjectId = editId;
   // Set or clear pending inbox/agenda IDs based on what triggered this open
@@ -5420,11 +5457,20 @@ function openAddModal(editId = null, prefill = null) {
   document.getElementById('f-note').value        = '';
   document.getElementById('f-is-complex').checked = isEdit ? (p ? (p.isComplex || false) : false) : false;
 
-  ['new-category-input', 'new-type-input'].forEach(id => {
+  ['new-category-input', 'new-type-input', 'new-phase-category-input'].forEach(id => {
     const el = document.getElementById(id);
-    el.value = '';
-    el.style.display = 'none';
+    if (el) { el.value = ''; el.style.display = 'none'; }
   });
+
+  // Reset opening-specific fields — hide them for regular tasks
+  state._openingModalId = null;
+  document.getElementById('fg-phase').style.display = 'none';
+  document.getElementById('fg-phase-category').style.display = 'none';
+  document.getElementById('fg-category').style.display = '';
+  document.getElementById('fg-type').style.display = '';
+  document.getElementById('f-phase').value = '';
+  document.getElementById('f-phase-category').innerHTML = '<option value="">Select or create…</option>';
+  document.getElementById('f-restaurant').disabled = false;
 
   const notesLog     = document.getElementById('edit-notes-log');
   const notesDisplay = document.getElementById('notes-log-display');
@@ -5440,6 +5486,65 @@ function openAddModal(editId = null, prefill = null) {
   updateDuePreview();
   document.getElementById('note-date-preview').textContent = 'Note dated: ' + formatDate(today());
   document.getElementById('project-modal').classList.add('open');
+}
+
+function openOpeningTaskModal(editId = null) {
+  const opening = state.openings.find(o => o.id === state.activeOpeningId);
+  if (!opening) return;
+
+  const isEdit = !!editId;
+  const p = isEdit ? state.projects.find(x => x.id === editId) : null;
+
+  // Use the regular modal but configure it for opening mode
+  openAddModal(editId);
+
+  // Now override for opening context
+  state._openingModalId = opening.id;
+  document.getElementById('modal-title').innerHTML = isEdit ? 'Edit <em>Opening Task</em>' : 'New <em>Opening Task</em>';
+
+  // Lock restaurant to the opening's restaurant
+  const rSel = document.getElementById('f-restaurant');
+  rSel.value = opening.restaurant;
+  rSel.disabled = true;
+
+  // Hide regular category/type, show phase/sub-category
+  document.getElementById('fg-category').style.display = 'none';
+  document.getElementById('fg-type').style.display = 'none';
+  document.getElementById('fg-phase').style.display = '';
+  document.getElementById('fg-phase-category').style.display = '';
+
+  // If editing, pre-select phase and sub-category
+  if (isEdit && p) {
+    document.getElementById('f-phase').value = p.phase != null ? p.phase : '';
+    if (p.phase != null) onPhaseChange(p.phaseCategory || null);
+  } else {
+    document.getElementById('f-phase').value = '';
+    document.getElementById('f-phase-category').innerHTML = '<option value="">Select phase first…</option>';
+  }
+}
+
+function onPhaseChange(preselect) {
+  const phaseVal = document.getElementById('f-phase').value;
+  const sel = document.getElementById('f-phase-category');
+  if (!phaseVal && phaseVal !== '0') {
+    sel.innerHTML = '<option value="">Select phase first…</option>';
+    return;
+  }
+  const phase = parseInt(phaseVal);
+  // Gather existing sub-categories for this phase from current opening tasks
+  const openingId = state._openingModalId;
+  const cats = new Set();
+  state.projects.forEach(p => {
+    if (p.openingId === openingId && p.phase === phase && p.phaseCategory) {
+      cats.add(p.phaseCategory);
+    }
+  });
+  const sorted = [...cats].sort();
+  sel.innerHTML =
+    '<option value="">Select or create…</option>' +
+    sorted.map(c => `<option value="${c}"${c === preselect ? ' selected' : ''}>${c}</option>`).join('') +
+    '<option value="__new__">+ Add new…</option>';
+  if (preselect && sorted.includes(preselect)) sel.value = preselect;
 }
 
 function populateDynamicSelect(selectId, options, selected) {
@@ -5507,17 +5612,44 @@ async function saveProject() {
   if (!title)      { alert('Task title is required.'); return; }
   if (!restaurant) { alert('Please select a restaurant.'); return; }
 
+  const isOpeningMode = !!state._openingModalId;
+
+  // Validate opening-specific fields
+  if (isOpeningMode) {
+    const phaseVal = document.getElementById('f-phase').value;
+    if (phaseVal === '') { alert('Please select a phase.'); return; }
+    const pcSel = document.getElementById('f-phase-category');
+    const pcInput = document.getElementById('new-phase-category-input');
+    const pcVal = pcSel.value === '__new__' ? pcInput.value.trim() : pcSel.value;
+    if (!pcVal) { alert('Please select or create a sub-category.'); return; }
+  }
+
   showLoading('Saving…');
 
-  const category    = await resolveSelectValue('f-category', 'new-category-input', 'categories', 'categories');
-  const type        = await resolveSelectValue('f-type',     'new-type-input',     'types',      'types');
+  const category    = isOpeningMode ? '' : await resolveSelectValue('f-category', 'new-category-input', 'categories', 'categories');
+  const type        = isOpeningMode ? '' : await resolveSelectValue('f-type',     'new-type-input',     'types',      'types');
   const owner       = await resolveSelectValue('f-owner',    'new-owner-input',    'owners',     'owners');
   const noteText    = document.getElementById('f-note').value.trim();
   const weeks       = parseInt(document.getElementById('f-weeks').value) || null;
-  const description = document.getElementById('f-description').value.trim();
+  let   description = document.getElementById('f-description').value.trim();
   const priority    = document.getElementById('f-priority').value;
   const dateAdded   = document.getElementById('f-date-added').value;
   const dueDate     = document.getElementById('f-due-date').value || null;
+
+  // Opening-specific fields
+  let openingId = null, phase = null, phaseCategory = '';
+  if (isOpeningMode) {
+    openingId = state._openingModalId;
+    phase = parseInt(document.getElementById('f-phase').value);
+    const pcSel = document.getElementById('f-phase-category');
+    const pcInput = document.getElementById('new-phase-category-input');
+    phaseCategory = pcSel.value === '__new__' ? pcInput.value.trim() : pcSel.value;
+    // Embed phase tag in description for consistency with existing data
+    const phaseTag = `[Phase ${phase} -- ${phaseCategory}]`;
+    if (!description.includes(phaseTag)) {
+      description = description ? phaseTag + ' ' + description : phaseTag;
+    }
+  }
 
   try {
     if (state.editProjectId) {
@@ -5527,6 +5659,11 @@ async function saveProject() {
       p.type = type; p.description = description; p.owner = owner;
       p.priority = priority; p.weeks = weeks; p.dateAdded = dateAdded; p.dueDate = dueDate;
       p.isComplex = document.getElementById('f-is-complex').checked;
+      if (isOpeningMode) {
+        p.openingId = openingId;
+        p.phase = phase;
+        p.phaseCategory = phaseCategory;
+      }
       await dbUpsertProject(p);
       if (noteText) {
         const newNote = { date: today(), text: noteText, author: '' };
@@ -5539,7 +5676,10 @@ async function saveProject() {
         id: uid(), restaurant, title, category, type, description,
         owner, priority, weeks, dateAdded, dueDate,
         isComplex: document.getElementById('f-is-complex').checked,
-        complete: false, link: '', notes: [], subtasks: []
+        complete: false, link: '', notes: [], subtasks: [],
+        openingId: openingId,
+        phase: phase,
+        phaseCategory: phaseCategory,
       };
       await dbUpsertProject(newProject);
       if (noteText) {
@@ -5588,6 +5728,8 @@ function closeModal() {
   state.editProjectId = null;
   state.pendingInboxItemId = null;
   state._pendingAgendaItemId = null;
+  state._openingModalId = null;
+  document.getElementById('f-restaurant').disabled = false;
 }
 
 // ============================================================
@@ -8594,6 +8736,7 @@ function renderOpeningDetail(el) {
             <span class="opening-meta-item"><strong>${total}</strong> tasks</span>
           </div>
         </div>
+        <button class="btn-primary" onclick="openOpeningTaskModal()">+ Add Task</button>
       </div>
     </div>
 
