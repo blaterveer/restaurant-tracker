@@ -1206,6 +1206,8 @@
   .opening-subcat-count { font-size: 10px; color: var(--warm-gray); opacity: 0.7; }
   .opening-subcat-arrow { font-size: 8px; color: var(--warm-gray); margin-left: auto; transition: transform 0.2s; }
   .opening-subcat.open .opening-subcat-arrow { transform: rotate(180deg); }
+  .opening-expand-btn { font-family: 'DM Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; background: none; border: 1px solid var(--warm-gray); color: var(--warm-gray); padding: 4px 14px; border-radius: 4px; cursor: pointer; transition: all 0.15s; }
+  .opening-expand-btn:hover { border-color: var(--dark-brown); color: var(--dark-brown); }
   .opening-subcat .opening-task-list { display: none; }
   .opening-subcat.open .opening-task-list { display: block; }
 
@@ -9059,7 +9061,22 @@ function renderOpeningPhases(el, tasks) {
     html = '<div class="opening-empty"><strong>No tasks</strong>No tasks found for this opening.</div>';
   }
 
-  el.innerHTML = html;
+  const controls = `<div style="display:flex;gap:12px;margin-bottom:12px">
+    <button class="opening-expand-btn" onclick="toggleAllPhases(true)">&#9660; Expand All</button>
+    <button class="opening-expand-btn" onclick="toggleAllPhases(false)">&#9650; Collapse All</button>
+  </div>`;
+
+  el.innerHTML = controls + html;
+}
+
+function toggleAllPhases(expand) {
+  document.querySelectorAll('.opening-phase, .opening-subcat').forEach(el => {
+    if (expand) {
+      el.classList.add('open');
+    } else {
+      el.classList.remove('open');
+    }
+  });
 }
 
 function toggleOpeningPhase(ph) {
