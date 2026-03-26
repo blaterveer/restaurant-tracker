@@ -8677,6 +8677,10 @@ function render() {
   renderTable();
   renderFilterDropdowns();
   applySessionGating();
+  // Re-render openings view if currently active
+  if (state.activeTab === '__openings__') {
+    renderOpeningsView();
+  }
 }
 
 function applySessionGating() {
