@@ -8737,6 +8737,11 @@ function switchOpeningTab(tab) {
   renderOpeningsView();
 }
 
+function clearOpeningSearch() {
+  state._openingSearch = '';
+  renderOpeningsView();
+}
+
 function onOpeningSearch(val) {
   state._openingSearch = val;
   // Re-render only the tab content, not the whole view, to keep focus
@@ -8823,7 +8828,7 @@ function renderOpeningDetail(el) {
       </div>
       <div class="opening-search-wrap">
         <input type="text" class="opening-search" id="opening-search" placeholder="Search tasks..." value="${state._openingSearch || ''}" oninput="onOpeningSearch(this.value)">
-        ${state._openingSearch ? '<button class="opening-search-clear" onclick="onOpeningSearch(\\'\\');document.getElementById(\\'opening-search\\').value=\\'\\'">&#10005;</button>' : ''}
+        ${state._openingSearch ? '<button class="opening-search-clear" onclick="clearOpeningSearch()">&#10005;</button>' : ''}
       </div>
     </div>
 
