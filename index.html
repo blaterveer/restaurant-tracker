@@ -3484,6 +3484,8 @@ let state = {
   openingTab: 'thisweek',   // 'thisweek' | 'phases' | 'byowner' | 'gantt'
   _openingModalId: null,    // set when add/edit modal is in opening mode
   _openingSearch: '',       // search query for opening tasks
+  _openingSections: {},     // tracks open/closed state of collapsible sections {sectionId: true/false}
+  _openingSectionsInit: false, // whether sections have been initialized for current view
 };
 
 // ============================================================
@@ -8792,11 +8794,13 @@ function closeOpeningDetail() {
   state.activeOpeningId = null;
   state.openingTab = 'thisweek';
   state._openingSearch = '';
+  state._openingSections = {};
   renderOpeningsView();
 }
 
 function switchOpeningTab(tab) {
   state.openingTab = tab;
+  state._openingSections = {};
   renderOpeningsView();
 }
 
@@ -8867,7 +8871,11 @@ function renderOpeningDetail(el) {
             <span class="opening-meta-item"><strong>${total}</strong> tasks</span>
           </div>
         </div>
-        <button class="btn-primary" onclick="openOpeningTaskModal()">+ Add Task</button>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn-ghost" onclick="exportOpeningCSV()" title="Export full task list to CSV" style="font-size:12px">&#128229; Export CSV</button>
+          <button class="btn-ghost" onclick="exportOpeningReport()" title="Export executive summary report" style="font-size:12px">&#128438; Report</button>
+          <button class="btn-primary" onclick="openOpeningTaskModal()">+ Add Task</button>
+        </div>
       </div>
     </div>
 
@@ -9103,15 +9111,20 @@ function renderOpeningPhases(el, tasks) {
     });
     const catKeys = Object.keys(byCat).sort();
 
-    // Auto-open phases that have overdue or upcoming work
-    const hasUrgent = phaseTasks.some(t => {
-      if (t.complete) return false;
-      const d = daysUntil(dueDate(t));
-      return d !== null && d < 14;
-    });
+    // On first render, auto-open phases with urgent work; after that, preserve user's choices
+    const phaseKey = 'phase-' + ph;
+    if (!(phaseKey in state._openingSections)) {
+      const hasUrgent = phaseTasks.some(t => {
+        if (t.complete) return false;
+        const d = daysUntil(dueDate(t));
+        return d !== null && d < 14;
+      });
+      state._openingSections[phaseKey] = hasUrgent;
+    }
+    const phaseOpen = state._openingSections[phaseKey];
 
     html += `
-      <div class="opening-phase ${hasUrgent ? 'open' : ''}" id="opening-phase-${ph}">
+      <div class="opening-phase ${phaseOpen ? 'open' : ''}" id="opening-phase-${ph}">
         <div class="opening-phase-header" onclick="toggleOpeningPhase(${ph})">
           <div class="opening-phase-dot" style="background:${color}"></div>
           <div class="opening-phase-name">${PHASE_LABELS[ph]}</div>
@@ -9143,9 +9156,14 @@ function renderOpeningPhases(el, tasks) {
       });
 
       const subcatId = 'subcat-' + ph + '-' + ci;
+      // Persist subcat open/close state
+      if (!(subcatId in state._openingSections)) {
+        state._openingSections[subcatId] = catHasUrgent;
+      }
+      const subcatOpen = state._openingSections[subcatId];
       const bulkOwnerOpts = state.owners.map(o => `<option value="${escHtml(o)}">${escHtml(o)}</option>`).join('');
       html += `
-          <div class="opening-subcat ${catHasUrgent ? 'open' : ''}" id="${subcatId}">
+          <div class="opening-subcat ${subcatOpen ? 'open' : ''}" id="${subcatId}">
             <div class="opening-subcat-header" onclick="toggleSubcat('${subcatId}')">
               ${escHtml(cat)} <span class="opening-subcat-count">${catDone}/${catTasks.length}</span>
               <select class="opening-subcat-bulk" onclick="event.stopPropagation()" onchange="bulkAssignOwner('${escHtml(cat)}', ${ph}, this.value); this.value='';" title="Bulk assign owner">
@@ -9185,14 +9203,21 @@ function toggleAllPhases(expand) {
       el.classList.remove('open');
     }
   });
+  // Persist all section states
+  Object.keys(state._openingSections).forEach(k => {
+    state._openingSections[k] = expand;
+  });
 }
 
 function toggleOpeningPhase(ph) {
+  const key = 'phase-' + ph;
+  state._openingSections[key] = !state._openingSections[key];
   const el = document.getElementById('opening-phase-' + ph);
   if (el) el.classList.toggle('open');
 }
 
 function toggleSubcat(id) {
+  state._openingSections[id] = !state._openingSections[id];
   const el = document.getElementById(id);
   if (el) el.classList.toggle('open');
 }
@@ -9250,8 +9275,14 @@ function renderOpeningByOwner(el, tasks) {
       return new Date(da + 'T00:00:00') - new Date(db + 'T00:00:00');
     });
 
+    // Persist owner group open/close state
+    if (!(groupId in state._openingSections)) {
+      state._openingSections[groupId] = hasUrgent;
+    }
+    const groupOpen = state._openingSections[groupId];
+
     html += `
-      <div class="opening-owner-group ${hasUrgent ? 'open' : ''}" id="${groupId}">
+      <div class="opening-owner-group ${groupOpen ? 'open' : ''}" id="${groupId}">
         <div class="opening-owner-header" onclick="toggleOwnerGroup('${groupId}')">
           <div class="opening-owner-name">${escHtml(displayName)}</div>
           <div class="opening-owner-stats">
@@ -9277,6 +9308,7 @@ function renderOpeningByOwner(el, tasks) {
 }
 
 function toggleOwnerGroup(id) {
+  state._openingSections[id] = !state._openingSections[id];
   const el = document.getElementById(id);
   if (el) el.classList.toggle('open');
 }
