@@ -1185,6 +1185,13 @@
   .opening-task-category { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--warm-gray); }
   .opening-task-owner { font-size: 13px; color: var(--ink-light); }
   .opening-task-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .opening-inline-select { font-family: 'DM Mono', monospace; font-size: 11px; padding: 2px 6px; border: 1px solid var(--border); border-radius: 4px; background: white; color: var(--espresso); cursor: pointer; max-width: 160px; appearance: auto; }
+  .opening-inline-select:hover { border-color: var(--warm-gray); }
+  .opening-inline-select:focus { outline: none; border-color: var(--rust); }
+  .opening-inline-select.unassigned { color: var(--warm-gray); font-style: italic; }
+  .opening-subcat-bulk { font-family: 'DM Mono', monospace; font-size: 10px; padding: 1px 4px; border: 1px solid var(--border); border-radius: 3px; background: white; color: var(--warm-gray); cursor: pointer; max-width: 130px; margin-left: 8px; }
+  .opening-subcat-bulk:hover { border-color: var(--rust); color: var(--rust); }
+  .opening-subcat-bulk:focus { outline: none; border-color: var(--rust); }
 
   /* Phase accordion sections */
   .opening-phase { margin-bottom: 8px; border: 1px solid var(--border); background: white; }
@@ -8920,24 +8927,66 @@ function renderOpeningDetail(el) {
 function openingTaskRow(p) {
   const isComplete = p.complete;
   const isAdmin = state.session && state.session.role === 'admin';
+  const ownerOptions = state.owners.map(o => `<option value="${escHtml(o)}" ${p.owner === o ? 'selected' : ''}>${escHtml(o)}</option>`).join('');
+  const priorityOptions = ['', 'Low', 'Medium', 'High'].map(pr => `<option value="${pr}" ${(p.priority || '') === pr ? 'selected' : ''}>${pr || '—'}</option>`).join('');
   return `
-    <div class="opening-task-row ${isComplete ? 'done' : ''}" onclick="openDetail('${p.id}')">
+    <div class="opening-task-row ${isComplete ? 'done' : ''}">
       <div onclick="event.stopPropagation()">
         ${isAdmin ? '<div class="complete-toggle ' + (isComplete ? 'done' : '') + '" onclick="toggleOpeningComplete(\'' + p.id + '\')"></div>' : '<div style="width:18px"></div>'}
       </div>
-      <div class="opening-task-info">
+      <div class="opening-task-info" onclick="openDetail('${p.id}')" style="cursor:pointer">
         <div class="opening-task-title">${escHtml(p.title)}</div>
         <div class="opening-task-meta">
           ${p.phase != null ? '<span style="display:inline-block;width:7px;height:7px;border-radius:2px;background:' + PHASE_COLORS[p.phase] + ';vertical-align:middle;margin-right:2px"></span>' : ''}
           ${p.phaseCategory ? '<span class="opening-task-category">' + escHtml(p.phaseCategory) + '</span>' : ''}
-          ${p.owner ? '<span class="opening-task-owner">' + escHtml(p.owner) + '</span>' : ''}
         </div>
       </div>
-      <div class="opening-task-right">
+      <div class="opening-task-right" onclick="event.stopPropagation()">
+        <select class="opening-inline-select ${p.owner ? '' : 'unassigned'}" onchange="inlineUpdateOwner('${p.id}', this.value)" title="Assign owner">
+          <option value="">Unassigned</option>
+          ${ownerOptions}
+        </select>
+        <select class="opening-inline-select" onchange="inlineUpdatePriority('${p.id}', this.value)" title="Set priority" style="max-width:90px">
+          ${priorityOptions}
+        </select>
         ${dueBadge(p)}
-        ${p.priority ? '<span class="priority-badge ' + p.priority.toLowerCase() + '">' + p.priority + '</span>' : ''}
       </div>
     </div>`;
+}
+
+async function inlineUpdateOwner(id, owner) {
+  const p = state.projects.find(x => x.id === id);
+  if (!p) return;
+  p.owner = owner;
+  await dbUpsertProject(p);
+  renderOpeningsView();
+  showToast(owner ? 'Owner: ' + owner : 'Owner cleared');
+}
+
+async function inlineUpdatePriority(id, priority) {
+  const p = state.projects.find(x => x.id === id);
+  if (!p) return;
+  p.priority = priority;
+  await dbUpsertProject(p);
+  renderOpeningsView();
+  showToast(priority ? 'Priority: ' + priority : 'Priority cleared');
+}
+
+async function bulkAssignOwner(category, phase, owner) {
+  if (!owner) return;
+  const opening = state.openings.find(o => o.id === state.activeOpeningId);
+  if (!opening) return;
+  const tasks = getOpeningTasks(opening.id).filter(t => t.phaseCategory === category && t.phase === phase && !t.complete);
+  if (tasks.length === 0) return;
+  if (!confirm('Assign ' + owner + ' to all ' + tasks.length + ' incomplete tasks in ' + category + '?')) return;
+  showLoading('Assigning...');
+  for (const t of tasks) {
+    t.owner = owner;
+    await dbUpsertProject(t);
+  }
+  hideLoading();
+  renderOpeningsView();
+  showToast(tasks.length + ' tasks assigned to ' + owner);
 }
 
 async function toggleOpeningComplete(id) {
@@ -9094,10 +9143,15 @@ function renderOpeningPhases(el, tasks) {
       });
 
       const subcatId = 'subcat-' + ph + '-' + ci;
+      const bulkOwnerOpts = state.owners.map(o => `<option value="${escHtml(o)}">${escHtml(o)}</option>`).join('');
       html += `
           <div class="opening-subcat ${catHasUrgent ? 'open' : ''}" id="${subcatId}">
             <div class="opening-subcat-header" onclick="toggleSubcat('${subcatId}')">
               ${escHtml(cat)} <span class="opening-subcat-count">${catDone}/${catTasks.length}</span>
+              <select class="opening-subcat-bulk" onclick="event.stopPropagation()" onchange="bulkAssignOwner('${escHtml(cat)}', ${ph}, this.value); this.value='';" title="Bulk assign owner">
+                <option value="">Assign all...</option>
+                ${bulkOwnerOpts}
+              </select>
               <span class="opening-subcat-arrow">&#9660;</span>
             </div>
             <div class="opening-task-list">
