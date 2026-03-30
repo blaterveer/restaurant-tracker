@@ -1198,7 +1198,11 @@
   .opening-phase-header { display: flex; align-items: center; gap: 12px; padding: 14px 20px; cursor: pointer; transition: background 0.15s; user-select: none; }
   .opening-phase-header:hover { background: var(--parchment); }
   .opening-phase-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
-  .opening-phase-name { font-family: 'Instrument Sans', sans-serif; font-size: 15px; font-weight: 600; flex: 1; }
+  .opening-phase-name { font-family: 'Instrument Sans', sans-serif; font-size: 15px; font-weight: 600; flex: 1; position: relative; }
+  .phase-info-icon { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: var(--parchment); border: 1px solid var(--border); font-family: 'Instrument Sans', serif; font-size: 11px; font-style: italic; font-weight: 400; color: var(--warm-gray); cursor: pointer; margin-left: 6px; vertical-align: middle; transition: all 0.15s; line-height: 1; }
+  .phase-info-icon:hover { background: var(--espresso); color: white; border-color: var(--espresso); }
+  .phase-info-tooltip { display: none; position: absolute; top: calc(100% + 8px); left: 0; z-index: 100; background: white; border: 1px solid var(--border); border-radius: 6px; padding: 14px 18px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 400; line-height: 1.5; color: var(--ink); max-width: 480px; min-width: 300px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+  .phase-info-tooltip.show { display: block; }
   .opening-phase-stats { display: flex; align-items: center; gap: 12px; }
   .opening-phase-progress { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--warm-gray); }
   .opening-phase-progress-bar { width: 80px; height: 4px; background: var(--parchment); border-radius: 2px; overflow: hidden; }
@@ -8735,7 +8739,14 @@ function renderFilterDropdowns() {
 // OPENINGS VIEW
 // ============================================================
 const PHASE_COLORS = ['#8B3A1E', '#3A5C6B', '#5C4A2E', '#3B5241'];
-const PHASE_LABELS = ['Phase 0', 'Phase 1', 'Phase 2', 'Phase 3'];
+const PHASE_LABELS = ['Phase 0 — Construction & Design', 'Phase 1 — Pre-Opening Planning', 'Phase 2 — Build-Out & Execution', 'Phase 3 — Opening Sequence'];
+const PHASE_SHORT = ['Phase 0', 'Phase 1', 'Phase 2', 'Phase 3'];
+const PHASE_DESCRIPTIONS = [
+  'Site, lease, permits, contractor, equipment walk and installations. The physical space getting ready to operate. For Ponte specifically this is compressed — it\u2019s an existing buildout, so it\u2019s mostly equipment changes and the CO/permit amendment rather than a full build.',
+  'LTH\u2019s analytical and strategic work. Market study, competitive set, pro forma, concept finalization, pre-opening budgets, staffing cost estimates, and locking the critical path. This is the planning phase before execution starts.',
+  'The bulk of the work — everything that gets built, hired, designed, written, and ordered. Menu development, beverage program, brand and PR, staffing and HR, training materials, operational systems, POS, licenses and permits, collateral, OS&E. This is where LTH\u2019s scope is heaviest.',
+  'The final push. Staff training, mock service, Friends and Family, procedural setup, opening and closing checklists, sidework, and the grand opening itself. Everything from about 6 weeks out through opening day.'
+];
 
 function getOpeningTasks(openingId) {
   return state.projects.filter(p => p.openingId === openingId && !p.archived);
@@ -9127,7 +9138,9 @@ function renderOpeningPhases(el, tasks) {
       <div class="opening-phase ${phaseOpen ? 'open' : ''}" id="opening-phase-${ph}">
         <div class="opening-phase-header" onclick="toggleOpeningPhase(${ph})">
           <div class="opening-phase-dot" style="background:${color}"></div>
-          <div class="opening-phase-name">${PHASE_LABELS[ph]}</div>
+          <div class="opening-phase-name">${PHASE_LABELS[ph]} <span class="phase-info-icon" onclick="event.stopPropagation();togglePhaseInfo(this)" title="Phase details">i</span>
+            <div class="phase-info-tooltip">${PHASE_DESCRIPTIONS[ph]}</div>
+          </div>
           <div class="opening-phase-stats">
             <span class="opening-phase-progress">${done}/${total}</span>
             <div class="opening-phase-progress-bar">
@@ -9208,6 +9221,23 @@ function toggleAllPhases(expand) {
     state._openingSections[k] = expand;
   });
 }
+
+function togglePhaseInfo(iconEl) {
+  const tooltip = iconEl.nextElementSibling;
+  if (!tooltip) return;
+  // Close any other open tooltips first
+  document.querySelectorAll('.phase-info-tooltip.show').forEach(el => {
+    if (el !== tooltip) el.classList.remove('show');
+  });
+  tooltip.classList.toggle('show');
+}
+
+// Close phase info tooltips when clicking outside
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.phase-info-icon') && !e.target.closest('.phase-info-tooltip')) {
+    document.querySelectorAll('.phase-info-tooltip.show').forEach(el => el.classList.remove('show'));
+  }
+});
 
 function toggleOpeningPhase(ph) {
   const key = 'phase-' + ph;
@@ -9335,7 +9365,7 @@ function renderOpeningGantt(el, tasks, opening) {
 
   // Legend
   let legendHtml = '<div class="opening-gantt-legend">';
-  PHASE_LABELS.forEach((label, i) => {
+  PHASE_SHORT.forEach((label, i) => {
     legendHtml += `<div class="opening-gantt-legend-item"><div class="opening-gantt-legend-dot" style="background:${PHASE_COLORS[i]}"></div>${label}</div>`;
   });
   legendHtml += `<div class="opening-gantt-legend-item" style="margin-left:16px"><div class="opening-gantt-legend-dot" style="background:var(--rust);border-radius:50%"></div>Today</div>`;
