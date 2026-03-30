@@ -9442,7 +9442,7 @@ function renderOpeningGantt(el, tasks, opening) {
         ${weeks.map((w) => {
           const wEnd = new Date(w); wEnd.setDate(wEnd.getDate() + 6);
           const todayInWeek = todayDate >= w && todayDate <= wEnd;
-          return `<td class="gantt-bar-cell gantt-day-cell ${todayInWeek ? 'today-col' : ''}" style="height:42px"></td>`;
+          return `<td class="gantt-bar-cell gantt-day-cell ${todayInWeek ? 'today-col' : ''}" style="height:42px;min-width:${WEEK_W}px"></td>`;
         }).join('')}
       </tr>`;
       orderedGroups.push({ ...g, phase: ph });
@@ -9451,7 +9451,7 @@ function renderOpeningGantt(el, tasks, opening) {
 
   el.innerHTML = legendHtml + `
     <div class="gantt-scroll-wrap" id="opening-gantt-scroll">
-      <table class="gantt-table" id="opening-gantt-table">
+      <table class="gantt-table" id="opening-gantt-table" style="width:auto;min-width:${220 + weeks.length * WEEK_W}px">
         <thead>
           <tr class="gantt-header-row"><th class="label-col"></th>${monthRow}</tr>
           <tr class="gantt-header-row"><th class="label-col" style="font-size:10px">Category</th>${weekRow}</tr>
@@ -9460,81 +9460,81 @@ function renderOpeningGantt(el, tasks, opening) {
       </table>
     </div>`;
 
-  // Draw grouped bars
+  // Draw grouped bars — use requestAnimationFrame to ensure DOM is laid out
   const timelineStart = weeks[0];
-  const totalMs = endDate - timelineStart;
-  // Get consistent column start from header cells
-  const _headerCells = document.querySelectorAll('#opening-gantt-table .gantt-header-row:last-child th');
-  const _firstWeekCell = _headerCells.length > 1 ? _headerCells[1] : null;
-  const colStart = _firstWeekCell ? _firstWeekCell.offsetLeft : 220;
 
-  const rows = document.querySelectorAll('#opening-gantt-table .gantt-row');
-  rows.forEach((row, i) => {
-    const g = orderedGroups[i];
-    if (!g || !g.earliest || !g.latest) return;
+  requestAnimationFrame(() => {
+    const table = document.getElementById('opening-gantt-table');
+    const wrap = document.getElementById('opening-gantt-scroll');
+    if (!table || !wrap) return;
 
-    const barStartDate = g.earliest < timelineStart ? timelineStart : g.earliest;
-    const barEndDate = g.latest > endDate ? endDate : g.latest;
-    if (barStartDate > barEndDate) return;
+    // Get label width from the first body row's label cell (matches restaurant Gantt pattern)
+    const firstLabelCell = table.querySelector('.gantt-label-cell');
+    const labelW = firstLabelCell ? firstLabelCell.offsetWidth : 220;
 
-    const startWeeks = (barStartDate - timelineStart) / (7 * 86400000);
-    const endWeeks = (barEndDate - timelineStart) / (7 * 86400000);
-    const leftPx = colStart + Math.round(startWeeks * WEEK_W);
-    const widthPx = Math.max(Math.round((endWeeks - startWeeks) * WEEK_W), 8);
+    const rows = document.querySelectorAll('#opening-gantt-table .gantt-row');
+    rows.forEach((row, i) => {
+      const g = orderedGroups[i];
+      if (!g || !g.earliest || !g.latest) return;
 
-    const barColor = PHASE_COLORS[g.phase];
-    const pct = g.total > 0 ? Math.round((g.done / g.total) * 100) : 0;
+      const barStartDate = g.earliest < timelineStart ? timelineStart : g.earliest;
+      const barEndDate = g.latest > endDate ? endDate : g.latest;
+      if (barStartDate > barEndDate) return;
 
-    const overlay = document.createElement('div');
-    overlay.style.cssText = 'position:absolute;top:0;bottom:0;left:0;right:0;pointer-events:none;';
+      const startWeeks = (barStartDate - timelineStart) / (7 * 86400000);
+      const endWeeks = (barEndDate - timelineStart) / (7 * 86400000);
+      const leftPx = labelW + Math.round(startWeeks * WEEK_W) + 1;
+      const widthPx = Math.max(Math.round((endWeeks - startWeeks) * WEEK_W), 8);
 
-    // Background bar (full span)
-    const bar = document.createElement('div');
-    bar.className = 'gantt-bar' + (g.done === g.total ? ' complete' : '') + (g.hasOverdue ? ' overdue' : '');
-    bar.style.cssText = `left:${leftPx}px;width:${widthPx}px;background:${barColor};opacity:0.3;`;
-    bar.title = `${g.cat} — ${g.done}/${g.total} (${pct}%)`;
-    bar.style.pointerEvents = 'auto';
-    overlay.appendChild(bar);
+      const barColor = PHASE_COLORS[g.phase];
+      const pct = g.total > 0 ? Math.round((g.done / g.total) * 100) : 0;
 
-    // Progress fill bar
-    if (pct > 0 && pct < 100) {
-      const fillBar = document.createElement('div');
-      fillBar.className = 'gantt-bar';
-      fillBar.style.cssText = `left:${leftPx}px;width:${Math.round(widthPx * pct / 100)}px;background:${barColor};`;
-      overlay.appendChild(fillBar);
-    } else if (pct === 100) {
-      bar.style.opacity = '0.5';
-    }
+      const overlay = document.createElement('div');
+      overlay.style.cssText = 'position:absolute;top:0;bottom:0;left:0;right:0;pointer-events:none;';
 
-    // Label on bar
-    if (widthPx > 60) {
-      const labelSpan = document.createElement('span');
-      labelSpan.className = 'gantt-bar-label';
-      labelSpan.style.cssText = `position:absolute;left:${leftPx + 6}px;top:50%;transform:translateY(-50%);font-size:10px;color:white;white-space:nowrap;font-family:'DM Mono',monospace;pointer-events:none;z-index:1;`;
-      labelSpan.textContent = `${g.done}/${g.total}`;
-      overlay.appendChild(labelSpan);
-    }
+      // Background bar (full span)
+      const bar = document.createElement('div');
+      bar.className = 'gantt-bar' + (g.done === g.total ? ' complete' : '') + (g.hasOverdue ? ' overdue' : '');
+      bar.style.cssText = `left:${leftPx}px;width:${widthPx}px;background:${barColor};opacity:0.3;`;
+      bar.title = `${g.cat} — ${g.done}/${g.total} (${pct}%)`;
+      bar.style.pointerEvents = 'auto';
+      overlay.appendChild(bar);
 
-    row.style.position = 'relative';
-    row.appendChild(overlay);
-  });
+      // Progress fill bar
+      if (pct > 0 && pct < 100) {
+        const fillBar = document.createElement('div');
+        fillBar.className = 'gantt-bar';
+        fillBar.style.cssText = `left:${leftPx}px;width:${Math.round(widthPx * pct / 100)}px;background:${barColor};`;
+        overlay.appendChild(fillBar);
+      } else if (pct === 100) {
+        bar.style.opacity = '0.5';
+      }
 
-  // Today line + Opening day line
-  const wrap = document.getElementById('opening-gantt-scroll');
-  const table = document.getElementById('opening-gantt-table');
-  if (wrap && table) {
+      // Label on bar
+      if (widthPx > 60) {
+        const labelSpan = document.createElement('span');
+        labelSpan.className = 'gantt-bar-label';
+        labelSpan.style.cssText = `position:absolute;left:${leftPx + 6}px;top:50%;transform:translateY(-50%);font-size:10px;color:white;white-space:nowrap;font-family:'DM Mono',monospace;pointer-events:none;z-index:1;`;
+        labelSpan.textContent = `${g.done}/${g.total}`;
+        overlay.appendChild(labelSpan);
+      }
+
+      row.style.position = 'relative';
+      row.appendChild(overlay);
+    });
+
+    // Today line + Opening day line (same pattern as restaurant Gantt)
     wrap.style.position = 'relative';
-
-    // Find the actual pixel position of week columns from the header cells
-    const headerCells = table.querySelectorAll('.gantt-header-row:last-child th');
-    const firstWeekCell = headerCells.length > 1 ? headerCells[1] : null; // [0] is label-col
-    const colStart = firstWeekCell ? firstWeekCell.offsetLeft : 220;
 
     // Today line
     const todayWeeks = (todayDate - timelineStart) / (7 * 86400000);
     const todayLine = document.createElement('div');
     todayLine.className = 'gantt-today-line';
-    todayLine.style.cssText = `position:absolute;top:0;bottom:0;width:2px;left:${colStart + Math.round(todayWeeks * WEEK_W)}px;`;
+    todayLine.style.position = 'absolute';
+    todayLine.style.top = '0';
+    todayLine.style.bottom = '0';
+    todayLine.style.width = '2px';
+    todayLine.style.left = (labelW + Math.round(todayWeeks * WEEK_W) + 1) + 'px';
     wrap.appendChild(todayLine);
 
     // Opening day line
@@ -9542,10 +9542,13 @@ function renderOpeningGantt(el, tasks, opening) {
     if (targetWeeks >= 0 && targetWeeks <= weeks.length) {
       const openingLine = document.createElement('div');
       openingLine.className = 'opening-gantt-milestone';
-      openingLine.style.cssText = `position:absolute;top:0;bottom:0;left:${colStart + Math.round(targetWeeks * WEEK_W)}px;`;
+      openingLine.style.position = 'absolute';
+      openingLine.style.top = '0';
+      openingLine.style.bottom = '0';
+      openingLine.style.left = (labelW + Math.round(targetWeeks * WEEK_W) + 1) + 'px';
       wrap.appendChild(openingLine);
     }
-  }
+  });
 }
 
 // ============================================================
