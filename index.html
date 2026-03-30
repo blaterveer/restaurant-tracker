@@ -510,6 +510,10 @@
     padding: 20px;
   }
   .modal-overlay.open { display: flex; }
+  /* Opening panel mode: right-side slide-out instead of centered overlay */
+  .modal-overlay.opening-panel { background: none; backdrop-filter: none; pointer-events: none; align-items: stretch; justify-content: flex-end; padding: 0; }
+  .modal-overlay.opening-panel .modal { pointer-events: auto; max-width: 460px; max-height: 100vh; height: 100vh; box-shadow: -12px 0 40px rgba(0,0,0,0.2); animation: slideInRight 0.3s ease; }
+  @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
   .modal {
     background: var(--cream);
     width: 100%;
@@ -5592,6 +5596,9 @@ function openOpeningTaskModal(editId = null) {
   // Use the regular modal but configure it for opening mode
   openAddModal(editId);
 
+  // Switch to side panel mode for openings
+  document.getElementById('project-modal').classList.add('opening-panel');
+
   // Now override for opening context
   state._openingModalId = opening.id;
   document.getElementById('modal-title').innerHTML = isEdit ? 'Edit <em>Opening Task</em>' : 'New <em>Opening Task</em>';
@@ -5818,7 +5825,9 @@ async function saveProject() {
 }
 
 function closeModal() {
-  document.getElementById('project-modal').classList.remove('open');
+  const modal = document.getElementById('project-modal');
+  modal.classList.remove('open');
+  modal.classList.remove('opening-panel');
   state.editProjectId = null;
   state.pendingInboxItemId = null;
   state._pendingAgendaItemId = null;
