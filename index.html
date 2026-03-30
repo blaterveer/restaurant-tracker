@@ -9451,7 +9451,7 @@ function renderOpeningGantt(el, tasks, opening) {
 
   el.innerHTML = legendHtml + `
     <div class="gantt-scroll-wrap" id="opening-gantt-scroll">
-      <table class="gantt-table" id="opening-gantt-table" style="width:auto;min-width:${220 + weeks.length * WEEK_W}px">
+      <table class="gantt-table" id="opening-gantt-table">
         <thead>
           <tr class="gantt-header-row"><th class="label-col"></th>${monthRow}</tr>
           <tr class="gantt-header-row"><th class="label-col" style="font-size:10px">Category</th>${weekRow}</tr>
@@ -9460,7 +9460,7 @@ function renderOpeningGantt(el, tasks, opening) {
       </table>
     </div>`;
 
-  // Draw grouped bars — use requestAnimationFrame to ensure DOM is laid out
+  // Draw bars and lines after DOM layout, using ACTUAL rendered cell positions
   const timelineStart = weeks[0];
 
   requestAnimationFrame(() => {
@@ -9468,9 +9468,19 @@ function renderOpeningGantt(el, tasks, opening) {
     const wrap = document.getElementById('opening-gantt-scroll');
     if (!table || !wrap) return;
 
-    // Get label width from the first body row's label cell (matches restaurant Gantt pattern)
-    const firstLabelCell = table.querySelector('.gantt-label-cell');
-    const labelW = firstLabelCell ? firstLabelCell.offsetWidth : 220;
+    // Measure actual rendered column positions from the header row
+    const headerRow = table.querySelectorAll('.gantt-header-row')[1]; // second row has week cells
+    if (!headerRow) return;
+    const headerCells = headerRow.querySelectorAll('th');
+    if (headerCells.length < 2) return;
+
+    // headerCells[0] is the label column, [1]+ are week columns
+    const labelColRight = headerCells[1].offsetLeft; // left edge of first week column = right edge of label
+    const actualWeekW = headerCells[1].offsetWidth;  // actual rendered width of one week column
+
+    function weeksToPx(w) {
+      return labelColRight + Math.round(w * actualWeekW);
+    }
 
     const rows = document.querySelectorAll('#opening-gantt-table .gantt-row');
     rows.forEach((row, i) => {
@@ -9481,10 +9491,10 @@ function renderOpeningGantt(el, tasks, opening) {
       const barEndDate = g.latest > endDate ? endDate : g.latest;
       if (barStartDate > barEndDate) return;
 
-      const startWeeks = (barStartDate - timelineStart) / (7 * 86400000);
-      const endWeeks = (barEndDate - timelineStart) / (7 * 86400000);
-      const leftPx = labelW + Math.round(startWeeks * WEEK_W) + 1;
-      const widthPx = Math.max(Math.round((endWeeks - startWeeks) * WEEK_W), 8);
+      const startW = (barStartDate - timelineStart) / (7 * 86400000);
+      const endW = (barEndDate - timelineStart) / (7 * 86400000);
+      const leftPx = weeksToPx(startW);
+      const widthPx = Math.max(Math.round((endW - startW) * actualWeekW), 8);
 
       const barColor = PHASE_COLORS[g.phase];
       const pct = g.total > 0 ? Math.round((g.done / g.total) * 100) : 0;
@@ -9523,29 +9533,22 @@ function renderOpeningGantt(el, tasks, opening) {
       row.appendChild(overlay);
     });
 
-    // Today line + Opening day line (same pattern as restaurant Gantt)
+    // Today line + Opening day line
     wrap.style.position = 'relative';
 
     // Today line
-    const todayWeeks = (todayDate - timelineStart) / (7 * 86400000);
+    const todayW = (todayDate - timelineStart) / (7 * 86400000);
     const todayLine = document.createElement('div');
     todayLine.className = 'gantt-today-line';
-    todayLine.style.position = 'absolute';
-    todayLine.style.top = '0';
-    todayLine.style.bottom = '0';
-    todayLine.style.width = '2px';
-    todayLine.style.left = (labelW + Math.round(todayWeeks * WEEK_W) + 1) + 'px';
+    todayLine.style.cssText = `position:absolute;top:0;bottom:0;width:2px;left:${weeksToPx(todayW)}px;`;
     wrap.appendChild(todayLine);
 
     // Opening day line
-    const targetWeeks = (targetDate - timelineStart) / (7 * 86400000);
-    if (targetWeeks >= 0 && targetWeeks <= weeks.length) {
+    const targetW = (targetDate - timelineStart) / (7 * 86400000);
+    if (targetW >= 0 && targetW <= weeks.length) {
       const openingLine = document.createElement('div');
       openingLine.className = 'opening-gantt-milestone';
-      openingLine.style.position = 'absolute';
-      openingLine.style.top = '0';
-      openingLine.style.bottom = '0';
-      openingLine.style.left = (labelW + Math.round(targetWeeks * WEEK_W) + 1) + 'px';
+      openingLine.style.cssText = `position:absolute;top:0;bottom:0;left:${weeksToPx(targetW)}px;`;
       wrap.appendChild(openingLine);
     }
   });
