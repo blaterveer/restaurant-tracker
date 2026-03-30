@@ -514,9 +514,10 @@
   .modal-overlay.opening-panel { background: none; backdrop-filter: none; pointer-events: none; align-items: stretch; justify-content: flex-end; padding: 0; }
   .modal-overlay.opening-panel .modal { pointer-events: auto; max-width: 460px; max-height: 100vh; height: 100vh; box-shadow: -12px 0 40px rgba(0,0,0,0.2); animation: slideInRight 0.3s ease; position: relative; transition: max-width 0.25s ease; }
   .modal-overlay.opening-panel.collapsed .modal { max-width: 0; overflow: hidden; box-shadow: none; }
-  .opening-panel-toggle { pointer-events: auto; position: absolute; left: -32px; top: 50%; transform: translateY(-50%); width: 28px; height: 56px; background: var(--ink); color: var(--cream); border: none; border-radius: 6px 0 0 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; box-shadow: -4px 0 12px rgba(0,0,0,0.15); z-index: 1; transition: background 0.15s; }
+  .opening-panel-toggle { pointer-events: auto; position: fixed; right: 460px; top: 50%; transform: translateY(-50%); width: 28px; height: 56px; background: var(--ink); color: var(--cream); border: none; border-radius: 6px 0 0 6px; cursor: pointer; display: none; align-items: center; justify-content: center; font-size: 14px; box-shadow: -4px 0 12px rgba(0,0,0,0.15); z-index: 201; transition: right 0.25s ease, background 0.15s; }
   .opening-panel-toggle:hover { background: var(--espresso); }
-  .modal-overlay:not(.opening-panel) .opening-panel-toggle { display: none; }
+  .modal-overlay.opening-panel.open .opening-panel-toggle { display: flex; }
+  .modal-overlay.opening-panel.collapsed .opening-panel-toggle { right: 0; }
   @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
   .modal {
     background: var(--cream);
@@ -3220,8 +3221,8 @@
 
 <!-- ADD/EDIT PROJECT MODAL -->
 <div class="modal-overlay" id="project-modal">
+  <button class="opening-panel-toggle" onclick="toggleOpeningPanel()" title="Collapse/expand form">&#9654;</button>
   <div class="modal">
-    <button class="opening-panel-toggle" onclick="toggleOpeningPanel()" title="Collapse/expand form">&#9654;</button>
     <div class="modal-header">
       <h2 id="modal-title">New <em>Task</em></h2>
       <button class="modal-close" onclick="closeModal()">&#10005;</button>
