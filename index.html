@@ -1115,8 +1115,8 @@
     white-space: nowrap;
   }
   .gantt-day-cell { min-width: 28px; border-right: 1px solid rgba(212,203,184,0.3); }
-  .gantt-day-cell.today-col { background: rgba(139,58,30,0.06); }
-  .gantt-day-cell.opening-target-col { border-right: 2px solid var(--gold); }
+  .gantt-day-cell.today-col { background: rgba(139,58,30,0.08); border-left: 2px solid var(--rust); border-right: 2px solid var(--rust); }
+  .gantt-day-cell.opening-target-col { background: rgba(201,168,76,0.1); border-left: 2px solid var(--gold); border-right: 2px solid var(--gold); }
   .gantt-day-cell.weekend { background: rgba(0,0,0,0.015); }
   .gantt-no-date { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--warm-gray); padding: 9px 12px; text-align: center; }
   .gantt-legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 16px; }
@@ -9400,7 +9400,7 @@ function renderOpeningGantt(el, tasks, opening) {
     let cls = 'gantt-day-cell';
     if (todayInWeek) cls += ' today-col';
     if (isTarget) cls += ' opening-target-col';
-    return `<th class="${cls}" style="min-width:36px;font-size:9px">${todayInWeek ? '<span style="color:#ff6b4a;font-weight:700">▼</span> ' : ''}${label}</th>`;
+    return `<th class="${cls}" style="min-width:36px;font-size:9px">${label}${todayInWeek ? '<div style="font-size:7px;color:#ff6b4a;font-weight:700;letter-spacing:0.05em;margin-top:1px">TODAY</div>' : ''}${isTarget ? '<div style="font-size:7px;color:var(--gold);font-weight:700;letter-spacing:0.05em;margin-top:1px">OPEN</div>' : ''}</th>`;
   }).join('');
 
   // Build grouped rows
@@ -9451,18 +9451,21 @@ function renderOpeningGantt(el, tasks, opening) {
         const todayInWeek = todayDate >= w && todayDate <= wEnd;
         const isTarget = idx === targetWeekIdx;
         const inRange = idx >= startWk && idx <= endWk;
+        const isFirst = idx === startWk;
+        const isLast = idx === endWk;
 
         let bgStyle = '';
         let content = '';
         if (inRange) {
-          if (allDone) {
-            bgStyle = `background:${barColor};opacity:0.25;`;
-          } else {
-            bgStyle = `background:${barColor};opacity:0.18;`;
-          }
-          // Show progress label in the first cell of the range
-          if (idx === startWk) {
-            content = `<span style="position:relative;z-index:1;font-family:'DM Mono',monospace;font-size:10px;color:${barColor};font-weight:600;white-space:nowrap">${g.done}/${g.total}</span>`;
+          const opacity = allDone ? 0.2 : 0.3;
+          bgStyle = `background:${barColor}${Math.round(opacity * 255).toString(16).padStart(2,'0')};`;
+          // Rounded edges on first/last cells
+          if (isFirst && isLast) bgStyle += 'border-radius:4px;';
+          else if (isFirst) bgStyle += 'border-radius:4px 0 0 4px;';
+          else if (isLast) bgStyle += 'border-radius:0 4px 4px 0;';
+          // Show progress label in first cell
+          if (isFirst) {
+            content = `<span style="position:relative;z-index:1;font-family:'DM Mono',monospace;font-size:9px;color:white;font-weight:600;white-space:nowrap;text-shadow:0 1px 2px rgba(0,0,0,0.3)">${g.done}/${g.total}</span>`;
           }
         }
 
@@ -9470,7 +9473,7 @@ function renderOpeningGantt(el, tasks, opening) {
         if (todayInWeek) cls += ' today-col';
         if (isTarget) cls += ' opening-target-col';
 
-        return `<td class="${cls}" style="height:36px;min-width:36px;padding:0 2px;vertical-align:middle;${bgStyle}">${content}</td>`;
+        return `<td class="${cls}" style="height:32px;min-width:36px;padding:0 3px;vertical-align:middle;${bgStyle}">${content}</td>`;
       }).join('');
 
       tableRows += `<tr class="gantt-row" style="cursor:default" title="${escHtml(g.cat)}: ${g.done}/${g.total} (${pct}%)">
