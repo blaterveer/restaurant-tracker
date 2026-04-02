@@ -439,94 +439,161 @@ function exportOpeningCSV() {
 function exportOpeningReport() {
   const opening = state.openings.find(o => o.id === state.activeOpeningId);
   if (!opening) return;
+  document.getElementById('report-notes-input').value = '';
+  document.getElementById('report-notes-modal-overlay').classList.add('open');
+}
+
+function closeReportNotesModal() {
+  document.getElementById('report-notes-modal-overlay').classList.remove('open');
+}
+
+function generateOpeningReportPDF() {
+  const opening = state.openings.find(o => o.id === state.activeOpeningId);
+  if (!opening) return;
+
+  const userNotes = document.getElementById('report-notes-input').value.trim();
+  closeReportNotesModal();
 
   const tasks = getOpeningTasks(opening.id);
   const total = tasks.length;
-  const done = tasks.filter(t => t.complete).length;
-  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-  const overdue = tasks.filter(t => !t.complete && daysUntil(dueDate(t)) !== null && daysUntil(dueDate(t)) < 0);
-  const dueSoon = tasks.filter(t => !t.complete && daysUntil(dueDate(t)) !== null && daysUntil(dueDate(t)) >= 0 && daysUntil(dueDate(t)) <= 14);
+  const doneCount = tasks.filter(t => t.complete).length;
+  const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
+
+  const overdue = tasks.filter(t => {
+    if (t.complete) return false;
+    const d = daysUntil(dueDate(t));
+    return d !== null && d < 0;
+  });
   const high = tasks.filter(t => !t.complete && t.priority === 'High');
+
   const targetStr = new Date(opening.targetDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   const daysLeft = daysUntil(opening.targetDate);
+  const dateLabel = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-  // Group by category
-  const byCategory = {};
+  // 7-day cutoff
+  const now = new Date(today() + 'T00:00:00');
+  const cutoff7 = new Date(now);
+  cutoff7.setDate(cutoff7.getDate() - 7);
+
+  // Tasks completed in last 7 days
+  const recentlyCompleted = tasks.filter(t => {
+    if (!t.complete) return false;
+    const u = t.updatedAt ? new Date(t.updatedAt) : null;
+    return u && u >= cutoff7;
+  }).sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+
+  // Updates (notes) added in last 7 days
+  const recentUpdates = [];
   tasks.forEach(t => {
-    const cat = t.category || 'Uncategorized';
-    if (!byCategory[cat]) byCategory[cat] = { total: 0, done: 0, tasks: [] };
-    byCategory[cat].total++;
-    if (t.complete) byCategory[cat].done++;
-    byCategory[cat].tasks.push(t);
+    const taskNotes = (t.notes || []).filter(n => n.date && new Date(n.date + 'T00:00:00') >= cutoff7);
+    if (taskNotes.length > 0) {
+      recentUpdates.push({ task: t, notes: taskNotes.sort((a, b) => b.date.localeCompare(a.date)) });
+    }
   });
+  recentUpdates.sort((a, b) => b.notes[0].date.localeCompare(a.notes[0].date));
 
-  // Group by owner
-  const byOwner = {};
-  tasks.forEach(t => {
-    const own = t.owner || 'Unassigned';
-    if (!byOwner[own]) byOwner[own] = { total: 0, done: 0 };
-    byOwner[own].total++;
-    if (t.complete) byOwner[own].done++;
-  });
+  // Logo
+  var lthLogoSrc = '';
+  var scLogoEl = document.querySelector('.header-logos img');
+  if (scLogoEl) lthLogoSrc = scLogoEl.src;
 
-  let report = '';
-  report += `OPENING REPORT: ${opening.name}\n`;
-  report += `${'='.repeat(50)}\n`;
-  report += `Restaurant: ${opening.restaurant}\n`;
-  report += `Target Date: ${targetStr}${daysLeft !== null ? ' (' + daysLeft + ' days remaining)' : ''}\n`;
-  report += `Generated: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}\n\n`;
+  // Build HTML
+  let html = '';
 
-  report += `SUMMARY\n${'-'.repeat(30)}\n`;
-  report += `Total Tasks: ${total}\n`;
-  report += `Completed: ${done}/${total} (${pct}%)\n`;
-  report += `Overdue: ${overdue.length}\n`;
-  report += `Due Within 14 Days: ${dueSoon.length}\n`;
-  report += `High Priority (Open): ${high.length}\n\n`;
+  // Header
+  html += '<div class="pr-header">';
+  html += '<div class="pr-header-left">';
+  html += '<div>';
+  html += '<h1>' + escHtml(opening.name) + '</h1>';
+  html += '<p>' + escHtml(opening.restaurant) + ' &mdash; Target: ' + escHtml(targetStr);
+  if (daysLeft !== null) html += ' (' + daysLeft + ' days remaining)';
+  html += '</p>';
+  html += '<p style="font-size:8pt;color:#a09585;margin:2pt 0 0">Generated ' + dateLabel + '</p>';
+  html += '</div>';
+  html += '</div>';
+  if (lthLogoSrc) {
+    html += '<div class="pr-header-logos"><img src="' + lthLogoSrc + '"></div>';
+  }
+  html += '</div>';
 
-  report += `PROGRESS BY CATEGORY\n${'-'.repeat(30)}\n`;
-  Object.keys(byCategory).sort().forEach(cat => {
-    const c = byCategory[cat];
-    const cpct = c.total > 0 ? Math.round((c.done / c.total) * 100) : 0;
-    report += `  ${cat}: ${c.done}/${c.total} (${cpct}%)\n`;
-  });
-  report += '\n';
+  // User notes
+  if (userNotes) {
+    html += '<div class="pr-notes-label">Executive Summary</div>';
+    html += '<div class="pr-notes-block">' + escHtml(userNotes) + '</div>';
+  }
 
-  report += `PROGRESS BY OWNER\n${'-'.repeat(30)}\n`;
-  Object.keys(byOwner).sort().forEach(own => {
-    const o = byOwner[own];
-    const opct = o.total > 0 ? Math.round((o.done / o.total) * 100) : 0;
-    report += `  ${own}: ${o.done}/${o.total} (${opct}%)\n`;
-  });
-  report += '\n';
+  // Summary bar
+  html += '<div class="pr-summary-bar">';
+  html += '<div class="pr-summary-stat"><span class="pr-stat-value">' + total + '</span><span class="pr-stat-label">Total Tasks</span></div>';
+  html += '<div class="pr-summary-stat pr-stat-green"><span class="pr-stat-value">' + doneCount + '/' + total + '</span><span class="pr-stat-label">Completed (' + pct + '%)</span>';
+  html += '<div class="pr-progress-bar-track"><div class="pr-progress-bar-fill" style="width:' + pct + '%"></div></div>';
+  html += '</div>';
+  html += '<div class="pr-summary-stat pr-stat-rust"><span class="pr-stat-value">' + overdue.length + '</span><span class="pr-stat-label">Overdue</span></div>';
+  html += '<div class="pr-summary-stat"><span class="pr-stat-value">' + high.length + '</span><span class="pr-stat-label">High Priority Open</span></div>';
+  html += '</div>';
 
+  // Tasks completed in last 7 days
+  html += '<div class="pr-section-title">Tasks Completed (Last 7 Days)</div>';
+  if (recentlyCompleted.length === 0) {
+    html += '<p class="pr-no-activity">No tasks completed in the last 7 days.</p>';
+  } else {
+    html += '<div class="pr-subsection">';
+    html += '<table class="pr-table"><thead><tr><th>Task</th><th>Category</th><th>Owner</th><th>Completed</th></tr></thead><tbody>';
+    recentlyCompleted.forEach(t => {
+      const cd = t.updatedAt ? new Date(t.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '\u2014';
+      html += '<tr>';
+      html += '<td>' + escHtml(t.title) + '</td>';
+      html += '<td>' + escHtml(t.category || '\u2014') + '</td>';
+      html += '<td>' + escHtml(t.owner || '\u2014') + '</td>';
+      html += '<td class="pr-complete">' + cd + '</td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table></div>';
+  }
+
+  // Updates in last 7 days
+  html += '<div class="pr-section-title">Updates (Last 7 Days)</div>';
+  if (recentUpdates.length === 0) {
+    html += '<p class="pr-no-activity">No updates added in the last 7 days.</p>';
+  } else {
+    recentUpdates.forEach(({ task, notes }) => {
+      html += '<div class="pr-update-group">';
+      html += '<div class="pr-update-task-name">' + escHtml(task.title) + '</div>';
+      notes.forEach(n => {
+        const nd = new Date(n.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        html += '<div class="pr-update-note"><span class="pr-update-note-date">' + nd + '</span> &mdash; ' + escHtml(n.text) + '</div>';
+      });
+      html += '</div>';
+    });
+  }
+
+  // Overdue tasks
   if (overdue.length > 0) {
-    report += `OVERDUE TASKS\n${'-'.repeat(30)}\n`;
+    html += '<div class="pr-section-title">Overdue Tasks</div>';
+    html += '<div class="pr-subsection">';
+    html += '<table class="pr-table"><thead><tr><th>Task</th><th>Days Overdue</th><th>Owner</th><th>Priority</th></tr></thead><tbody>';
     overdue.sort((a, b) => (dueDate(a) || '').localeCompare(dueDate(b) || '')).forEach(t => {
       const due = dueDate(t);
       const days = Math.abs(daysUntil(due));
-      report += `  - ${t.title} (${days} day${days !== 1 ? 's' : ''} overdue, Owner: ${t.owner || 'Unassigned'})\n`;
+      const priClass = t.priority === 'High' ? 'pr-pri-high' : t.priority === 'Medium' ? 'pr-pri-medium' : 'pr-pri-low';
+      html += '<tr>';
+      html += '<td>' + escHtml(t.title) + '</td>';
+      html += '<td class="pr-overdue">' + days + ' day' + (days !== 1 ? 's' : '') + '</td>';
+      html += '<td>' + escHtml(t.owner || '\u2014') + '</td>';
+      html += '<td><span class="' + priClass + '">' + escHtml(t.priority || 'Low') + '</span></td>';
+      html += '</tr>';
     });
-    report += '\n';
+    html += '</tbody></table></div>';
   }
 
-  if (high.length > 0) {
-    report += `HIGH PRIORITY TASKS (OPEN)\n${'-'.repeat(30)}\n`;
-    high.sort((a, b) => (dueDate(a) || '9999-12-31').localeCompare(dueDate(b) || '9999-12-31')).forEach(t => {
-      const due = dueDate(t);
-      report += `  - ${t.title} (Due: ${due ? formatDate(due) : 'N/A'}, Owner: ${t.owner || 'Unassigned'})\n`;
-    });
-    report += '\n';
-  }
+  // Footer
+  html += '<div class="pr-footer"><span>Opening Report &mdash; ' + escHtml(opening.name) + '</span><span>' + dateLabel + '</span></div>';
 
-  const blob = new Blob([report], { type: 'text/plain;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  const label = opening.name.replace(/\s+/g, '-').toLowerCase();
-  a.download = `opening-report-${label}-${today()}.txt`;
-  a.click();
-  URL.revokeObjectURL(url);
-  showToast(`Report exported for ${opening.name}`, 'success');
+  // Render and print
+  const printView = document.getElementById('print-view');
+  printView.innerHTML = html;
+  window.print();
+  setTimeout(() => { printView.innerHTML = ''; }, 1000);
 }
 
 async function importData(input) {

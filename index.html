@@ -665,6 +665,24 @@
 <script src="js/inbox.js"></script>
 <script src="js/travel.js"></script>
 <script src="js/admin.js"></script>
+<!-- OPENING REPORT NOTES MODAL -->
+<div class="modal-overlay" id="report-notes-modal-overlay">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header">
+      <h2>Opening Report</h2>
+      <button class="modal-close" onclick="closeReportNotesModal()">&#215;</button>
+    </div>
+    <div class="modal-body" style="padding:24px 32px">
+      <p style="margin:0 0 12px;font-size:14px;color:var(--warm-gray)">Add an optional executive summary or notes. This will appear at the top of the report.</p>
+      <textarea id="report-notes-input" rows="6" placeholder="Write your summary here..." style="width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px;resize:vertical;background:var(--cream);color:var(--ink)"></textarea>
+    </div>
+    <div class="modal-footer" style="padding:16px 32px 24px;display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn-ghost" onclick="closeReportNotesModal()">Cancel</button>
+      <button class="btn-primary" onclick="generateOpeningReportPDF()">Generate Report</button>
+    </div>
+  </div>
+</div>
+
 <div id="print-view"></div>
 
 </body>

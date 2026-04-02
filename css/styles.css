@@ -1518,6 +1518,15 @@
     .pr-subsection { margin-bottom: 16pt; page-break-inside: avoid; }
     .pr-subsection-title { font-size: 10pt; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #6b6055; margin-bottom: 6pt; }
     .pr-no-activity { font-size: 10pt; color: #a09585; font-style: italic; margin: 4pt 0 0; }
+    .pr-notes-block { background: #f7f4ef; border-left: 4pt solid #8b3a1e; padding: 12pt 16pt; margin-bottom: 20pt; white-space: pre-wrap; font-size: 11pt; line-height: 1.6; color: #1a1612; }
+    .pr-notes-label { font-size: 8pt; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #6b6055; margin-bottom: 4pt; }
+    .pr-section-title { font-size: 12pt; font-weight: 700; color: #1a1612; border-bottom: 2px solid #8b3a1e; padding-bottom: 6pt; margin: 20pt 0 12pt; }
+    .pr-update-group { margin-bottom: 12pt; page-break-inside: avoid; }
+    .pr-update-task-name { font-size: 10pt; font-weight: 700; color: #1a1612; margin-bottom: 4pt; }
+    .pr-update-note { font-size: 10pt; color: #3a3530; margin: 2pt 0 2pt 12pt; }
+    .pr-update-note-date { font-size: 9pt; color: #6b6055; font-weight: 600; }
+    .pr-progress-bar-track { width: 100%; height: 8pt; background: #ede8df; border-radius: 4pt; overflow: hidden; margin-top: 4pt; }
+    .pr-progress-bar-fill { height: 100%; background: #4a7c59; border-radius: 4pt; }
   }
   /* ============================================================
      LOGIN SCREEN
