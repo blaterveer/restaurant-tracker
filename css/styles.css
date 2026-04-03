@@ -1320,12 +1320,15 @@
     flex-shrink: 0;
   }
   .admin-list-item:hover .admin-item-actions { display: flex; }
+  .admin-list-item.editing .item-label { display: none; }
+  .admin-list-item.editing .admin-item-actions { display: none !important; }
   .admin-save-row {
     display: none;
     gap: 4px;
-    flex-shrink: 0;
+    flex: 1;
     align-items: center;
   }
+  .admin-list-item.editing .admin-save-row { display: flex; }
   .admin-item-btn {
     background: none;
     border: 1px solid var(--border);

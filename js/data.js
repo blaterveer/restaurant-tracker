@@ -215,12 +215,12 @@ async function dbAddLookup(table, name) {
 }
 
 async function dbUpdateLookup(table, oldName, newName) {
-  const { error } = await db.from(table).update({ name: newName }).eq('name', oldName);
+  const { error } = await db.from(table).update({ name: newName }).eq('name', oldName).eq('workspace_id', state.workspace_id);
   if (error) throw error;
 }
 
 async function dbDeleteLookup(table, name) {
-  const { error } = await db.from(table).delete().eq('name', name);
+  const { error } = await db.from(table).delete().eq('name', name).eq('workspace_id', state.workspace_id);
   if (error) throw error;
 }
 

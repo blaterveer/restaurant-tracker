@@ -157,8 +157,8 @@ function renderAdminList(listKey, listId, countId) {
         <button class="admin-item-btn" onclick="startEditAdminItem('${listKey}',${i})">Edit</button>
         <button class="admin-item-btn del" onclick="deleteAdminItem('${listKey}',${i})">Delete</button>
       </div>
-      <div class="admin-save-row" id="admin-save-row-${listKey}-${i}" style="display:none">
-        <input type="text" class="admin-add-input" id="admin-edit-input-${listKey}-${i}" value="${item}" style="padding:2px 6px;font-size:12px;width:160px" onkeydown="if(event.key==='Enter')saveAdminItem('${listKey}',${i});if(event.key==='Escape')cancelEditAdminItem('${listKey}',${i})">
+      <div class="admin-save-row" id="admin-save-row-${listKey}-${i}">
+        <input type="text" class="admin-add-input" id="admin-edit-input-${listKey}-${i}" value="${item}" style="flex:1" onkeydown="if(event.key==='Enter')saveAdminItem('${listKey}',${i});if(event.key==='Escape')cancelEditAdminItem('${listKey}',${i})">
         <button class="admin-item-btn save" onclick="saveAdminItem('${listKey}',${i})">Save</button>
         <button class="admin-item-btn" onclick="cancelEditAdminItem('${listKey}',${i})">✕</button>
       </div>
@@ -167,13 +167,13 @@ function renderAdminList(listKey, listId, countId) {
 }
 
 function startEditAdminItem(listKey, index) {
-  document.querySelectorAll('.admin-save-row').forEach(el => el.style.display = 'none');
-  document.getElementById(`admin-save-row-${listKey}-${index}`).style.display = 'flex';
+  document.querySelectorAll('.admin-list-item.editing').forEach(el => el.classList.remove('editing'));
+  document.getElementById(`admin-item-${listKey}-${index}`).classList.add('editing');
   const input = document.getElementById(`admin-edit-input-${listKey}-${index}`);
   input.focus(); input.select();
 }
 function cancelEditAdminItem(listKey, index) {
-  document.getElementById(`admin-save-row-${listKey}-${index}`).style.display = 'none';
+  document.getElementById(`admin-item-${listKey}-${index}`).classList.remove('editing');
 }
 
 const lookupTableMap = { categories: 'categories', types: 'types', owners: 'owners' };
