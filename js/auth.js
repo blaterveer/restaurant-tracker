@@ -158,7 +158,7 @@ function logout() {
   state.workspace_id = null;
   state.workspace_name = null;
   state.workspace_slug = null;
-  // Clear data arrays to prevent stale data from flashing on next login
+  // Clear data arrays and UI state to prevent stale data from flashing on next login
   state.restaurants = [];
   state.projects = [];
   state.categories = [];
@@ -168,6 +168,20 @@ function logout() {
   state.inboxRequests = [];
   state.agendaItems = [];
   state.adminInboxUnread = 0;
+  state.restaurantMeta = {};
+  state.activeTab = 'all';
+  state.detailProjectId = null;
+  state.editProjectId = null;
+  state.editingSubtaskId = null;
+  state.activeOpeningId = null;
+  state.openingTab = 'thisweek';
+  state._openingModalId = null;
+  state._openingSearch = '';
+  state._openingSections = {};
+  state._openingSectionsInit = false;
+  state.sort = { col: null, dir: 'asc' };
+  state.showOverdue = false;
+  state.pendingInboxItemId = null;
   render();
   document.body.classList.remove('logged-in');
   var headerEl = document.getElementById('header-title');
