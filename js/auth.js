@@ -66,6 +66,8 @@ async function initApp() {
   if (saved) {
     try {
       state.session = JSON.parse(saved);
+      // Reject stale sessions that lack workspace_id
+      if (!state.session.workspace_id) throw new Error('missing workspace');
       state.workspace_id = state.session.workspace_id;
       state.workspace_name = state.session.workspace_name;
       state.workspace_slug = state.session.workspace_slug;
@@ -77,6 +79,7 @@ async function initApp() {
       return;
     } catch(e) {
       sessionStorage.removeItem('sc_session');
+      state.session = null;
     }
   }
 
@@ -155,9 +158,20 @@ function logout() {
   state.workspace_id = null;
   state.workspace_name = null;
   state.workspace_slug = null;
+  // Clear data arrays to prevent stale data from flashing on next login
+  state.restaurants = [];
+  state.projects = [];
+  state.categories = [];
+  state.types = [];
+  state.owners = [];
+  state.openings = [];
+  state.inboxRequests = [];
+  state.agendaItems = [];
+  state.adminInboxUnread = 0;
+  render();
   document.body.classList.remove('logged-in');
   var headerEl = document.getElementById('header-title');
-  if (headerEl) headerEl.innerHTML = 'SC Culinary \u2014 <em>Project Dashboard</em>';
+  if (headerEl) headerEl.innerHTML = 'LT Hospitality \u2014 <em>Project Dashboard</em>';
   document.getElementById('login-password').value = '';
   document.getElementById('login-who').value = '';
   document.getElementById('login-error').style.display = 'none';

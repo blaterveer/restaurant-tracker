@@ -27,7 +27,15 @@ function openAddOwnerModal(returnSelectId) {
   _ownerReturnSelectId = returnSelectId;
   document.getElementById('f-owner-first').value = '';
   document.getElementById('f-owner-last').value  = '';
-  document.getElementById('f-owner-team').value  = 'SC Culinary';
+  // Populate team dropdown based on workspace
+  var teamSel = document.getElementById('f-owner-team');
+  var teams = state.workspace_slug === 'brandon'
+    ? [{ value: 'LTH Team', label: 'LTH Team' }]
+    : [{ value: 'SC Culinary', label: 'SC Culinary' }, { value: 'Property', label: 'Property' }];
+  teamSel.innerHTML = teams.map(function(t) {
+    return '<option value="' + t.value + '">' + t.label + '</option>';
+  }).join('');
+  teamSel.value = teams[0].value;
   document.getElementById('add-owner-modal').classList.add('open');
 }
 
