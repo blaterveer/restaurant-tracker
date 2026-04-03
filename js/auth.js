@@ -23,11 +23,12 @@ async function initApp() {
       }
       loadEl.textContent = 'Loading data\u2026';
       loadEl.style.cssText = 'position:fixed;inset:0;background:#1C1915;display:flex;align-items:center;justify-content:center;z-index:10000;font-family:"DM Mono",monospace;color:#F7F3EE;font-size:14px;letter-spacing:0.1em;';
-      // Set state from session
+      // Set state from session and reset view state
       state.session = parsed;
       state.workspace_id = parsed.workspace_id;
       state.workspace_name = parsed.workspace_name;
       state.workspace_slug = parsed.workspace_slug;
+      state.activeTab = 'all';
       document.body.classList.add('workspace-' + state.workspace_slug);
       updateHeaderTitle();
       // Load data and render behind opaque overlay
