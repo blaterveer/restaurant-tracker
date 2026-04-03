@@ -144,8 +144,8 @@ async function attemptLogin() {
 
   showLoading('Loading data\u2026');
   await loadAll();
-  hideLoading();
   render();
+  hideLoading();
 
   document.getElementById('login-screen').style.display = 'none';
   document.body.classList.add('logged-in');
@@ -182,7 +182,13 @@ function logout() {
   state.sort = { col: null, dir: 'asc' };
   state.showOverdue = false;
   state.pendingInboxItemId = null;
-  render();
+  // Wipe rendered DOM so no stale tabs/data are visible behind login screen
+  var wipe = ['summary-bar', 'tabs-wrapper', 'tabs-utility', 'project-table-body', 'mobile-nav-content'];
+  wipe.forEach(function(id) { var el = document.getElementById(id); if (el) el.innerHTML = ''; });
+  // Close any open panels/modals
+  var dp = document.getElementById('detail-panel');
+  if (dp) dp.classList.remove('open');
+  document.querySelectorAll('.modal-overlay.open').forEach(function(m) { m.classList.remove('open'); });
   document.body.classList.remove('logged-in');
   var headerEl = document.getElementById('header-title');
   if (headerEl) headerEl.innerHTML = 'LT Hospitality \u2014 <em>Project Dashboard</em>';
