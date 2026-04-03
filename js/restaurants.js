@@ -1060,7 +1060,7 @@ function renderRecentView() {
 
 
 async function loadRestaurantMap() {
-  const { data } = await db.from('restaurants').select('id,name');
+  const { data } = await db.from('restaurants').select('id,name').eq('workspace_id', state.workspace_id);
   travelState.restaurantMap = {};
   (data || []).forEach(r => { travelState.restaurantMap[r.name] = r.id; });
 }

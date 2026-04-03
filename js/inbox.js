@@ -5,7 +5,7 @@
 async function dbSubmitInboxRequest(restaurantName, title, description, category) {
   const { data, error } = await db
     .from('inbox_requests')
-    .insert([{ restaurant_name: restaurantName, title, description, category, status: 'submitted' }])
+    .insert([{ restaurant_name: restaurantName, title, description, category, status: 'submitted', workspace_id: state.workspace_id }])
     .select()
     .single();
   if (error) throw error;
@@ -30,7 +30,7 @@ async function dbUpdateInboxStatus(id, status) {
 // ============================================================
 
 async function dbAddAgendaItem(restaurant, title, description, sourceInboxId) {
-  const row = { restaurant_name: restaurant, title, description: description || '' };
+  const row = { restaurant_name: restaurant, title, description: description || '', workspace_id: state.workspace_id };
   if (sourceInboxId) row.inbox_request_id = sourceInboxId;
   const { data, error } = await db.from('agenda_items').insert([row]).select().single();
   if (error) throw error;

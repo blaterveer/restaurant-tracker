@@ -46,14 +46,14 @@ async function loadTravelData() {
     { data: ownerRecords },
   ] = await Promise.all([
     db.from('travelers').select('*').order('created_at'),
-    db.from('trips').select('*, restaurants(name)').order('start_date'),
+    db.from('trips').select('*, restaurants(name)').eq('workspace_id', state.workspace_id).order('start_date'),
     db.from('trip_travelers').select('*'),
     db.from('itinerary_items').select('*').order('date').order('time', { nullsFirst: true }),
     db.from('agenda_blocks').select('*').order('date').order('sort_order'),
-    db.from('agenda_templates').select('*').order('name'),
+    db.from('agenda_templates').select('*').eq('workspace_id', state.workspace_id).order('name'),
     db.from('visit_recaps').select('*, restaurants(name)').order('created_at', { ascending: false }),
     db.from('recap_observations').select('*').order('sort_order'),
-    db.from('owners').select('id, name').order('sort_order'),
+    db.from('owners').select('id, name').eq('workspace_id', state.workspace_id).order('sort_order'),
   ]);
 
   travelState.travelers = (travelers || []);
@@ -93,6 +93,7 @@ async function dbSaveTrip(trip, travelerIds) {
       start_date:    trip.start_date,
       end_date:      trip.end_date,
       notes:         trip.notes || null,
+      workspace_id:  state.workspace_id,
     }).select('id').single();
     if (error) { console.error(error); return; }
     id = data.id;

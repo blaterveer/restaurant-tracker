@@ -621,7 +621,7 @@ async function importData(input) {
 
     // Upsert lookup tables
     for (const table of ['restaurants','categories','types','owners']) {
-      const rows = imported[table].map((name, i) => ({ name, sort_order: i }));
+      const rows = imported[table].map((name, i) => ({ name, sort_order: i, workspace_id: state.workspace_id }));
       if (rows.length) {
         const { error } = await db.from(table).upsert(rows, { onConflict: 'name' });
         if (error) throw new Error(`${table}: ${error.message}`);

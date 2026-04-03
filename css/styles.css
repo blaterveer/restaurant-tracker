@@ -1532,15 +1532,15 @@
      LOGIN SCREEN
      ============================================================ */
   #login-screen { display: none; position: fixed; inset: 0; background: var(--cream); z-index: 9999; align-items: center; justify-content: center; padding: 24px; }
-  .login-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 40px; width: 100%; max-width: 400px; box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
+  .login-card { background: white; border: 1px solid var(--border); border-radius: 0; padding: 40px; width: 100%; max-width: 400px; box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
   .login-logo-wrap { text-align: center; margin-bottom: 24px; }
   .login-logo-wrap img { height: 48px; }
-  .login-title { font-family: 'Instrument Sans', sans-serif; font-size: 22px; font-weight: 600; color: var(--ink); text-align: center; margin: 0 0 4px; }
-  .login-sub { font-size: 13px; color: var(--warm-gray); text-align: center; margin: 0 0 28px; }
+  .login-title { font-family: 'Cinzel', serif; font-size: 22px; font-weight: 400; letter-spacing: 0.04em; color: var(--ink); text-align: center; margin: 0 0 4px; }
+  .login-sub { font-family: 'EB Garamond', serif; font-style: italic; font-size: 14px; color: var(--warm-gray); text-align: center; margin: 0 0 28px; }
   .login-form { display: flex; flex-direction: column; gap: 16px; }
-  .login-label { font-size: 12px; font-weight: 600; color: var(--ink-light); letter-spacing: 0.06em; text-transform: uppercase; display: block; margin-bottom: 6px; }
+  .login-label { font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 500; color: var(--ink-light); letter-spacing: 0.06em; text-transform: uppercase; display: block; margin-bottom: 6px; }
   .login-select, .login-input { width: 100%; }
-  .login-error { background: rgba(139,58,30,0.08); border: 1px solid rgba(139,58,30,0.25); color: var(--rust); border-radius: 6px; padding: 10px 12px; font-size: 13px; }
+  .login-error { background: rgba(139,58,30,0.08); border: 1px solid rgba(139,58,30,0.25); color: var(--rust); border-radius: 0; padding: 10px 12px; font-size: 13px; }
   .login-btn { width: 100%; padding: 12px; font-size: 14px; justify-content: center; margin-top: 4px; }
   /* ============================================================
      SUBTASKS
@@ -2811,5 +2811,225 @@
   @keyframes fadeInView {
     from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ============================================================
+     LTH PLATFORM DESIGN — Brandon's Personal Workspace
+     ============================================================ */
+
+  body.workspace-brandon {
+    --navy: #1C2E51;
+    --copper: #786F67;
+    --warm-bg: #FAFAF7;
+    --card-bg: #FFFFFF;
+    --border: #E8E5DF;
+    --text-primary: #2C2B28;
+    --text-secondary: #8A8780;
+    --text-muted: #B0ADA6;
+    --green: #1D9E75;
+    --green-bg: #E1F5EE;
+    --amber: #BA7517;
+    --amber-bg: #FAEEDA;
+    --blue: #185FA5;
+    --blue-bg: #E6F1FB;
+    --red: #A32D2D;
+    --red-bg: #FCEBEB;
+    --cream: var(--warm-bg);
+    --parchment: #F0EFEC;
+    --ink: var(--navy);
+    --ink-light: #3A4A66;
+    --rust: var(--navy);
+    --rust-light: #2A4068;
+    --warm-gray: var(--text-secondary);
+    --gold: var(--copper);
+    --gold-light: var(--copper);
+    background-color: var(--warm-bg);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text-primary);
+  }
+
+  /* Page titles — Cinzel */
+  body.workspace-brandon .page-title,
+  body.workspace-brandon h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 22px;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    color: var(--navy);
+  }
+
+  /* Summary bar stat values — Cinzel */
+  body.workspace-brandon .summary-stat .value,
+  body.workspace-brandon .admin-stat-card .stat-value,
+  body.workspace-brandon .analytics-stat-value {
+    font-family: 'Cinzel', serif;
+    font-size: 26px;
+    font-weight: 400;
+    color: var(--navy);
+  }
+
+  /* Summary bar stat labels — DM Sans uppercase */
+  body.workspace-brandon .summary-stat .label,
+  body.workspace-brandon .admin-stat-card .stat-label,
+  body.workspace-brandon .analytics-stat-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+  }
+
+  /* Admin stat sub notes — EB Garamond italic */
+  body.workspace-brandon .admin-stat-card .stat-sub {
+    font-family: 'EB Garamond', serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--copper);
+  }
+
+  /* Section labels — copper with hairline */
+  body.workspace-brandon .section-label,
+  body.workspace-brandon .rc-section-label,
+  body.workspace-brandon .people-section-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--copper);
+    text-transform: uppercase;
+  }
+
+  /* Cards — no border-radius, hairline border, no shadow */
+  body.workspace-brandon .admin-stat-card,
+  body.workspace-brandon .analytics-stat-card,
+  body.workspace-brandon .inbox-form-card {
+    background: var(--card-bg);
+    border: 0.5px solid var(--border);
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  /* Tables */
+  body.workspace-brandon table {
+    background: var(--card-bg);
+    border: 0.5px solid var(--border);
+    border-radius: 0;
+  }
+
+  body.workspace-brandon th {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-weight: 500;
+    background: var(--warm-bg);
+    border-bottom: 0.5px solid var(--border);
+  }
+
+  body.workspace-brandon td {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    border-bottom: 0.5px solid var(--border);
+  }
+
+  /* Buttons — navy, no border-radius */
+  body.workspace-brandon .btn-primary {
+    background: var(--navy);
+    color: #fff;
+    border: none;
+    border-radius: 0;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+  }
+  body.workspace-brandon .btn-primary:hover {
+    background: #2A4068;
+  }
+
+  /* Inputs — no border-radius */
+  body.workspace-brandon input,
+  body.workspace-brandon select,
+  body.workspace-brandon textarea {
+    border-radius: 0;
+    border: 0.5px solid var(--border);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+  }
+
+  body.workspace-brandon input:focus,
+  body.workspace-brandon select:focus,
+  body.workspace-brandon textarea:focus {
+    border-color: var(--navy);
+    outline: none;
+  }
+
+  /* Nav wordmark — show LT HOSPITALITY instead of SC logo */
+  body.workspace-brandon .header-logos img {
+    display: none;
+  }
+
+  body.workspace-brandon .header-logos::before {
+    content: 'LT HOSPITALITY';
+    font-family: 'Cinzel', serif;
+    font-size: 15px;
+    letter-spacing: 0.12em;
+    color: var(--warm-bg);
+  }
+
+  /* Header title override */
+  body.workspace-brandon header h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 22px;
+    color: var(--warm-bg);
+  }
+  body.workspace-brandon header h1 em {
+    color: var(--copper);
+  }
+
+  /* Badges — no border-radius */
+  body.workspace-brandon .badge,
+  body.workspace-brandon .overdue-badge,
+  body.workspace-brandon .inbox-category-pill {
+    border-radius: 0;
+  }
+
+  /* Modal — no border-radius, no shadow */
+  body.workspace-brandon .modal {
+    border-radius: 0;
+    box-shadow: none;
+    border: 0.5px solid var(--border);
+  }
+
+  body.workspace-brandon .detail-panel {
+    border-radius: 0;
+    box-shadow: none;
+    border-left: 0.5px solid var(--border);
+  }
+
+  /* Empty states — EB Garamond */
+  body.workspace-brandon .empty-state {
+    font-family: 'EB Garamond', serif;
+    font-style: italic;
+    font-size: 16px;
+    color: var(--copper);
+  }
+  body.workspace-brandon .empty-state h3 {
+    font-family: 'Cinzel', serif;
+    font-style: normal;
+    color: var(--navy);
+  }
+
+  /* Summary bar */
+  body.workspace-brandon .summary-bar {
+    background: var(--parchment);
+    border-bottom: 0.5px solid var(--border);
+  }
+
+  /* Login card — no border-radius */
+  body.workspace-brandon .login-card {
+    border-radius: 0;
+    box-shadow: none;
+    border: 0.5px solid var(--border);
   }
 

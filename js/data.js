@@ -18,6 +18,7 @@ async function autoArchiveOldCompleted() {
 }
 
 async function loadAll() {
+  const wsId = state.workspace_id;
   const [
     { data: restaurants },
     { data: categories  },
@@ -30,16 +31,16 @@ async function loadAll() {
     { data: inboxRequests },
     { data: openingsData },
   ] = await Promise.all([
-    db.from('restaurants').select('name, next_meeting_date').order('sort_order'),
-    db.from('categories' ).select('name').order('sort_order'),
-    db.from('types'      ).select('name').order('sort_order'),
-    db.from('owners'     ).select('name').order('sort_order'),
-    db.from('projects'   ).select('*'),
+    db.from('restaurants').select('name, next_meeting_date').eq('workspace_id', wsId).order('sort_order'),
+    db.from('categories' ).select('name').eq('workspace_id', wsId).order('sort_order'),
+    db.from('types'      ).select('name').eq('workspace_id', wsId).order('sort_order'),
+    db.from('owners'     ).select('name').eq('workspace_id', wsId).order('sort_order'),
+    db.from('projects'   ).select('*').eq('workspace_id', wsId),
     db.from('notes'      ).select('*').order('created_at'),
     db.from('subtasks'   ).select('*').order('sort_order'),
-    db.from('agenda_items').select('*').order('created_at'),
-    db.from('inbox_requests').select('*').order('created_at', { ascending: false }),
-    db.from('openings'   ).select('*').order('created_at'),
+    db.from('agenda_items').select('*').eq('workspace_id', wsId).order('created_at'),
+    db.from('inbox_requests').select('*').eq('workspace_id', wsId).order('created_at', { ascending: false }),
+    db.from('openings'   ).select('*').eq('workspace_id', wsId).order('created_at'),
   ]);
 
   state.restaurants = (restaurants || []).map(r => r.name);
@@ -155,6 +156,7 @@ async function dbUpsertProject(p) {
     archived:    p.archived   || false,
     opening_id:  p.openingId  || null,
     phase:       p.phase != null ? p.phase : null,
+    workspace_id: state.workspace_id,
   };
   const { error } = await db.from('projects').upsert(row);
   if (error) throw error;
@@ -208,7 +210,7 @@ async function dbDeleteSubtask(id) {
 
 async function dbAddLookup(table, name) {
   const maxOrder = state[lookupStateKey(table)].length;
-  const { error } = await db.from(table).insert({ name, sort_order: maxOrder });
+  const { error } = await db.from(table).insert({ name, sort_order: maxOrder, workspace_id: state.workspace_id });
   if (error) throw error;
 }
 
