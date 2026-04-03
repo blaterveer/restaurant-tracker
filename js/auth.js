@@ -127,28 +127,16 @@ async function attemptLogin() {
     return;
   }
 
-  state.session = {
+  sessionStorage.setItem('sc_session', JSON.stringify({
     role: role,
     restaurant: restaurant,
     workspace_id: workspaceId,
     workspace_name: workspaceName,
     workspace_slug: workspaceSlug
-  };
-  state.workspace_id = workspaceId;
-  state.workspace_name = workspaceName;
-  state.workspace_slug = workspaceSlug;
-  sessionStorage.setItem('sc_session', JSON.stringify(state.session));
+  }));
 
-  document.body.classList.add('workspace-' + workspaceSlug);
-  updateHeaderTitle();
-
-  showLoading('Loading data\u2026');
-  await loadAll();
-  render();
-  hideLoading();
-
-  document.getElementById('login-screen').style.display = 'none';
-  document.body.classList.add('logged-in');
+  // Full page reload ensures a clean DOM — initApp() picks up the session
+  window.location.reload();
 }
 
 function logout() {
