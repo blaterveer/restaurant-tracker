@@ -8,22 +8,56 @@ function updateHeaderTitle() {
 }
 
 async function initApp() {
-  // Copy logo from header into login screen
+  // Check for saved session FIRST (synchronous) — before any async work
+  var saved = sessionStorage.getItem('sc_session');
+  if (saved) {
+    try {
+      var parsed = JSON.parse(saved);
+      if (!parsed.workspace_id) throw new Error('missing workspace');
+      // Immediately show opaque loading screen to hide any stale DOM
+      var loadEl = document.getElementById('loading-overlay');
+      if (!loadEl) {
+        loadEl = document.createElement('div');
+        loadEl.id = 'loading-overlay';
+        document.body.appendChild(loadEl);
+      }
+      loadEl.textContent = 'Loading data\u2026';
+      loadEl.style.cssText = 'position:fixed;inset:0;background:#1C1915;display:flex;align-items:center;justify-content:center;z-index:10000;font-family:"DM Mono",monospace;color:#F7F3EE;font-size:14px;letter-spacing:0.1em;';
+      // Set state from session
+      state.session = parsed;
+      state.workspace_id = parsed.workspace_id;
+      state.workspace_name = parsed.workspace_name;
+      state.workspace_slug = parsed.workspace_slug;
+      document.body.classList.add('workspace-' + state.workspace_slug);
+      updateHeaderTitle();
+      // Load data and render behind opaque overlay
+      await loadAll();
+      render();
+      // Remove overlay and show dashboard
+      loadEl.style.display = 'none';
+      document.body.classList.add('logged-in');
+      return;
+    } catch(e) {
+      sessionStorage.removeItem('sc_session');
+      state.session = null;
+      var loadEl = document.getElementById('loading-overlay');
+      if (loadEl) loadEl.style.display = 'none';
+    }
+  }
+
+  // No session — populate login dropdown and show login screen
   var headerLogo = document.querySelector('.header-logos img');
   if (headerLogo) document.getElementById('login-logo').src = headerLogo.src;
 
-  // Load workspaces and restaurants for login dropdown
   var { data: wsData } = await db.from('workspaces').select('*').order('name');
   var { data: restData } = await db.from('restaurants').select('name, workspace_id').order('sort_order');
   state.workspaces = wsData || [];
 
   var loginSel = document.getElementById('login-who');
-  // Clear existing options except the first placeholder
   while (loginSel.options.length > 1) loginSel.remove(1);
 
   (wsData || []).forEach(function(ws) {
     if (ws.type === 'client') {
-      // Admin option for client workspaces
       var adminOpt = document.createElement('option');
       adminOpt.value = ws.slug + '__admin__';
       adminOpt.textContent = ws.name + ' (Admin)';
@@ -34,7 +68,6 @@ async function initApp() {
       adminOpt.dataset.restaurant = '';
       loginSel.appendChild(adminOpt);
 
-      // Restaurant options for this workspace
       var wsRestaurants = (restData || []).filter(function(r) { return r.workspace_id === ws.id; });
       wsRestaurants.forEach(function(r) {
         var opt = document.createElement('option');
@@ -48,7 +81,6 @@ async function initApp() {
         loginSel.appendChild(opt);
       });
     } else if (ws.type === 'personal') {
-      // Personal workspace — single option
       var opt = document.createElement('option');
       opt.value = ws.slug + '__personal__';
       opt.textContent = ws.name;
@@ -61,29 +93,6 @@ async function initApp() {
     }
   });
 
-  // Check for existing session
-  var saved = sessionStorage.getItem('sc_session');
-  if (saved) {
-    try {
-      state.session = JSON.parse(saved);
-      // Reject stale sessions that lack workspace_id
-      if (!state.session.workspace_id) throw new Error('missing workspace');
-      state.workspace_id = state.session.workspace_id;
-      state.workspace_name = state.session.workspace_name;
-      state.workspace_slug = state.session.workspace_slug;
-      document.body.classList.add('workspace-' + state.workspace_slug);
-      updateHeaderTitle();
-      await loadAll();
-      render();
-      document.body.classList.add('logged-in');
-      return;
-    } catch(e) {
-      sessionStorage.removeItem('sc_session');
-      state.session = null;
-    }
-  }
-
-  // No session — show login screen
   document.getElementById('login-screen').style.display = 'flex';
 }
 
@@ -141,48 +150,7 @@ async function attemptLogin() {
 
 function logout() {
   sessionStorage.removeItem('sc_session');
-  if (state.workspace_slug) document.body.classList.remove('workspace-' + state.workspace_slug);
-  state.session = null;
-  state.workspace_id = null;
-  state.workspace_name = null;
-  state.workspace_slug = null;
-  // Clear data arrays and UI state to prevent stale data from flashing on next login
-  state.restaurants = [];
-  state.projects = [];
-  state.categories = [];
-  state.types = [];
-  state.owners = [];
-  state.openings = [];
-  state.inboxRequests = [];
-  state.agendaItems = [];
-  state.adminInboxUnread = 0;
-  state.restaurantMeta = {};
-  state.activeTab = 'all';
-  state.detailProjectId = null;
-  state.editProjectId = null;
-  state.editingSubtaskId = null;
-  state.activeOpeningId = null;
-  state.openingTab = 'thisweek';
-  state._openingModalId = null;
-  state._openingSearch = '';
-  state._openingSections = {};
-  state._openingSectionsInit = false;
-  state.sort = { col: null, dir: 'asc' };
-  state.showOverdue = false;
-  state.pendingInboxItemId = null;
-  // Wipe rendered DOM so no stale tabs/data are visible behind login screen
-  var wipe = ['summary-bar', 'tabs-wrapper', 'tabs-utility', 'project-table-body', 'mobile-nav-content'];
-  wipe.forEach(function(id) { var el = document.getElementById(id); if (el) el.innerHTML = ''; });
-  // Close any open panels/modals
-  var dp = document.getElementById('detail-panel');
-  if (dp) dp.classList.remove('open');
-  document.querySelectorAll('.modal-overlay.open').forEach(function(m) { m.classList.remove('open'); });
-  document.body.classList.remove('logged-in');
-  var headerEl = document.getElementById('header-title');
-  if (headerEl) headerEl.innerHTML = 'LT Hospitality \u2014 <em>Project Dashboard</em>';
-  document.getElementById('login-password').value = '';
-  document.getElementById('login-who').value = '';
-  document.getElementById('login-error').style.display = 'none';
-  document.getElementById('login-screen').style.display = 'flex';
+  // Reload page — initApp() will find no session and show the login screen with a fresh DOM
+  window.location.reload();
 }
 
