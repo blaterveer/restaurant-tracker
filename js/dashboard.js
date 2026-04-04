@@ -184,7 +184,6 @@ function closeMobileNav() {
 }
 
 function switchTab(tab) {
-  console.log('[switchTab] received:', JSON.stringify(tab), '| in restaurants:', state.restaurants.includes(tab), '| restaurants:', JSON.stringify(state.restaurants));
   if (tab !== state.activeTab) state.showOverdue = false;
   state.activeTab = tab;
   // Clear pending inbox/agenda flags so a subsequent task save
@@ -252,7 +251,6 @@ function switchTab(tab) {
     document.getElementById('page-title').textContent = tab === 'all' ? 'All Restaurants' : tab;
     const col = document.getElementById('col-restaurant');
     if (col) col.style.display = tab === 'all' ? '' : 'none';
-    console.log('[switchTab] about to renderTable, activeTab:', JSON.stringify(state.activeTab), '| matching projects:', state.projects.filter(p => p.restaurant === state.activeTab).length);
     renderTable();
     // Show agenda section for admin on a specific restaurant tab
     const isAdmin = state.session && state.session.role === 'admin';
