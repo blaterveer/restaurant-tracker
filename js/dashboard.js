@@ -25,6 +25,7 @@ function renderSummary() {
 // ============================================================
 // TABS
 // ============================================================
+function escTabName(s) { return s.replace(/\\/g, '\\\\').replace(/'/g, "\\'"); }
 function renderTabs() {
   const wrapper = document.getElementById('tabs-wrapper');
   const tabs = ['all', ...state.restaurants];
@@ -34,7 +35,7 @@ function renderTabs() {
     const count  = isAll
       ? state.projects.filter(p => !p.complete).length
       : state.projects.filter(p => p.restaurant === t && !p.complete).length;
-    return `<button class="tab ${state.activeTab === t ? 'active' : ''}" onclick="switchTab('${t}')">
+    return `<button class="tab ${state.activeTab === t ? 'active' : ''}" onclick="switchTab('${escTabName(t)}')">
       ${label} <span class="badge">${count}</span>
     </button>`;
   }).join('');
@@ -60,7 +61,7 @@ function renderTabs() {
       const label2 = isAll2 ? 'All Tasks' : t;
       const count2 = state.projects.filter(p => p.restaurant === myRest && !p.complete).length;
       const cnt = isAll2 ? count2 : count2;
-      return `<button class="tab ${state.activeTab === t ? 'active' : ''}" onclick="switchTab('${t}')">${label2} <span class="badge">${cnt}</span></button>`;
+      return `<button class="tab ${state.activeTab === t ? 'active' : ''}" onclick="switchTab('${escTabName(t)}')">${label2} <span class="badge">${cnt}</span></button>`;
     }).join('');
   }
 
@@ -103,13 +104,13 @@ function renderMobileNav() {
     const myRest = state.session.restaurant;
     const count = state.projects.filter(p => p.restaurant === myRest && !p.complete).length;
     html += `<button class="mobile-nav-item ${state.activeTab === 'all' ? 'active' : ''}" onclick="switchTab('all');closeMobileNav()">All Tasks <span class="badge">${count}</span></button>`;
-    html += `<button class="mobile-nav-item ${state.activeTab === myRest ? 'active' : ''}" onclick="switchTab('${myRest}');closeMobileNav()">${myRest} <span class="badge">${count}</span></button>`;
+    html += `<button class="mobile-nav-item ${state.activeTab === myRest ? 'active' : ''}" onclick="switchTab('${escTabName(myRest)}');closeMobileNav()">${myRest} <span class="badge">${count}</span></button>`;
   } else {
     const allCount = state.projects.filter(p => !p.complete).length;
     html += `<button class="mobile-nav-item ${state.activeTab === 'all' ? 'active' : ''}" onclick="switchTab('all');closeMobileNav()">All Restaurants <span class="badge">${allCount}</span></button>`;
     state.restaurants.forEach(r => {
       const cnt = state.projects.filter(p => p.restaurant === r && !p.complete).length;
-      html += `<button class="mobile-nav-item ${state.activeTab === r ? 'active' : ''}" onclick="switchTab('${r.replace(/'/g, "\\'")}');closeMobileNav()">${r} <span class="badge">${cnt}</span></button>`;
+      html += `<button class="mobile-nav-item ${state.activeTab === r ? 'active' : ''}" onclick="switchTab('${escTabName(r)}');closeMobileNav()">${r} <span class="badge">${cnt}</span></button>`;
     });
   }
   html += '</div>';
@@ -183,6 +184,7 @@ function closeMobileNav() {
 }
 
 function switchTab(tab) {
+  console.log('[switchTab] received:', JSON.stringify(tab), '| in restaurants:', state.restaurants.includes(tab), '| restaurants:', JSON.stringify(state.restaurants));
   if (tab !== state.activeTab) state.showOverdue = false;
   state.activeTab = tab;
   // Clear pending inbox/agenda flags so a subsequent task save
@@ -250,6 +252,7 @@ function switchTab(tab) {
     document.getElementById('page-title').textContent = tab === 'all' ? 'All Restaurants' : tab;
     const col = document.getElementById('col-restaurant');
     if (col) col.style.display = tab === 'all' ? '' : 'none';
+    console.log('[switchTab] about to renderTable, activeTab:', JSON.stringify(state.activeTab), '| matching projects:', state.projects.filter(p => p.restaurant === state.activeTab).length);
     renderTable();
     // Show agenda section for admin on a specific restaurant tab
     const isAdmin = state.session && state.session.role === 'admin';
