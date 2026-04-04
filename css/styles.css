@@ -1251,6 +1251,25 @@
   .opening-empty { padding: 40px; text-align: center; color: var(--warm-gray); font-size: 15px; }
   .opening-empty strong { display: block; font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--ink-light); margin-bottom: 4px; font-weight: 300; }
 
+  /* Opening Notes tab */
+  .opening-notes-wrap { max-width: 720px; }
+  .opening-notes-input { margin-bottom: 24px; }
+  .opening-note-textarea { width: 100%; font-family: 'Instrument Sans', sans-serif; font-size: 14px; line-height: 1.5; padding: 12px 16px; border: 1px solid var(--border); background: white; resize: vertical; box-sizing: border-box; }
+  .opening-note-textarea:focus { outline: none; border-color: var(--rust); }
+  .opening-notes-input-actions { display: flex; justify-content: flex-end; margin-top: 8px; }
+  .opening-notes-list { display: flex; flex-direction: column; gap: 12px; }
+  .opening-notes-list.archived { padding: 16px; }
+  .opening-note-card { background: white; border: 1px solid var(--border); padding: 16px 20px; }
+  .opening-note-card.archived { opacity: 0.6; }
+  .opening-note-timestamp { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--warm-gray); margin-bottom: 8px; }
+  .opening-note-content { font-family: 'Instrument Sans', sans-serif; font-size: 14px; line-height: 1.6; color: var(--ink); margin-bottom: 12px; }
+  .opening-note-actions { display: flex; gap: 8px; }
+  .opening-note-btn { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 12px; border: 1px solid var(--border); background: none; color: var(--warm-gray); cursor: pointer; transition: all 0.15s; }
+  .opening-note-btn:hover { color: var(--ink); border-color: var(--ink-light); }
+  .opening-note-btn.danger:hover { color: #a33; border-color: #a33; }
+  .opening-note-btn.primary { color: var(--rust); border-color: var(--rust); }
+  .opening-note-btn.primary:hover { background: var(--rust); color: white; }
+
   .admin-view { display: none; padding: 32px 40px; }
   .admin-view.active { display: block; }
   .projects-view { display: block; }

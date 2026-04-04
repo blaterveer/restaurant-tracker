@@ -110,6 +110,8 @@ function onOpeningSearch(val) {
     renderOpeningByOwner(contentEl, filteredTasks);
   } else if (tabActive === 'gantt') {
     renderOpeningGantt(contentEl, filteredTasks, opening);
+  } else if (tabActive === 'notes') {
+    renderOpeningNotes(contentEl, opening);
   }
   // Update clear button visibility
   const clearBtn = document.querySelector('.opening-search-clear');
@@ -169,6 +171,7 @@ function renderOpeningDetail(el) {
         <button class="opening-tab ${tabActive === 'phases' ? 'active' : ''}" onclick="switchOpeningTab('phases')">Phases</button>
         <button class="opening-tab ${tabActive === 'byowner' ? 'active' : ''}" onclick="switchOpeningTab('byowner')">By Owner</button>
         <button class="opening-tab ${tabActive === 'gantt' ? 'active' : ''}" onclick="switchOpeningTab('gantt')">Gantt</button>
+        <button class="opening-tab ${tabActive === 'notes' ? 'active' : ''}" onclick="switchOpeningTab('notes')">Notes</button>
       </div>
       <div class="opening-search-wrap">
         <input type="text" class="opening-search" id="opening-search" placeholder="Search tasks..." value="${state._openingSearch || ''}" oninput="onOpeningSearch(this.value)">
@@ -202,6 +205,8 @@ function renderOpeningDetail(el) {
     renderOpeningByOwner(contentEl, filteredTasks);
   } else if (tabActive === 'gantt') {
     renderOpeningGantt(contentEl, filteredTasks, opening);
+  } else if (tabActive === 'notes') {
+    renderOpeningNotes(contentEl, opening);
   }
 }
 
@@ -757,5 +762,141 @@ function renderOpeningGantt(el, tasks, opening) {
         <tbody>${tableRows}</tbody>
       </table>
     </div>`;
+}
+
+// --- NOTES ---
+function renderOpeningNotes(el, opening) {
+  const allNotes = state.openingNotes.filter(n => n.openingId === opening.id);
+  const activeNotes = allNotes.filter(n => n.status === 'active');
+  const archivedNotes = allNotes.filter(n => n.status === 'archived');
+
+  let html = `
+    <div class="opening-notes-wrap">
+      <div class="opening-notes-input">
+        <textarea id="opening-note-input" class="opening-note-textarea" placeholder="Add a note or update..." rows="3"></textarea>
+        <div class="opening-notes-input-actions">
+          <button class="btn-primary" onclick="saveOpeningNote()">Save Note</button>
+        </div>
+      </div>
+      <div class="opening-notes-list">`;
+
+  if (activeNotes.length === 0) {
+    html += '<div class="opening-empty"><strong>No notes yet</strong>Add your first note above</div>';
+  } else {
+    activeNotes.forEach(n => { html += openingNoteCard(n); });
+  }
+
+  html += '</div>';
+
+  // Archived section
+  if (archivedNotes.length > 0) {
+    const isOpen = state._openingSections['archived-notes'];
+    html += `
+      <div class="opening-phase ${isOpen ? 'open' : ''}" id="archived-notes">
+        <div class="opening-phase-header" onclick="togglePhaseGroup('archived-notes')">
+          <div class="opening-phase-dot" style="background:var(--warm-gray)"></div>
+          <div class="opening-phase-name">Archived</div>
+          <div class="opening-phase-stats">
+            <span class="opening-phase-progress">${archivedNotes.length} note${archivedNotes.length !== 1 ? 's' : ''}</span>
+          </div>
+          <div class="opening-phase-arrow">&#9660;</div>
+        </div>
+        <div class="opening-phase-body">
+          <div class="opening-notes-list archived">`;
+    archivedNotes.forEach(n => { html += openingNoteCard(n, true); });
+    html += '</div></div></div>';
+  }
+
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+function openingNoteCard(n, isArchived) {
+  const date = new Date(n.createdAt);
+  const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  return `
+    <div class="opening-note-card ${isArchived ? 'archived' : ''}">
+      <div class="opening-note-timestamp">${dateStr} at ${timeStr}</div>
+      <div class="opening-note-content">${escHtml(n.content).replace(/\n/g, '<br>')}</div>
+      <div class="opening-note-actions">
+        ${isArchived
+          ? '<button class="opening-note-btn" onclick="unarchiveOpeningNote(\'' + n.id + '\')" title="Restore">Restore</button>'
+          : '<button class="opening-note-btn" onclick="archiveOpeningNote(\'' + n.id + '\')" title="Archive">Archive</button>'
+        }
+        <button class="opening-note-btn danger" onclick="deleteOpeningNote('${n.id}')" title="Delete">Delete</button>
+        ${!isArchived ? '<button class="opening-note-btn primary" onclick="openingNoteToTask(\'' + n.id + '\')" title="Turn into Task">Turn into Task</button>' : ''}
+      </div>
+    </div>`;
+}
+
+async function saveOpeningNote() {
+  const input = document.getElementById('opening-note-input');
+  const content = (input ? input.value : '').trim();
+  if (!content) return;
+  const openingId = state.activeOpeningId;
+  if (!openingId) return;
+  try {
+    const note = await dbInsertOpeningNote(openingId, content);
+    state.openingNotes.unshift(note);
+    input.value = '';
+    const contentEl = document.getElementById('opening-tab-content');
+    const opening = state.openings.find(o => o.id === openingId);
+    if (contentEl && opening) renderOpeningNotes(contentEl, opening);
+    showToast('Note saved');
+  } catch (e) {
+    showToast('Error saving note', 'error');
+  }
+}
+
+async function archiveOpeningNote(noteId) {
+  try {
+    await dbUpdateOpeningNoteStatus(noteId, 'archived');
+    const n = state.openingNotes.find(x => x.id === noteId);
+    if (n) n.status = 'archived';
+    refreshNotesTab();
+    showToast('Note archived');
+  } catch (e) {
+    showToast('Error archiving note', 'error');
+  }
+}
+
+async function unarchiveOpeningNote(noteId) {
+  try {
+    await dbUpdateOpeningNoteStatus(noteId, 'active');
+    const n = state.openingNotes.find(x => x.id === noteId);
+    if (n) n.status = 'active';
+    refreshNotesTab();
+    showToast('Note restored');
+  } catch (e) {
+    showToast('Error restoring note', 'error');
+  }
+}
+
+async function deleteOpeningNote(noteId) {
+  if (!confirm('Delete this note? This cannot be undone.')) return;
+  try {
+    await dbDeleteOpeningNote(noteId);
+    state.openingNotes = state.openingNotes.filter(x => x.id !== noteId);
+    refreshNotesTab();
+    showToast('Note deleted');
+  } catch (e) {
+    showToast('Error deleting note', 'error');
+  }
+}
+
+function openingNoteToTask(noteId) {
+  const n = state.openingNotes.find(x => x.id === noteId);
+  if (!n) return;
+  openOpeningTaskModal();
+  // Pre-fill the title field with the note content
+  const titleField = document.getElementById('f-title');
+  if (titleField) titleField.value = n.content;
+}
+
+function refreshNotesTab() {
+  const contentEl = document.getElementById('opening-tab-content');
+  const opening = state.openings.find(o => o.id === state.activeOpeningId);
+  if (contentEl && opening) renderOpeningNotes(contentEl, opening);
 }
 

@@ -30,6 +30,7 @@ async function loadAll() {
     { data: agendaItems },
     { data: inboxRequests },
     { data: openingsData },
+    { data: openingNotesData },
   ] = await Promise.all([
     db.from('restaurants').select('name, next_meeting_date').eq('workspace_id', wsId).order('sort_order'),
     db.from('categories' ).select('name').eq('workspace_id', wsId).order('sort_order'),
@@ -41,6 +42,7 @@ async function loadAll() {
     db.from('agenda_items').select('*').eq('workspace_id', wsId).order('created_at'),
     db.from('inbox_requests').select('*').eq('workspace_id', wsId).order('created_at', { ascending: false }),
     db.from('openings'   ).select('*').eq('workspace_id', wsId).order('created_at'),
+    db.from('opening_notes').select('*').order('created_at', { ascending: false }),
   ]);
 
   state.restaurants = (restaurants || []).map(r => r.name);
@@ -52,6 +54,12 @@ async function loadAll() {
   state.openings = (openingsData || []).map(o => ({
     id: o.id, restaurant: o.restaurant, name: o.name,
     targetDate: o.target_date, createdAt: o.created_at,
+  }));
+
+  // Load opening notes
+  state.openingNotes = (openingNotesData || []).map(n => ({
+    id: n.id, openingId: n.opening_id, content: n.content,
+    status: n.status, createdAt: n.created_at, updatedAt: n.updated_at,
   }));
 
   // Build restaurant meta (next_meeting_date, etc.)
@@ -205,6 +213,26 @@ async function dbUpsertSubtask(projectId, st) {
 
 async function dbDeleteSubtask(id) {
   const { error } = await db.from('subtasks').delete().eq('id', id);
+  if (error) throw error;
+}
+
+async function dbInsertOpeningNote(openingId, content) {
+  const { data, error } = await db.from('opening_notes').insert({
+    opening_id: openingId,
+    content: content,
+    status: 'active',
+  }).select().single();
+  if (error) throw error;
+  return { id: data.id, openingId: data.opening_id, content: data.content, status: data.status, createdAt: data.created_at, updatedAt: data.updated_at };
+}
+
+async function dbUpdateOpeningNoteStatus(noteId, status) {
+  const { error } = await db.from('opening_notes').update({ status }).eq('id', noteId);
+  if (error) throw error;
+}
+
+async function dbDeleteOpeningNote(noteId) {
+  const { error } = await db.from('opening_notes').delete().eq('id', noteId);
   if (error) throw error;
 }
 

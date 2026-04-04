@@ -96,6 +96,27 @@ create table if not exists notes (
 create index if not exists notes_project_id_idx on notes(project_id);
 
 -- ============================================================
+-- OPENING NOTES (free-form notes attached to openings)
+-- ============================================================
+
+create table if not exists opening_notes (
+  id          uuid primary key default gen_random_uuid(),
+  opening_id  uuid not null references openings(id) on delete cascade,
+  content     text not null,
+  status      text not null default 'active'
+                check (status in ('active', 'archived')),
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+
+create index if not exists opening_notes_opening_id_idx on opening_notes(opening_id);
+
+drop trigger if exists opening_notes_updated_at on opening_notes;
+create trigger opening_notes_updated_at
+  before update on opening_notes
+  for each row execute procedure set_updated_at();
+
+-- ============================================================
 -- INBOX REQUESTS (restaurant → admin communication)
 -- ============================================================
 
@@ -127,6 +148,7 @@ alter table openings     enable row level security;
 alter table projects     enable row level security;
 alter table notes           enable row level security;
 alter table inbox_requests  enable row level security;
+alter table opening_notes   enable row level security;
 
 -- Allow full access via anon key (public dashboard, no auth)
 create policy "anon all" on restaurants  for all using (true) with check (true);
@@ -137,6 +159,7 @@ create policy "anon all" on openings     for all using (true) with check (true);
 create policy "anon all" on projects     for all using (true) with check (true);
 create policy "anon all" on notes           for all using (true) with check (true);
 create policy "anon all" on inbox_requests  for all using (true) with check (true);
+create policy "anon all" on opening_notes   for all using (true) with check (true);
 
 -- ============================================================
 -- SEED DATA (matches the original in-memory defaults)

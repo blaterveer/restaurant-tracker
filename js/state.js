@@ -25,8 +25,9 @@ let state = {
   restaurantMeta: {},       // { 'LEOLA': { next_meeting_date: '2026-03-20' }, ... }
   pendingInboxItemId: null, // set before opening new-task modal from inbox
   openings: [],             // { id, restaurant, name, targetDate }
+  openingNotes: [],         // { id, openingId, content, status, createdAt, updatedAt }
   activeOpeningId: null,    // currently selected opening
-  openingTab: 'thisweek',   // 'thisweek' | 'phases' | 'byowner' | 'gantt'
+  openingTab: 'thisweek',   // 'thisweek' | 'phases' | 'byowner' | 'gantt' | 'notes'
   _openingModalId: null,    // set when add/edit modal is in opening mode
   _openingSearch: '',       // search query for opening tasks
   _openingSections: {},     // tracks open/closed state of collapsible sections {sectionId: true/false}
