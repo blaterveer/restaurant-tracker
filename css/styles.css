@@ -403,7 +403,7 @@
     cursor: pointer;
   }
   tbody tr:last-child { border-bottom: none; }
-  tbody tr:nth-child(even) { background: transparent; }
+  tbody tr:nth-child(even) { background: rgba(244, 241, 235, 0.5); }
   tbody tr:hover { background: var(--surface-hover); }
   tbody td {
     padding: 12px 14px;
