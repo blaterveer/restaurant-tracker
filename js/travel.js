@@ -1735,7 +1735,7 @@ function printRecap(recapId) {
         </tr>`;
       }).join('');
       actionItemsHTML = `
-      <h2 style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;margin:24px 0 12px;color:#1C1915">Action Items</h2>
+      <h2 style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:400;margin:24px 0 12px;color:#1C1915">Action Items</h2>
       <table style="width:100%;border-collapse:collapse;font-size:13px">
         <thead><tr style="background:#EDE7DC">
           <th style="padding:8px 10px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:#8C8278">Task</th>
@@ -1750,7 +1750,7 @@ function printRecap(recapId) {
 
   // Follow-up
   const followupHTML = (recap.next_visit_date || recap.followup_notes) ? `
-  <h2 style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;margin:24px 0 12px;color:#1C1915">Follow-Up</h2>
+  <h2 style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:400;margin:24px 0 12px;color:#1C1915">Follow-Up</h2>
   ${recap.next_visit_date ? `<p style="font-size:14px;color:#3D3830"><strong>Next Visit:</strong> ${fmtDate(recap.next_visit_date)}</p>` : ''}
   ${recap.followup_notes ? `<p style="font-size:14px;color:#3D3830;line-height:1.6"><strong>30-Day Check-in:</strong><br>${escHtml(recap.followup_notes).replace(/\n/g, '<br>')}</p>` : ''}` : '';
 
@@ -1759,20 +1759,20 @@ function printRecap(recapId) {
   const logoSrc = logoEl ? logoEl.src : '';
 
   const html = `
-  <div style="font-family:'Instrument Sans',sans-serif;max-width:800px;margin:0 auto;padding:40px;color:#1C1915">
+  <div style="font-family:'DM Sans',sans-serif;max-width:800px;margin:0 auto;padding:40px;color:#1C1915">
     ${logoSrc ? `<div style="text-align:center;margin-bottom:24px"><img src="${logoSrc}" style="height:40px;opacity:0.8"></div>` : ''}
     <div style="text-align:center;margin-bottom:32px">
-      <h1 style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;margin:0 0 8px">${escHtml(restaurantName)}</h1>
+      <h1 style="font-family:'DM Sans',sans-serif;font-size:28px;font-weight:400;margin:0 0 8px">${escHtml(restaurantName)}</h1>
       <div style="font-size:15px;color:#3D3830">Site Visit Recap</div>
       ${trip ? `<div style="font-size:13px;color:#8C8278;margin-top:6px">${fmtDate(trip.start_date)} — ${fmtDate(trip.end_date)} · ${escHtml(trip.destination)}</div>` : ''}
       ${travelerNames ? `<div style="font-size:13px;color:#8C8278;margin-top:4px">Visitors: ${escHtml(travelerNames)}</div>` : ''}
     </div>
     <hr style="border:none;border-top:1px solid #D4CBB8;margin:0 0 24px">
     ${recap.summary ? `
-    <h2 style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;margin:0 0 12px;color:#1C1915">Executive Summary</h2>
+    <h2 style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:400;margin:0 0 12px;color:#1C1915">Executive Summary</h2>
     <p style="font-size:14px;line-height:1.7;color:#3D3830;margin-bottom:24px">${escHtml(recap.summary).replace(/\n/g, '<br>')}</p>` : ''}
     ${obsHTML ? `
-    <h2 style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;margin:0 0 16px;color:#1C1915">Observations</h2>
+    <h2 style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:400;margin:0 0 16px;color:#1C1915">Observations</h2>
     ${obsHTML}` : ''}
     ${actionItemsHTML}
     ${followupHTML}

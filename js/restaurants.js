@@ -987,9 +987,12 @@ function renderRecentView() {
     return new Date(p.updatedAt) >= cutoff;
   });
 
+  var titleStyle = "font-family:'DM Sans',sans-serif;font-size:22px;font-weight:500;color:var(--text-primary);margin-bottom:4px";
+  var subtitleStyle = "font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text-secondary);margin-bottom:24px;font-variant-numeric:tabular-nums";
+
   if (recent.length === 0) {
     recentEl.innerHTML =
-      "<h2 style=\"font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;margin-bottom:24px\">Recently Completed</h2>" +
+      "<h2 style=\"" + titleStyle + "\">Recently Completed</h2>" +
       "<div class=\"empty-state\" style=\"padding:40px 0\">" +
         "<h3>No completions in the last 14 days</h3>" +
         "<p>Projects marked complete will appear here for two weeks.</p>" +
@@ -1003,13 +1006,11 @@ function renderRecentView() {
     grouped[p.restaurant].push(p);
   });
 
-  var monoFont = "font-family:'DM Mono',monospace";
-  var serifFont = "font-family:'Cormorant Garamond',serif";
-  var thStyle = monoFont + ";font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--warm-gray);padding:8px 14px;text-align:left;font-weight:400";
+  var thStyle = "font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-secondary);padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);background:var(--surface-sunken)";
 
   var out =
-    "<h2 style=\"" + serifFont + ";font-size:28px;font-weight:300;margin-bottom:6px\">Recently Completed</h2>" +
-    "<p style=\"font-size:14px;color:var(--warm-gray);margin-bottom:28px;" + monoFont + ";letter-spacing:0.06em\">Projects completed in the last 14 days &middot; " + recent.length + " total</p>";
+    "<h2 style=\"" + titleStyle + "\">Recently Completed</h2>" +
+    "<p style=\"" + subtitleStyle + "\">Projects completed in the last 14 days &middot; " + recent.length + " total</p>";
 
   Object.entries(grouped).forEach(function(entry) {
     var restaurant = entry[0];
@@ -1021,29 +1022,29 @@ function renderRecentView() {
       var latestNote  = (p.notes && p.notes.length > 0) ? p.notes[p.notes.length - 1].text : "&mdash;";
       var completedOn = p.updatedAt ? formatDate(p.updatedAt.split("T")[0]) : "&mdash;";
       var desc = p.description
-        ? "<span style=\"display:block;font-size:12px;color:var(--warm-gray);font-style:italic;margin-top:2px\">" + p.description + "</span>"
+        ? "<span style=\"display:block;font-family:'Source Serif 4',Georgia,serif;font-size:13px;color:var(--text-secondary);margin-top:3px;line-height:1.5\">" + p.description + "</span>"
         : "";
       rows +=
         "<tr style=\"border-bottom:1px solid var(--border);cursor:pointer\" onclick=\"openDetail('" + p.id + "')\">" +
           "<td style=\"padding:12px 14px\">" +
-            "<span style=\"" + serifFont + ";font-size:17px;opacity:0.7;text-decoration:line-through\">" + p.title + "</span>" +
+            "<span style=\"font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;color:var(--text-primary);opacity:0.55;text-decoration:line-through\">" + p.title + "</span>" +
             desc +
           "</td>" +
           "<td style=\"padding:12px 14px\"><span class=\"category-tag " + categoryClass(p.category) + "\">" + (p.category || "&mdash;") + "</span></td>" +
-          "<td style=\"padding:12px 14px;font-size:14px;color:var(--ink-light)\">" + (p.owner || "&mdash;") + "</td>" +
-          "<td style=\"padding:12px 14px;" + monoFont + ";font-size:12px;color:var(--sage)\">" + completedOn + "</td>" +
+          "<td style=\"padding:12px 14px;font-size:13px;color:var(--text-secondary)\">" + (p.owner || "&mdash;") + "</td>" +
+          "<td style=\"padding:12px 14px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;color:var(--green);font-variant-numeric:tabular-nums\">" + completedOn + "</td>" +
           "<td style=\"padding:12px 14px\"><div class=\"update-preview\">" + latestNote + "</div></td>" +
         "</tr>";
     });
 
     out +=
-      "<div style=\"margin-bottom:32px\">" +
-        "<div style=\"display:flex;align-items:center;gap:12px;margin-bottom:12px\">" +
+      "<div style=\"margin-bottom:24px\">" +
+        "<div style=\"display:flex;align-items:center;gap:12px;margin-bottom:8px\">" +
           "<span class=\"restaurant-pill\" data-r=\"" + colorIdx + "\">" + restaurant + "</span>" +
-          "<span style=\"" + monoFont + ";font-size:11px;color:var(--warm-gray);letter-spacing:0.1em\">" + projects.length + " project" + (projects.length !== 1 ? "s" : "") + "</span>" +
+          "<span style=\"font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;color:var(--text-secondary);letter-spacing:0.04em;font-variant-numeric:tabular-nums\">" + projects.length + " project" + (projects.length !== 1 ? "s" : "") + "</span>" +
         "</div>" +
-        "<table style=\"width:100%;border-collapse:collapse\">" +
-          "<thead><tr style=\"border-bottom:2px solid var(--ink)\">" +
+        "<table style=\"width:100%;border-collapse:collapse;background:var(--card-bg);border:1px solid var(--border);font-variant-numeric:tabular-nums\">" +
+          "<thead><tr>" +
             "<th style=\"" + thStyle + "\">Project</th>" +
             "<th style=\"" + thStyle + "\">Category</th>" +
             "<th style=\"" + thStyle + "\">Owner</th>" +

@@ -352,7 +352,7 @@ function renderOpeningThisWeek(el, tasks) {
         <div style="margin-bottom:4px">
           <div style="display:flex;align-items:center;gap:8px;padding:6px 0;margin-bottom:2px">
             <div style="width:8px;height:8px;border-radius:2px;background:${color};flex-shrink:0"></div>
-            <span style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--warm-gray)">${phLabel}</span>
+            <span style="font-family:'DM Sans',sans-serif;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--warm-gray)">${phLabel}</span>
           </div>
           <div class="opening-task-list">
             ${phTasks.map(t => openingTaskRow(t)).join('')}
@@ -731,7 +731,7 @@ function renderOpeningGantt(el, tasks, opening) {
           else if (isLast) bgStyle += 'border-radius:0 4px 4px 0;';
           // Show progress label in first cell
           if (isFirst) {
-            content = `<span style="position:relative;z-index:1;font-family:'DM Mono',monospace;font-size:9px;color:white;font-weight:600;white-space:nowrap;text-shadow:0 1px 2px rgba(0,0,0,0.3)">${g.done}/${g.total}</span>`;
+            content = `<span style="position:relative;z-index:1;font-family:'DM Sans',sans-serif;font-size:9px;color:white;font-weight:600;white-space:nowrap;text-shadow:0 1px 2px rgba(0,0,0,0.3)">${g.done}/${g.total}</span>`;
           }
         }
 

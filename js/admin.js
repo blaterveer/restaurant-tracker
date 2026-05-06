@@ -27,7 +27,7 @@ function renderRestaurantAgenda(restaurant) {
   activeItems.forEach(a => { window._agendaItemMap[a.id] = a; });
 
   const itemsHtml = activeItems.length === 0
-    ? `<div style="color:var(--warm-gray);font-family:'DM Mono',monospace;font-size:13px;padding:8px 0 16px">No agenda items yet.</div>`
+    ? `<div style="color:var(--warm-gray);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 0 16px">No agenda items yet.</div>`
     : activeItems.map(item => `
         <div class="inbox-item" id="agenda-item-${escHtml(item.id)}" style="align-items:center">
           <div class="inbox-item-body" style="flex:1">
@@ -44,17 +44,17 @@ function renderRestaurantAgenda(restaurant) {
     <div style="max-width:820px">
       <div style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
         <div>
-          <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:var(--ink)">Restaurant Agenda</div>
-          <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--warm-gray);margin-top:2px">Items to discuss at the next check-in</div>
+          <div style="font-family:'DM Sans',sans-serif;font-size:18px;font-weight:600;letter-spacing:0.02em;color:var(--text-primary)">Restaurant Agenda</div>
+          <div style="font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text-secondary);margin-top:2px">Items to discuss at the next check-in</div>
         </div>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <div style="display:flex;align-items:center;gap:8px">
-            <label style="font-family:'DM Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--warm-gray)">Next Check-in</label>
+            <label style="font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-secondary)">Next Check-in</label>
             <input type="date" id="agenda-meeting-date-${escHtml(restaurant)}" value="${escHtml(nextDate)}"
-              style="padding:5px 10px;border:1px solid var(--border);border-radius:4px;font-family:'DM Mono',monospace;font-size:12px;background:var(--cream);color:var(--ink)"
+              style="height:36px;padding:0 12px;border:1px solid var(--border);border-radius:0;font-family:'DM Sans',sans-serif;font-size:13px;background:var(--card-bg);color:var(--text-primary);font-variant-numeric:tabular-nums"
               onchange="agendaUpdateMeetingDate('${escHtml(restaurant)}', this.value)">
           </div>
-          ${activeItems.length > 0 ? `<button class="inbox-action-btn" style="background:var(--warm-gray);color:white" onclick="agendaClearAll('${escHtml(restaurant)}')">Clear Agenda</button>` : ''}
+          ${activeItems.length > 0 ? `<button class="inbox-action-btn" style="background:var(--text-secondary);color:white;border-color:var(--text-secondary)" onclick="agendaClearAll('${escHtml(restaurant)}')">Clear Agenda</button>` : ''}
         </div>
       </div>
 
@@ -62,7 +62,7 @@ function renderRestaurantAgenda(restaurant) {
 
       <div style="margin-top:16px;display:flex;gap:8px">
         <input type="text" id="agenda-add-input-${escHtml(restaurant)}" placeholder="Add agenda item…"
-          style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:4px;font-family:'Instrument Sans',sans-serif;font-size:13px;background:var(--cream);color:var(--ink)"
+          style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:4px;font-family:'DM Sans',sans-serif;font-size:13px;background:var(--cream);color:var(--ink)"
           onkeydown="if(event.key==='Enter') agendaAddManual('${escHtml(restaurant)}')">
         <button class="inbox-action-btn" style="background:var(--ink);color:var(--cream)" onclick="agendaAddManual('${escHtml(restaurant)}')">+ Add Item</button>
       </div>

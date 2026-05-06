@@ -1,0 +1,779 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup — Operational Design System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Source+Serif+4:wght@400&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Brand */
+  --primary:        #1C2E51;
+  --accent:         #786F67;
+  --page-bg:        #FAFAF7;
+  --card-bg:        #FFFFFF;
+  --border:         #E8E5DF;
+  --text-primary:   #2C2B28;
+  --text-secondary: #8A8780;
+  --text-muted:     #B0ADA6;
+
+  /* Semantic */
+  --green: #1D9E75; --green-bg: #E1F5EE;
+  --amber: #BA7517; --amber-bg: #FAEEDA;
+  --blue:  #185FA5; --blue-bg:  #E6F1FB;
+  --red:   #A32D2D; --red-bg:   #FCEBEB;
+
+  /* Operational chrome */
+  --surface-sunken: #F4F1EB;
+  --surface-hover:  #F0EDE6;
+  --surface-active: #E8E5DF;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background: var(--page-bg);
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================
+   APP CHROME
+============================================================ */
+.app-header {
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.wordmark {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+.wordmark-sub {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  padding-left: 12px;
+  margin-left: 12px;
+  border-left: 1px solid var(--border);
+}
+.header-spacer { flex: 1; }
+.header-date {
+  font-size: 12px;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+}
+.header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.overdue-badge {
+  background: var(--red-bg);
+  color: var(--red);
+  border: 1px solid var(--red);
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+.overdue-badge:hover { background: var(--red); color: #fff; }
+
+/* ============================================================
+   BUTTONS (desktop-tuned: 36px instead of 44px)
+============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 16px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  border: 1px solid transparent;
+  background: var(--card-bg);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, transform 80ms ease, color 120ms ease;
+  user-select: none;
+  font-variant-numeric: tabular-nums;
+}
+.btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+.btn-primary:hover { filter: brightness(0.92); }
+.btn-primary:active { filter: brightness(0.84); transform: translateY(1px); }
+.btn-secondary {
+  border-color: var(--border);
+}
+.btn-secondary:hover { background: var(--surface-hover); border-color: var(--text-muted); }
+.btn-secondary:active { background: var(--surface-active); transform: translateY(1px); }
+
+/* ============================================================
+   SUMMARY STATS BAR
+============================================================ */
+.summary-bar {
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+}
+.summary-stat {
+  padding: 14px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-right: 1px solid var(--border);
+  cursor: default;
+  transition: background 120ms ease;
+}
+.summary-stat:last-child { border-right: none; }
+.summary-stat.clickable { cursor: pointer; }
+.summary-stat.clickable:hover { background: var(--surface-hover); }
+.summary-stat.clickable:active { background: var(--surface-active); }
+.summary-stat .label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.summary-stat .value {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--primary);
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+.summary-stat .value.red    { color: var(--red); }
+.summary-stat .value.amber  { color: var(--amber); }
+.summary-stat .value.green  { color: var(--green); }
+
+/* ============================================================
+   TAB BARS
+============================================================ */
+.tabs-container {
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+}
+.tabs-row {
+  display: flex;
+  gap: 0;
+  align-items: stretch;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs-row::-webkit-scrollbar { display: none; }
+.tabs-row + .tabs-row { border-top: 1px solid var(--border); }
+.tab {
+  height: 40px;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px; /* overlap container border */
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+  font-variant-numeric: tabular-nums;
+}
+.tab:hover { background: var(--surface-hover); color: var(--text-primary); }
+.tab:active { background: var(--surface-active); }
+.tab.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  font-weight: 600;
+}
+.tab .tab-badge {
+  background: var(--surface-sunken);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.tab.active .tab-badge { background: var(--primary); color: #fff; }
+.tab-spacer { flex: 1; }
+
+/* ============================================================
+   PAGE HEADER + FILTER BAR
+============================================================ */
+.page-header {
+  padding: 16px 24px 8px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.page-title {
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--text-primary);
+}
+.page-meta {
+  font-size: 12px;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+}
+
+.filter-bar-header {
+  padding: 8px 24px 12px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.search-input {
+  flex: 1;
+  max-width: 360px;
+  height: 36px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  padding: 0 12px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-primary);
+  transition: border-color 120ms ease, background 120ms ease;
+}
+.search-input:hover { border-color: var(--text-muted); }
+.search-input:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: -1px;
+  border-color: var(--primary);
+}
+.search-input::placeholder { color: var(--text-muted); }
+
+.filter-content {
+  padding: 0 24px 12px;
+}
+.filter-group-row {
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  padding: 12px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  align-items: end;
+}
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 140px;
+}
+.filter-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.filter-select {
+  height: 36px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  padding: 0 12px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+.filter-select:hover { border-color: var(--text-muted); }
+.filter-select:focus { outline: 2px solid var(--primary); outline-offset: -1px; }
+
+/* Toggle group for due windows */
+.toggle-group {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+}
+.toggle-group .toggle {
+  height: 36px;
+  padding: 0 14px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+  background: var(--card-bg);
+  border: none;
+  border-right: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease, transform 80ms ease;
+  font-variant-numeric: tabular-nums;
+}
+.toggle-group .toggle:last-child { border-right: none; }
+.toggle-group .toggle:hover { background: var(--surface-hover); }
+.toggle-group .toggle:active { background: var(--surface-active); transform: translateY(1px); }
+.toggle-group .toggle.is-active {
+  background: var(--primary);
+  color: #fff;
+}
+
+/* ============================================================
+   PROJECT TABLE
+============================================================ */
+.projects-container { padding: 4px 24px 32px; }
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.table th {
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-sunken);
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+.table th .sort-icon { color: var(--text-muted); margin-left: 4px; }
+.table th:hover { background: var(--surface-hover); }
+.table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  vertical-align: middle;
+}
+.table td:last-child { border-right: none; }
+.table tr:last-child td { border-bottom: none; }
+.table tbody tr { cursor: pointer; transition: background 120ms ease; }
+.table tbody tr:hover td { background: var(--surface-hover); }
+
+/* Complete checkbox */
+.complete-toggle {
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--text-muted);
+  background: var(--card-bg);
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+  display: inline-block;
+}
+.complete-toggle:hover { border-color: var(--primary); background: var(--surface-hover); }
+.complete-toggle.done {
+  background: var(--green);
+  border-color: var(--green);
+  position: relative;
+}
+.complete-toggle.done::after {
+  content: '';
+  position: absolute;
+  left: 4px; top: 1px;
+  width: 4px; height: 9px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.project-name {
+  font-weight: 500;
+  color: var(--text-primary);
+  display: block;
+}
+.project-desc {
+  display: block;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-weight: 400;
+}
+
+/* Restaurant pills — replaces colored backgrounds with bordered chips */
+.restaurant-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+/* Different restaurants get different left-border accents instead of fills */
+.restaurant-pill[data-r="1"] { border-left: 3px solid #1C2E51; }
+.restaurant-pill[data-r="2"] { border-left: 3px solid #1D9E75; }
+.restaurant-pill[data-r="3"] { border-left: 3px solid #BA7517; }
+.restaurant-pill[data-r="4"] { border-left: 3px solid #786F67; }
+.restaurant-pill[data-r="5"] { border-left: 3px solid #185FA5; }
+
+/* Category tag */
+.category-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  background: var(--surface-sunken);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+/* Priority badge — semantic, no rounding */
+.priority-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.priority-badge.high   { background: var(--red-bg);   color: var(--red); }
+.priority-badge.medium { background: var(--amber-bg); color: var(--amber); }
+.priority-badge.low    { background: var(--surface-sunken); color: var(--text-secondary); }
+
+/* Due date cells */
+.due-date {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.due-date.overdue { color: var(--red); font-weight: 600; }
+.due-date.soon    { color: var(--amber); font-weight: 600; }
+
+.update-preview {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-weight: 400;
+  max-width: 320px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ============================================================
+   MOCKUP CHROME (not part of the system)
+============================================================ */
+.mockup-banner {
+  background: var(--blue-bg);
+  border-bottom: 1px solid var(--blue);
+  padding: 8px 24px;
+  font-size: 12px;
+  color: var(--blue);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.mockup-banner strong { letter-spacing: 0.04em; text-transform: uppercase; font-size: 11px; }
+</style>
+</head>
+<body>
+
+<div class="mockup-banner">
+  <strong>MOCKUP</strong>
+  <span>Operational design system applied to the main dashboard. Fake data. Not connected to Supabase.</span>
+</div>
+
+<!-- APP HEADER -->
+<header class="app-header">
+  <div class="wordmark">SC Culinary</div>
+  <div class="wordmark-sub">Project Dashboard</div>
+  <div class="header-spacer"></div>
+  <div class="header-date">Wednesday, May 6, 2026</div>
+  <div class="header-actions">
+    <span class="overdue-badge">3 overdue</span>
+    <button class="btn btn-secondary">+ Restaurant</button>
+    <button class="btn btn-primary">+ New Task</button>
+  </div>
+</header>
+
+<!-- SUMMARY STATS -->
+<div class="summary-bar">
+  <div class="summary-stat">
+    <span class="label">Open Tasks</span>
+    <span class="value">42</span>
+  </div>
+  <div class="summary-stat clickable" title="Click to filter">
+    <span class="label">Overdue</span>
+    <span class="value red">3</span>
+  </div>
+  <div class="summary-stat clickable" title="Click to filter">
+    <span class="label">Due ≤ 7 Days</span>
+    <span class="value amber">8</span>
+  </div>
+  <div class="summary-stat clickable" title="Click to filter">
+    <span class="label">High Priority</span>
+    <span class="value">11</span>
+  </div>
+  <div class="summary-stat">
+    <span class="label">Complete</span>
+    <span class="value green">127</span>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs-container">
+  <div class="tabs-row">
+    <button class="tab active">All Restaurants <span class="tab-badge">42</span></button>
+    <button class="tab">Halls Chophouse <span class="tab-badge">9</span></button>
+    <button class="tab">High Cotton <span class="tab-badge">7</span></button>
+    <button class="tab">Slightly North of Broad <span class="tab-badge">11</span></button>
+    <button class="tab">Halls Signature Events <span class="tab-badge">6</span></button>
+    <button class="tab">Rita's Seaside Grille <span class="tab-badge">9</span></button>
+  </div>
+  <div class="tabs-row">
+    <button class="tab">▤ Inbox <span class="tab-badge">2</span></button>
+    <button class="tab">▦ Openings <span class="tab-badge">3</span></button>
+    <button class="tab">▤ Gantt</button>
+    <button class="tab">▤ Recent</button>
+    <button class="tab">▤ Travel</button>
+    <button class="tab">▤ Analytics</button>
+    <span class="tab-spacer"></span>
+    <button class="tab">⚙ Admin</button>
+  </div>
+</div>
+
+<!-- PAGE HEADER -->
+<main>
+  <div class="page-header">
+    <div class="page-title">All Restaurants</div>
+    <div class="page-meta">42 open • 5 properties • 11 owners</div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar-header">
+    <input type="text" class="search-input" placeholder="Search tasks…">
+    <button class="btn btn-secondary">▾ Filters</button>
+  </div>
+  <div class="filter-content">
+    <div class="filter-group-row">
+      <div class="filter-group">
+        <span class="filter-label">Category</span>
+        <select class="filter-select">
+          <option>All</option>
+          <option>Menu Development</option>
+          <option>Maintenance</option>
+          <option>Marketing</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">Owner</span>
+        <select class="filter-select">
+          <option>All</option>
+          <option>Brandon L.</option>
+          <option>Tracey B.</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">Priority</span>
+        <select class="filter-select">
+          <option>All</option>
+          <option>High</option>
+          <option>Medium</option>
+          <option>Low</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">Status</span>
+        <select class="filter-select">
+          <option>Open</option>
+          <option>Complete</option>
+          <option>All</option>
+        </select>
+      </div>
+      <div class="filter-group" style="min-width:auto;">
+        <span class="filter-label">Due Within</span>
+        <div class="toggle-group">
+          <button class="toggle">7 days</button>
+          <button class="toggle is-active">14 days</button>
+          <button class="toggle">30 days</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROJECTS TABLE -->
+  <div class="projects-container">
+    <table class="table">
+      <thead>
+        <tr>
+          <th style="width:32px;"></th>
+          <th>Restaurant</th>
+          <th>Project <span class="sort-icon">↑</span></th>
+          <th>Category</th>
+          <th>Owner</th>
+          <th>Due By</th>
+          <th>Priority</th>
+          <th>Latest Update</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="complete-toggle"></span></td>
+          <td><span class="restaurant-pill" data-r="1">Halls Chophouse</span></td>
+          <td>
+            <span class="project-name">Spring menu rollout — finalize pricing</span>
+            <span class="project-desc">Coordinate with sommelier on pairings before May 15 launch.</span>
+          </td>
+          <td><span class="category-tag">Menu Development</span></td>
+          <td>Brandon L.</td>
+          <td><span class="due-date overdue">May 1, 2026</span></td>
+          <td><span class="priority-badge high">High</span></td>
+          <td><div class="update-preview">Pricing review pushed to Friday — waiting on supplier quotes.</div></td>
+        </tr>
+        <tr>
+          <td><span class="complete-toggle"></span></td>
+          <td><span class="restaurant-pill" data-r="3">Slightly North of Broad</span></td>
+          <td>
+            <span class="project-name">Hood inspection follow-up</span>
+            <span class="project-desc">Two violations from April inspection require sign-off.</span>
+          </td>
+          <td><span class="category-tag">Maintenance</span></td>
+          <td>Tracey B.</td>
+          <td><span class="due-date overdue">May 4, 2026</span></td>
+          <td><span class="priority-badge high">High</span></td>
+          <td><div class="update-preview">Vendor scheduled for Thursday morning before service.</div></td>
+        </tr>
+        <tr>
+          <td><span class="complete-toggle"></span></td>
+          <td><span class="restaurant-pill" data-r="2">High Cotton</span></td>
+          <td>
+            <span class="project-name">Mother's Day brunch staffing</span>
+          </td>
+          <td><span class="category-tag">Operations</span></td>
+          <td>Marcus R.</td>
+          <td><span class="due-date soon">May 9, 2026</span></td>
+          <td><span class="priority-badge high">High</span></td>
+          <td><div class="update-preview">Confirmed 14 servers + 3 floats. Need one more line cook.</div></td>
+        </tr>
+        <tr>
+          <td><span class="complete-toggle"></span></td>
+          <td><span class="restaurant-pill" data-r="4">Halls Signature Events</span></td>
+          <td>
+            <span class="project-name">Wedding tasting menu — Patel party (May 24)</span>
+            <span class="project-desc">Bride is celiac. Two vegetarian guests. Wine pairings TBD.</span>
+          </td>
+          <td><span class="category-tag">Events</span></td>
+          <td>Brandon L.</td>
+          <td><span class="due-date soon">May 12, 2026</span></td>
+          <td><span class="priority-badge medium">Medium</span></td>
+          <td><div class="update-preview">Tasting confirmed for May 12 at 2pm. Menu draft attached.</div></td>
+        </tr>
+        <tr>
+          <td><span class="complete-toggle"></span></td>
+          <td><span class="restaurant-pill" data-r="5">Rita's Seaside Grille</span></td>
+          <td>
+            <span class="project-name">Patio umbrella replacement</span>
+          </td>
+          <td><span class="category-tag">Maintenance</span></td>
+          <td>Operations Team</td>
+          <td><span class="due-date">May 20, 2026</span></td>
+          <td><span class="priority-badge medium">Medium</span></td>
+          <td><div class="update-preview">Quote received from Sunbrella — awaiting GM approval.</div></td>
+        </tr>
+        <tr>
+          <td><span class="complete-toggle"></span></td>
+          <td><span class="restaurant-pill" data-r="1">Halls Chophouse</span></td>
+          <td>
+            <span class="project-name">Quarterly liquor inventory variance review</span>
+            <span class="project-desc">Q1 variance came in at 4.2% — exceeds 2.5% threshold.</span>
+          </td>
+          <td><span class="category-tag">Finance</span></td>
+          <td>Tracey B.</td>
+          <td><span class="due-date">May 22, 2026</span></td>
+          <td><span class="priority-badge medium">Medium</span></td>
+          <td><div class="update-preview">Bar manager flagged a count discrepancy on bourbon SKUs.</div></td>
+        </tr>
+        <tr>
+          <td><span class="complete-toggle done"></span></td>
+          <td><span class="restaurant-pill" data-r="2">High Cotton</span></td>
+          <td>
+            <span class="project-name" style="opacity:0.55">New POS terminal install — bar 2</span>
+          </td>
+          <td><span class="category-tag">IT</span></td>
+          <td>Marcus R.</td>
+          <td><span class="due-date" style="opacity:0.55">May 5, 2026</span></td>
+          <td><span class="priority-badge low">Low</span></td>
+          <td><div class="update-preview" style="opacity:0.55">Installed and tested. Staff training Wednesday.</div></td>
+        </tr>
+        <tr>
+          <td><span class="complete-toggle"></span></td>
+          <td><span class="restaurant-pill" data-r="3">Slightly North of Broad</span></td>
+          <td>
+            <span class="project-name">Summer cocktail program kickoff</span>
+            <span class="project-desc">Five new builds + one zero-proof. Photography booked May 28.</span>
+          </td>
+          <td><span class="category-tag">Menu Development</span></td>
+          <td>Brandon L.</td>
+          <td><span class="due-date">May 28, 2026</span></td>
+          <td><span class="priority-badge medium">Medium</span></td>
+          <td><div class="update-preview">Bar lead sent first round of recipes — review Monday.</div></td>
+        </tr>
+        <tr>
+          <td><span class="complete-toggle"></span></td>
+          <td><span class="restaurant-pill" data-r="5">Rita's Seaside Grille</span></td>
+          <td>
+            <span class="project-name">Health department re-inspection prep</span>
+          </td>
+          <td><span class="category-tag">Compliance</span></td>
+          <td>Tracey B.</td>
+          <td><span class="due-date">June 3, 2026</span></td>
+          <td><span class="priority-badge low">Low</span></td>
+          <td><div class="update-preview">Walk-through scheduled for next Tuesday.</div></td>
+        </tr>
+        <tr>
+          <td><span class="complete-toggle"></span></td>
+          <td><span class="restaurant-pill" data-r="4">Halls Signature Events</span></td>
+          <td>
+            <span class="project-name">Q2 marketing collateral refresh</span>
+          </td>
+          <td><span class="category-tag">Marketing</span></td>
+          <td>Sarah K.</td>
+          <td><span class="due-date">June 10, 2026</span></td>
+          <td><span class="priority-badge low">Low</span></td>
+          <td><div class="update-preview">—</div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+</body>
+</html>

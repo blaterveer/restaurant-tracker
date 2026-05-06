@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell($f = 'css\\\\styles.css'; $c = Get-Content $f -Raw; $c = $c -replace '0\\\\.5px solid', '1px solid'; Set-Content $f -Value $c -NoNewline -Encoding UTF8; \\([regex]::Matches\\(\\(Get-Content $f -Raw\\),'0\\\\.5px'\\)\\).Count)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git fetch *)",
+      "Bash(git push *)"
+    ]
+  }
+}
