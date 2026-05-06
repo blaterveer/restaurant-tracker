@@ -666,7 +666,7 @@ function renderTripModal() {
     </div>
     <div class="form-group" style="margin-top:16px">
       <label>Travelers</label>
-      <div class="traveler-checkboxes">${checkboxes || '<span style="color:var(--warm-gray);font-size:14px">No active travelers. Add travelers via the ⚙ button.</span>'}</div>
+      <div class="traveler-checkboxes">${checkboxes || '<span style="color:var(--text-secondary);font-size:14px">No active travelers. Add travelers via the ⚙ button.</span>'}</div>
     </div>
   </div>
   ${isEdit ? buildRestaurantContextCard(trip) : ''}
@@ -679,12 +679,12 @@ function renderTripModal() {
   // Footer — recap button for existing trips
   const existingRecap = isEdit ? travelState.recaps.find(r => r.trip_id === tripId) : null;
   const recapBtn = isEdit ? (existingRecap
-    ? `<button class="btn-sm" style="background:var(--sage);color:white" onclick="closeTripModal();openRecapModal('${existingRecap.id}')">View Recap</button>`
-    : `<button class="btn-sm" style="background:var(--sage);color:white" onclick="createRecapFromTrip('${tripId}')">Create Recap</button>`)
+    ? `<button class="btn-sm" style="background:var(--green);color:white" onclick="closeTripModal();openRecapModal('${existingRecap.id}')">View Recap</button>`
+    : `<button class="btn-sm" style="background:var(--green);color:white" onclick="createRecapFromTrip('${tripId}')">Create Recap</button>`)
     : '';
 
   const footerHTML = `
-    ${isEdit ? `<button class="btn-cancel" style="color:var(--rust);border-color:rgba(139,58,30,0.35)" onclick="confirmDeleteTrip('${tripId}')">Delete Trip</button>` : ''}
+    ${isEdit ? `<button class="btn-cancel" style="color:var(--red);border-color:var(--red)" onclick="confirmDeleteTrip('${tripId}')">Delete Trip</button>` : ''}
     ${recapBtn}
     <button class="btn-cancel" onclick="closeTripModal()">Cancel</button>
     <button class="btn-primary" onclick="saveTripModal()">Save Trip</button>`;
@@ -784,7 +784,7 @@ function buildItinerarySection(tripId) {
   <div class="trip-modal-section">
     <div class="trip-modal-section-title">Itinerary</div>
     <div class="itinerary-list">
-      ${items.length === 0 ? '<p style="color:var(--warm-gray);font-size:14px;padding:8px 0">No items yet.</p>' : itemsHTML}
+      ${items.length === 0 ? '<p style="color:var(--text-secondary);font-size:14px;padding:8px 0">No items yet.</p>' : itemsHTML}
     </div>
     <button class="btn-sm" style="margin-top:12px" onclick="openItinModal(null,'${tripId}')">+ Add Item</button>
   </div>`;
@@ -1068,7 +1068,7 @@ function buildAgendaSection(tripId) {
     <div class="trip-modal-section-title">Agenda</div>
     ${tmplSection}
     <div class="agenda-blocks-list">
-      ${blocks.length === 0 ? '<p style="color:var(--warm-gray);font-size:14px;padding:8px 0">No agenda blocks yet. Apply a template or add blocks manually.</p>' : datesHTML}
+      ${blocks.length === 0 ? '<p style="color:var(--text-secondary);font-size:14px;padding:8px 0">No agenda blocks yet. Apply a template or add blocks manually.</p>' : datesHTML}
     </div>
     <button class="btn-sm" style="margin-top:12px" onclick="openAgendaBlockModal(null,'${tripId}')">+ Add Block</button>
   </div>`;
@@ -1281,18 +1281,18 @@ function renderPeopleModal() {
   const unlinkedHTML = unlinkedOwners.length > 0 ? unlinkedOwners.map(o => {
     const initials = autoInitials(o.name);
     return `<div class="people-item people-unlinked">
-      <div class="people-initials-badge" style="background:var(--warm-gray);color:white">${initials}</div>
+      <div class="people-initials-badge" style="background:var(--text-secondary);color:white">${initials}</div>
       <div class="people-name">${escHtml(o.name)}</div>
       <button class="btn-sm checklist-add-btn" onclick="addOwnerAsTraveler('${o.id}')">+ Add as Traveler</button>
     </div>`;
-  }).join('') : '<p style="color:var(--warm-gray);font-size:13px">All team members are set up as travelers.</p>';
+  }).join('') : '<p style="color:var(--text-secondary);font-size:13px">All team members are set up as travelers.</p>';
 
   document.getElementById('people-modal-body').innerHTML = `
     <div class="people-section-label">Active Travelers</div>
-    <div class="people-list">${listHTML || '<p style="color:var(--warm-gray)">No travelers yet. Add team members below.</p>'}</div>
+    <div class="people-list">${listHTML || '<p style="color:var(--text-secondary)">No travelers yet. Add team members below.</p>'}</div>
     <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
     <div class="people-section-label">Team Members</div>
-    <p style="color:var(--ink-light);font-size:12px;margin:0 0 10px">Team members from the Admin tab. Click to add them as travelers.</p>
+    <p style="color:var(--text-secondary);font-size:12px;margin:0 0 10px">Team members from the Admin tab. Click to add them as travelers.</p>
     <div class="people-list">${unlinkedHTML}</div>`;
 }
 
@@ -1508,7 +1508,7 @@ function renderRecapModal() {
       <div class="recap-obs-text ${isConverted ? 'converted' : ''}">${escHtml(obs.text)}</div>
       <div class="recap-obs-actions">
         ${!isConverted && recap.status !== 'final' ? `<button class="itin-action-btn" style="font-size:11px;white-space:nowrap" onclick="dbConvertObsToTask('${obs.id}','${recapId}','${escHtml(restaurantName)}')">→ Task</button>` : ''}
-        ${isConverted ? '<span style="font-size:11px;color:var(--sage)">✓ Task</span>' : ''}
+        ${isConverted ? '<span style="font-size:11px;color:var(--green)">✓ Task</span>' : ''}
         ${recap.status !== 'final' ? `<button class="itin-action-btn del" onclick="dbDeleteObservation('${obs.id}','${recapId}')">Del</button>` : ''}
       </div>
     </div>`;
@@ -1525,7 +1525,7 @@ function renderRecapModal() {
     <div class="recap-section-title">Observations</div>
     <div class="recap-obs-tabs">${tabsHTML}</div>
     <div class="recap-obs-list">
-      ${catObs.length === 0 ? '<p style="color:var(--warm-gray);font-size:14px;padding:8px 0">No observations in this category yet.</p>' : obsListHTML}
+      ${catObs.length === 0 ? '<p style="color:var(--text-secondary);font-size:14px;padding:8px 0">No observations in this category yet.</p>' : obsListHTML}
     </div>
     ${addObsHTML}
   </div>`;
@@ -1568,7 +1568,7 @@ function renderRecapModal() {
     actionItemsHTML = `
     <div class="recap-section">
       <div class="recap-section-title">Action Items</div>
-      ${allActionItems || '<p style="color:var(--warm-gray);font-size:14px;padding:8px 0">No tasks created during this trip window.</p>'}
+      ${allActionItems || '<p style="color:var(--text-secondary);font-size:14px;padding:8px 0">No tasks created during this trip window.</p>'}
     </div>`;
   }
 
@@ -1595,9 +1595,9 @@ function renderRecapModal() {
   // Footer
   const isFinal = recap.status === 'final';
   document.getElementById('recap-modal-footer').innerHTML = `
-    <button class="btn-cancel" style="color:var(--rust);border-color:rgba(139,58,30,0.35)" onclick="dbDeleteRecap('${recapId}')">Delete</button>
+    <button class="btn-cancel" style="color:var(--red);border-color:var(--red)" onclick="dbDeleteRecap('${recapId}')">Delete</button>
     ${!isFinal ? `<button class="btn-sm" onclick="saveRecapDraft('${recapId}')">Save Draft</button>` : ''}
-    ${!isFinal ? `<button class="btn-sm" style="background:var(--sage);color:white" onclick="dbFinalizeRecap('${recapId}')">Mark Final</button>` : ''}
+    ${!isFinal ? `<button class="btn-sm" style="background:var(--green);color:white" onclick="dbFinalizeRecap('${recapId}')">Mark Final</button>` : ''}
     <button class="btn-primary" onclick="printRecap('${recapId}')">&#128424; Export PDF</button>
     <button class="btn-cancel" onclick="closeRecapModal()">Close</button>`;
 }
@@ -1644,7 +1644,7 @@ function buildRecapHistoryHTML() {
   const recaps = travelState.recaps || [];
 
   if (recaps.length === 0) {
-    return '<p style="color:var(--warm-gray);font-size:14px;padding:20px 0">No recaps yet. Create one from a trip.</p>';
+    return '<p style="color:var(--text-secondary);font-size:14px;padding:20px 0">No recaps yet. Create one from a trip.</p>';
   }
 
   // Restaurant filter
@@ -1707,7 +1707,7 @@ function printRecap(recapId) {
     if (obs.length === 0) return '';
     const items = obs.map(o => `<li style="margin-bottom:6px;line-height:1.6">${escHtml(o.text)}${o.converted_to_task_id ? ' <em style="color:#4A5C4A">(→ Task created)</em>' : ''}</li>`).join('');
     return `<div style="margin-bottom:16px">
-      <h3 style="font-size:14px;font-weight:600;color:#1C1915;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.04em">${catLabels[cat]}</h3>
+      <h3 style="font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.04em">${catLabels[cat]}</h3>
       <ul style="margin:0;padding-left:20px;color:#3D3830">${items}</ul>
     </div>`;
   }).join('');
@@ -1735,7 +1735,7 @@ function printRecap(recapId) {
         </tr>`;
       }).join('');
       actionItemsHTML = `
-      <h2 style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:400;margin:24px 0 12px;color:#1C1915">Action Items</h2>
+      <h2 style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:400;margin:24px 0 12px;color:var(--text-primary)">Action Items</h2>
       <table style="width:100%;border-collapse:collapse;font-size:13px">
         <thead><tr style="background:#EDE7DC">
           <th style="padding:8px 10px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:#8C8278">Task</th>
@@ -1750,7 +1750,7 @@ function printRecap(recapId) {
 
   // Follow-up
   const followupHTML = (recap.next_visit_date || recap.followup_notes) ? `
-  <h2 style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:400;margin:24px 0 12px;color:#1C1915">Follow-Up</h2>
+  <h2 style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:400;margin:24px 0 12px;color:var(--text-primary)">Follow-Up</h2>
   ${recap.next_visit_date ? `<p style="font-size:14px;color:#3D3830"><strong>Next Visit:</strong> ${fmtDate(recap.next_visit_date)}</p>` : ''}
   ${recap.followup_notes ? `<p style="font-size:14px;color:#3D3830;line-height:1.6"><strong>30-Day Check-in:</strong><br>${escHtml(recap.followup_notes).replace(/\n/g, '<br>')}</p>` : ''}` : '';
 
@@ -1759,7 +1759,7 @@ function printRecap(recapId) {
   const logoSrc = logoEl ? logoEl.src : '';
 
   const html = `
-  <div style="font-family:'DM Sans',sans-serif;max-width:800px;margin:0 auto;padding:40px;color:#1C1915">
+  <div style="font-family:'DM Sans',sans-serif;max-width:800px;margin:0 auto;padding:40px;color:var(--text-primary)">
     ${logoSrc ? `<div style="text-align:center;margin-bottom:24px"><img src="${logoSrc}" style="height:40px;opacity:0.8"></div>` : ''}
     <div style="text-align:center;margin-bottom:32px">
       <h1 style="font-family:'DM Sans',sans-serif;font-size:28px;font-weight:400;margin:0 0 8px">${escHtml(restaurantName)}</h1>
@@ -1769,10 +1769,10 @@ function printRecap(recapId) {
     </div>
     <hr style="border:none;border-top:1px solid #D4CBB8;margin:0 0 24px">
     ${recap.summary ? `
-    <h2 style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:400;margin:0 0 12px;color:#1C1915">Executive Summary</h2>
+    <h2 style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:400;margin:0 0 12px;color:var(--text-primary)">Executive Summary</h2>
     <p style="font-size:14px;line-height:1.7;color:#3D3830;margin-bottom:24px">${escHtml(recap.summary).replace(/\n/g, '<br>')}</p>` : ''}
     ${obsHTML ? `
-    <h2 style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:400;margin:0 0 16px;color:#1C1915">Observations</h2>
+    <h2 style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:400;margin:0 0 16px;color:var(--text-primary)">Observations</h2>
     ${obsHTML}` : ''}
     ${actionItemsHTML}
     ${followupHTML}

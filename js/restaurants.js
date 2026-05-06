@@ -934,7 +934,7 @@ function renderGanttLegend() {
     const color = GANTT_COLORS[idx >= 0 ? idx % 8 : 0];
     return `<div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:${color}"></div>${r}</div>`;
   }).join('') +
-  `<div class="gantt-legend-item" style="margin-left:16px"><div class="gantt-legend-dot" style="background:var(--rust);border-radius:50%"></div>Today</div>` +
+  `<div class="gantt-legend-item" style="margin-left:16px"><div class="gantt-legend-dot" style="background:var(--red);border-radius:50%"></div>Today</div>` +
   `<div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:#ccc"></div>Overdue (red outline)</div>`;
 }
 

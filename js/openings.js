@@ -141,14 +141,14 @@ function renderOpeningDetail(el) {
         <div>
           <div class="opening-title">${opening.name}</div>
           <div class="opening-meta">
-            <span class="opening-meta-item">Opening: <strong class="opening-date-edit" onclick="promptChangeOpeningDate('${opening.id}','${opening.targetDate}')" title="Click to change opening date">${targetStr}</strong> <span style="font-size:11px;cursor:pointer;color:var(--warm-gray)" onclick="promptChangeOpeningDate('${opening.id}','${opening.targetDate}')">&#9998;</span></span>
+            <span class="opening-meta-item">Opening: <strong class="opening-date-edit" onclick="promptChangeOpeningDate('${opening.id}','${opening.targetDate}')" title="Click to change opening date">${targetStr}</strong> <span style="font-size:11px;cursor:pointer;color:var(--text-secondary)" onclick="promptChangeOpeningDate('${opening.id}','${opening.targetDate}')">&#9998;</span></span>
             ${daysLeft !== null ? '<span class="opening-meta-item"><strong>' + daysLeft + ' days</strong> remaining</span>' : ''}
             <span class="opening-meta-item"><strong>${total}</strong> tasks</span>
           </div>
         </div>
         <div style="display:flex;gap:8px;align-items:center">
-          <button class="btn-ghost" onclick="exportOpeningCSV()" title="Export full task list to CSV" style="font-size:12px;color:var(--warm-gray);border-color:var(--border)">&#128229; Export CSV</button>
-          <button class="btn-ghost" onclick="exportOpeningReport()" title="Export executive summary report" style="font-size:12px;color:var(--warm-gray);border-color:var(--border)">&#128438; Report</button>
+          <button class="btn-ghost" onclick="exportOpeningCSV()" title="Export full task list to CSV" style="font-size:12px;color:var(--text-secondary);border-color:var(--border)">&#128229; Export CSV</button>
+          <button class="btn-ghost" onclick="exportOpeningReport()" title="Export executive summary report" style="font-size:12px;color:var(--text-secondary);border-color:var(--border)">&#128438; Report</button>
           <button class="btn-primary" onclick="openOpeningTaskModal()">+ Add Task</button>
         </div>
       </div>
@@ -352,7 +352,7 @@ function renderOpeningThisWeek(el, tasks) {
         <div style="margin-bottom:4px">
           <div style="display:flex;align-items:center;gap:8px;padding:6px 0;margin-bottom:2px">
             <div style="width:8px;height:8px;border-radius:2px;background:${color};flex-shrink:0"></div>
-            <span style="font-family:'DM Sans',sans-serif;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--warm-gray)">${phLabel}</span>
+            <span style="font-family:'DM Sans',sans-serif;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-secondary)">${phLabel}</span>
           </div>
           <div class="opening-task-list">
             ${phTasks.map(t => openingTaskRow(t)).join('')}
@@ -638,8 +638,8 @@ function renderOpeningGantt(el, tasks, opening) {
   PHASE_SHORT.forEach((label, i) => {
     legendHtml += `<div class="opening-gantt-legend-item"><div class="opening-gantt-legend-dot" style="background:${PHASE_COLORS[i]}"></div>${label}</div>`;
   });
-  legendHtml += `<div class="opening-gantt-legend-item" style="margin-left:16px"><div class="opening-gantt-legend-dot" style="background:var(--rust);border-radius:50%"></div>Today</div>`;
-  legendHtml += `<div class="opening-gantt-legend-item"><div class="opening-gantt-legend-dot" style="background:var(--gold)"></div>Opening Day</div>`;
+  legendHtml += `<div class="opening-gantt-legend-item" style="margin-left:16px"><div class="opening-gantt-legend-dot" style="background:var(--red)"></div>Today</div>`;
+  legendHtml += `<div class="opening-gantt-legend-item"><div class="opening-gantt-legend-dot" style="background:var(--amber)"></div>Opening Day</div>`;
   legendHtml += '</div>';
 
   // Month headers
@@ -666,7 +666,7 @@ function renderOpeningGantt(el, tasks, opening) {
     let cls = 'gantt-day-cell';
     if (todayInWeek) cls += ' today-col';
     if (isTarget) cls += ' opening-target-col';
-    return `<th class="${cls}" style="min-width:36px;font-size:9px">${label}${todayInWeek ? '<div style="font-size:7px;color:#ff6b4a;font-weight:700;letter-spacing:0.05em;margin-top:1px">TODAY</div>' : ''}${isTarget ? '<div style="font-size:7px;color:var(--gold);font-weight:700;letter-spacing:0.05em;margin-top:1px">OPEN</div>' : ''}</th>`;
+    return `<th class="${cls}" style="min-width:36px;font-size:9px">${label}${todayInWeek ? '<div style="font-size:7px;color:var(--red);font-weight:700;letter-spacing:0.05em;margin-top:1px">TODAY</div>' : ''}${isTarget ? '<div style="font-size:7px;color:var(--amber);font-weight:700;letter-spacing:0.05em;margin-top:1px">OPEN</div>' : ''}</th>`;
   }).join('');
 
   // Build grouped rows
@@ -726,8 +726,8 @@ function renderOpeningGantt(el, tasks, opening) {
           const opacity = allDone ? 0.2 : 0.3;
           bgStyle = `background:${barColor}${Math.round(opacity * 255).toString(16).padStart(2,'0')};`;
           // Rounded edges on first/last cells
-          if (isFirst && isLast) bgStyle += 'border-radius:4px;';
-          else if (isFirst) bgStyle += 'border-radius:4px 0 0 4px;';
+          if (isFirst && isLast) bgStyle += 'border-radius:0;';
+          else if (isFirst) bgStyle += 'border-radius:0 0 0 4px;';
           else if (isLast) bgStyle += 'border-radius:0 4px 4px 0;';
           // Show progress label in first cell
           if (isFirst) {
@@ -794,7 +794,7 @@ function renderOpeningNotes(el, opening) {
     html += `
       <div class="opening-phase ${isOpen ? 'open' : ''}" id="archived-notes">
         <div class="opening-phase-header" onclick="togglePhaseGroup('archived-notes')">
-          <div class="opening-phase-dot" style="background:var(--warm-gray)"></div>
+          <div class="opening-phase-dot" style="background:var(--text-secondary)"></div>
           <div class="opening-phase-name">Archived</div>
           <div class="opening-phase-stats">
             <span class="opening-phase-progress">${archivedNotes.length} note${archivedNotes.length !== 1 ? 's' : ''}</span>

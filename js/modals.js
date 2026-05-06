@@ -86,7 +86,7 @@ function renderSubtasksPanel(p) {
   populateOwnerSelect(document.getElementById('st-owner'), null);
 
   if (!p.subtasks || p.subtasks.length === 0) {
-    list.innerHTML = '<p style="font-size:12px;color:var(--warm-gray);font-style:italic">No subtasks yet.</p>';
+    list.innerHTML = '<p style="font-size:12px;color:var(--text-secondary);font-style:italic">No subtasks yet.</p>';
     return;
   }
 
@@ -326,8 +326,8 @@ function openDetail(id) {
   document.getElementById('dp-note-date').textContent = formatDate(today());
 
   document.getElementById('dp-link').innerHTML = p.link
-    ? `<a href="${p.link}" target="_blank" style="color:var(--rust);font-size:13px">${p.link}</a>`
-    : '<span style="color:var(--warm-gray);font-size:13px">No link provided</span>';
+    ? `<a href="${p.link}" target="_blank" style="color:var(--primary);font-size:13px">${p.link}</a>`
+    : '<span style="color:var(--text-secondary);font-size:13px">No link provided</span>';
 
   const completeBtn = document.getElementById('dp-complete-btn');
   completeBtn.textContent = p.complete ? 'Mark Incomplete' : 'Mark Complete';
@@ -367,7 +367,7 @@ function renderPanelNotes(p) {
       </div>`
     ).join('');
   } else {
-    notesContainer.innerHTML = '<p style="font-size:12px;color:var(--warm-gray);font-style:italic">No notes yet.</p>';
+    notesContainer.innerHTML = '<p style="font-size:12px;color:var(--text-secondary);font-style:italic">No notes yet.</p>';
   }
 }
 

@@ -27,7 +27,7 @@ function renderRestaurantAgenda(restaurant) {
   activeItems.forEach(a => { window._agendaItemMap[a.id] = a; });
 
   const itemsHtml = activeItems.length === 0
-    ? `<div style="color:var(--warm-gray);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 0 16px">No agenda items yet.</div>`
+    ? `<div style="color:var(--text-secondary);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 0 16px">No agenda items yet.</div>`
     : activeItems.map(item => `
         <div class="inbox-item" id="agenda-item-${escHtml(item.id)}" style="align-items:center">
           <div class="inbox-item-body" style="flex:1">
@@ -35,8 +35,8 @@ function renderRestaurantAgenda(restaurant) {
             ${item.description ? `<div class="inbox-item-desc" style="margin-top:4px">${escHtml(item.description)}</div>` : ''}
           </div>
           <div class="inbox-item-actions" style="display:flex;gap:6px;flex-shrink:0">
-            <button class="inbox-action-btn" style="background:var(--gold-light);color:var(--ink)" onclick="agendaConvertToTask('${escHtml(item.id)}')">Convert to Task</button>
-            <button class="inbox-action-btn" style="background:transparent;color:var(--warm-gray);border:1px solid var(--border)" onclick="agendaRemoveItem('${escHtml(item.id)}')">Remove</button>
+            <button class="inbox-action-btn" style="background:var(--surface-hover);color:var(--text-primary);border:1px solid var(--border)" onclick="agendaConvertToTask('${escHtml(item.id)}')">Convert to Task</button>
+            <button class="inbox-action-btn" style="background:transparent;color:var(--text-secondary);border:1px solid var(--border)" onclick="agendaRemoveItem('${escHtml(item.id)}')">Remove</button>
           </div>
         </div>`).join('');
 
@@ -62,9 +62,9 @@ function renderRestaurantAgenda(restaurant) {
 
       <div style="margin-top:16px;display:flex;gap:8px">
         <input type="text" id="agenda-add-input-${escHtml(restaurant)}" placeholder="Add agenda item…"
-          style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:4px;font-family:'DM Sans',sans-serif;font-size:13px;background:var(--cream);color:var(--ink)"
+          style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:0;font-family:'DM Sans',sans-serif;font-size:13px;background:var(--card-bg);color:var(--text-primary)"
           onkeydown="if(event.key==='Enter') agendaAddManual('${escHtml(restaurant)}')">
-        <button class="inbox-action-btn" style="background:var(--ink);color:var(--cream)" onclick="agendaAddManual('${escHtml(restaurant)}')">+ Add Item</button>
+        <button class="inbox-action-btn" style="background:var(--primary);color:#fff" onclick="agendaAddManual('${escHtml(restaurant)}')">+ Add Item</button>
       </div>
     </div>`;
 }
@@ -139,7 +139,7 @@ function renderAdminStats() {
     </div>
     <div class="admin-stat-card">
       <div class="stat-label">Overdue</div>
-      <div class="stat-value" style="color:var(--rust)">${overdue.length}</div>
+      <div class="stat-value" style="color:var(--red)">${overdue.length}</div>
       <div class="stat-sub">${high.length} high priority open</div>
     </div>
   `;

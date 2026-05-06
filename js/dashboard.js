@@ -47,7 +47,7 @@ function renderTabs() {
     &#128197; Recent
   </button>`;
   const isAdmin = state.session && state.session.role === 'admin';
-  const adminInboxTab = isAdmin ? `<button class="tab ${state.activeTab === '__admin_inbox__' ? 'active' : ''}" onclick="switchTab('__admin_inbox__')">&#128235; Inbox${state.adminInboxUnread > 0 ? ` <span class="badge" style="background:var(--rust);color:white">${state.adminInboxUnread}</span>` : ''}</button>` : '';
+  const adminInboxTab = isAdmin ? `<button class="tab ${state.activeTab === '__admin_inbox__' ? 'active' : ''}" onclick="switchTab('__admin_inbox__')">&#128235; Inbox${state.adminInboxUnread > 0 ? ` <span class="badge" style="background:var(--red);color:white">${state.adminInboxUnread}</span>` : ''}</button>` : '';
   const analyticsTab = isAdmin ? `<button class="tab ${state.activeTab === '__analytics__' ? 'active' : ''}" onclick="switchTab('__analytics__')">&#128200; Analytics</button>` : '';
   const adminTab = isAdmin ? `<button class="tab ${state.activeTab === '__admin__' ? 'active' : ''}" onclick="switchTab('__admin__')" style="margin-left:auto">&#9881; Admin</button>` : '';
 
@@ -119,7 +119,7 @@ function renderMobileNav() {
   html += '<div class="mobile-nav-section">';
   html += '<div class="mobile-nav-section-label">Views</div>';
   if (isAdmin) {
-    html += `<button class="mobile-nav-item ${state.activeTab === '__admin_inbox__' ? 'active' : ''}" onclick="switchTab('__admin_inbox__');closeMobileNav()">&#128235; Inbox${state.adminInboxUnread > 0 ? ' <span class="badge" style="background:var(--rust);color:white">' + state.adminInboxUnread + '</span>' : ''}</button>`;
+    html += `<button class="mobile-nav-item ${state.activeTab === '__admin_inbox__' ? 'active' : ''}" onclick="switchTab('__admin_inbox__');closeMobileNav()">&#128235; Inbox${state.adminInboxUnread > 0 ? ' <span class="badge" style="background:var(--red);color:white">' + state.adminInboxUnread + '</span>' : ''}</button>`;
   }
   html += `<button class="mobile-nav-item ${state.activeTab === '__gantt__' ? 'active' : ''}" onclick="switchTab('__gantt__');closeMobileNav()">&#9638; Gantt</button>`;
   html += `<button class="mobile-nav-item ${state.activeTab === '__recent__' ? 'active' : ''}" onclick="switchTab('__recent__');closeMobileNav()">&#128197; Recent</button>`;

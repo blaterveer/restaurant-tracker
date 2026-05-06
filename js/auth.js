@@ -22,7 +22,7 @@ async function initApp() {
         document.body.appendChild(loadEl);
       }
       loadEl.textContent = 'Loading data\u2026';
-      loadEl.style.cssText = 'position:fixed;inset:0;background:#1C1915;display:flex;align-items:center;justify-content:center;z-index:10000;font-family:"DM Mono",monospace;color:#F7F3EE;font-size:14px;letter-spacing:0.1em;';
+      loadEl.style.cssText = 'position:fixed;inset:0;background:var(--text-primary);display:flex;align-items:center;justify-content:center;z-index:10000;font-family:"DM Sans",sans-serif;color:var(--card-bg);font-size:14px;letter-spacing:0.1em;';
       // Set state from session and reset view state
       state.session = parsed;
       state.workspace_id = parsed.workspace_id;

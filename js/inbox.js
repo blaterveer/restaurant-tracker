@@ -96,19 +96,19 @@ function renderRestaurantInbox() {
       <div class="inbox-section-title">Submit a Request</div>
       <div class="inbox-form-card">
         <div style="margin-bottom:14px">
-          <label style="display:block;font-family:'DM Sans',sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--warm-gray);margin-bottom:6px">Request Title *</label>
-          <input id="inbox-title" type="text" placeholder="e.g. New appetizer menu for spring" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid var(--border);border-radius:4px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);background:var(--cream);outline:none">
+          <label style="display:block;font-family:'DM Sans',sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-secondary);margin-bottom:6px">Request Title *</label>
+          <input id="inbox-title" type="text" placeholder="e.g. New appetizer menu for spring" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid var(--border);border-radius:0;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text-primary);background:var(--card-bg);outline:none">
         </div>
         <div style="margin-bottom:14px">
-          <label style="display:block;font-family:'DM Sans',sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--warm-gray);margin-bottom:6px">Category</label>
-          <select id="inbox-category" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid var(--border);border-radius:4px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);background:var(--cream);outline:none">
+          <label style="display:block;font-family:'DM Sans',sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-secondary);margin-bottom:6px">Category</label>
+          <select id="inbox-category" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid var(--border);border-radius:0;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text-primary);background:var(--card-bg);outline:none">
             <option value="">— Select category —</option>
             ${categoryOptions}
           </select>
         </div>
         <div style="margin-bottom:18px">
-          <label style="display:block;font-family:'DM Sans',sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--warm-gray);margin-bottom:6px">Description</label>
-          <textarea id="inbox-desc" rows="3" placeholder="Add any context or details…" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid var(--border);border-radius:4px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);background:var(--cream);outline:none;resize:vertical"></textarea>
+          <label style="display:block;font-family:'DM Sans',sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-secondary);margin-bottom:6px">Description</label>
+          <textarea id="inbox-desc" rows="3" placeholder="Add any context or details…" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid var(--border);border-radius:0;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text-primary);background:var(--card-bg);outline:none;resize:vertical"></textarea>
         </div>
         <button class="inbox-submit-btn" onclick="inboxSubmitRequest()">Submit Request</button>
       </div>
@@ -175,9 +175,9 @@ function renderAdminInbox(targetId = 'admin-inbox-section') {
     const actions = isResolved
       ? `<span class="inbox-status ${escHtml(req.status)}" style="font-family:'DM Sans',sans-serif;font-size:11px;opacity:.65">${escHtml(resolvedStatusLabel[req.status] || req.status)}</span>`
       : `<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
-           <button class="inbox-action-btn" style="background:var(--ink);color:var(--cream)" onclick="adminInboxAddToAgenda('${escHtml(req.id)}')">Add to Agenda</button>
-           <button class="inbox-action-btn" style="background:var(--gold-light);color:var(--ink)" onclick="adminInboxAddToTasks('${escHtml(req.id)}')">Add to Tasks</button>
-           <button class="inbox-action-btn" style="background:transparent;color:var(--warm-gray);border:1px solid var(--border)" onclick="adminInboxArchive('${escHtml(req.id)}')">Archive</button>
+           <button class="inbox-action-btn" style="background:var(--primary);color:#fff" onclick="adminInboxAddToAgenda('${escHtml(req.id)}')">Add to Agenda</button>
+           <button class="inbox-action-btn" style="background:var(--surface-hover);color:var(--text-primary);border:1px solid var(--border)" onclick="adminInboxAddToTasks('${escHtml(req.id)}')">Add to Tasks</button>
+           <button class="inbox-action-btn" style="background:transparent;color:var(--text-secondary);border:1px solid var(--border)" onclick="adminInboxArchive('${escHtml(req.id)}')">Archive</button>
          </div>`;
     return `<div class="inbox-item" id="admin-inbox-item-${escHtml(req.id)}" ${isResolved ? 'style="opacity:.55"' : ''}>
       <div class="inbox-item-body">
@@ -198,18 +198,18 @@ function renderAdminInbox(targetId = 'admin-inbox-section') {
     });
     return Object.keys(grouped).sort().map(rest =>
       `<div style="margin-bottom:24px">
-        <div style="font-family:'DM Sans',sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink);margin-bottom:10px">${escHtml(rest)}</div>
+        <div style="font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-secondary);margin-bottom:8px">${escHtml(rest)}</div>
         ${grouped[rest].map(r => buildInboxItem(r, isResolved)).join('')}
       </div>`
     ).join('');
   }
 
-  const activeHtml   = activeReqs.length   ? buildRestaurantGroup(activeReqs, false)   : '<div style="color:var(--warm-gray);font-family:\'DM Mono\',monospace;font-size:13px;padding:12px 0">No pending requests.</div>';
+  const activeHtml   = activeReqs.length   ? buildRestaurantGroup(activeReqs, false)   : '<div style="color:var(--text-secondary);font-family:\'DM Sans\',sans-serif;font-size:13px;padding:12px 0">No pending requests.</div>';
   const resolvedHtml = resolvedReqs.length ? buildRestaurantGroup(resolvedReqs, true)  : '';
 
   const resolvedSection = resolvedReqs.length ? `
     <details style="margin-top:32px">
-      <summary style="font-family:'DM Sans',sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--warm-gray);cursor:pointer;margin-bottom:12px">
+      <summary style="font-family:'DM Sans',sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-secondary);cursor:pointer;margin-bottom:12px">
         Resolved (${resolvedReqs.length})
       </summary>
       <div style="margin-top:14px">${resolvedHtml}</div>

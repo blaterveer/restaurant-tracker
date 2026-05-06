@@ -24,7 +24,7 @@ function daysUntil(dateStr) {
 function dueBadge(project) {
   if (project.complete) return '<span class="due-badge track">Complete</span>';
   const due = dueDate(project);
-  if (!due) return '<span style="color:var(--warm-gray);font-size:11px">""</span>';
+  if (!due) return '<span style="color:var(--text-secondary);font-size:11px">""</span>';
   const days = daysUntil(due);
   if (days < 0) return `<span class="due-badge overdue">Overdue</span>`;
   if (days <= 7) return `<span class="due-badge soon">${formatDate(due)}</span>`;
@@ -50,7 +50,7 @@ function showLoading(msg = 'Loading…') {
   if (!el) {
     el = document.createElement('div');
     el.id = 'loading-overlay';
-    el.style.cssText = 'position:fixed;inset:0;background:rgba(28,25,21,0.55);display:flex;align-items:center;justify-content:center;z-index:9999;font-family:"DM Mono",monospace;color:#F7F3EE;font-size:14px;letter-spacing:0.1em;';
+    el.style.cssText = 'position:fixed;inset:0;background:rgba(28,25,21,0.55);display:flex;align-items:center;justify-content:center;z-index:9999;font-family:"DM Sans",sans-serif;color:var(--card-bg);font-size:14px;letter-spacing:0.1em;';
     document.body.appendChild(el);
   }
   el.textContent = msg;
