@@ -675,9 +675,11 @@
     position: relative;
     transition: border-color 0.2s;
   }
-  .note-item:hover { border-left-color: var(--rust); }
-  .note-item .note-date { font-family: 'DM Sans', sans-serif; font-size: 12px; color: var(--warm-gray); margin-bottom: 4px; }
-  .note-item .note-text { font-size: 15px; color: var(--ink-light); line-height: 1.5; }
+  .note-item:hover { border-left-color: var(--primary); }
+  .note-item.is-pending { opacity: 0.6; }
+  .note-item .note-date { font-family: 'DM Sans', sans-serif; font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
+  .note-item .note-text { font-family: 'Source Serif 4', Georgia, serif; font-size: 14px; color: var(--text-primary); line-height: 1.55; }
+  .note-pending-tag { font-size: 10px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); margin-left: 4px; font-style: normal; }
   .note-actions {
     display: none;
     gap: 6px;

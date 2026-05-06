@@ -783,13 +783,19 @@ function renderGanttView() {
   for (let d = new Date(todayDate); d <= endDate; d.setDate(d.getDate()+1)) days.push(new Date(d));
 
   const ganttBase = state.session && state.session.role === 'restaurant'
-    ? state.projects.filter(p => !p.openingId && p.restaurant === state.session.restaurant)
-    : state.projects.filter(p => !p.openingId);
+    ? state.projects.filter(p => !p.openingId && !p.archived && p.restaurant === state.session.restaurant)
+    : state.projects.filter(p => !p.openingId && !p.archived);
   let projects = ganttBase.filter(p => {
+    if (p.complete && !showComplete) return false;
     if (!p.dateAdded) return false;
     const due = getDueDate(p);
     if (!due) return false;
-    if (!showComplete && p.complete) return false;
+    // Exclude tasks whose entire timeline falls outside the visible window
+    // (e.g., overdue tasks with no future portion would otherwise show as empty rows)
+    const start = new Date(p.dateAdded + 'T00:00:00');
+    const barStart = start < todayDate ? todayDate : start;
+    const barEnd   = due > endDate ? endDate : due;
+    if (barStart > barEnd) return false;
     return true;
   });
 

@@ -350,8 +350,8 @@ function renderPanelNotes(p) {
     const indexed = p.notes.map((n, i) => ({ ...n, origIndex: i }));
     indexed.reverse();
     notesContainer.innerHTML = indexed.map(n =>
-      `<div class="note-item" data-note-index="${n.origIndex}">
-        <div class="note-date">${formatDate(n.date)} · <strong>${n.author || 'Unknown'}</strong></div>
+      `<div class="note-item${n._pending ? ' is-pending' : ''}" data-note-index="${n.origIndex}">
+        <div class="note-date">${formatDate(n.date)} · <strong>${n.author || 'Unknown'}</strong>${n._pending ? ' <span class="note-pending-tag">saving…</span>' : ''}</div>
         <div class="note-text" id="note-text-${n.origIndex}">${n.text}</div>
         <div class="note-actions">
           <button class="note-action-btn" onclick="openNoteEdit('${p.id}', ${n.origIndex})">Edit</button>
@@ -390,11 +390,23 @@ async function saveNoteEdit(projectId, noteIndex) {
   const newText = document.getElementById(`note-edit-text-${noteIndex}`).value.trim();
   if (!newText) return;
   const note = p.notes[noteIndex];
+  if (!note) return;
+  const prevText = note.text;
+  // Optimistic update
   note.text = newText;
-  if (note.id) await dbUpdateNote(note.id, newText);
   renderPanelNotes(p);
   renderTable();
-  showToast('Note updated');
+  if (!note.id) { showToast('Note updated'); return; }
+  try {
+    await dbUpdateNote(note.id, newText);
+    showToast('Note updated');
+  } catch(e) {
+    console.error('saveNoteEdit error:', e);
+    note.text = prevText;
+    renderPanelNotes(p);
+    renderTable();
+    showToast('Error updating note — please try again', 'error');
+  }
 }
 
 async function deleteNote(projectId, noteIndex) {
@@ -402,11 +414,22 @@ async function deleteNote(projectId, noteIndex) {
   if (!p) return;
   if (!confirm('Delete this note?')) return;
   const note = p.notes[noteIndex];
-  if (note && note.id) await dbDeleteNote(note.id);
+  if (!note) return;
+  // Optimistic remove
   p.notes.splice(noteIndex, 1);
   renderPanelNotes(p);
   renderTable();
-  showToast('Note deleted');
+  if (!note.id) { showToast('Note deleted'); return; }
+  try {
+    await dbDeleteNote(note.id);
+    showToast('Note deleted');
+  } catch(e) {
+    console.error('deleteNote error:', e);
+    p.notes.splice(noteIndex, 0, note);
+    renderPanelNotes(p);
+    renderTable();
+    showToast('Error deleting note — please try again', 'error');
+  }
 }
 
 function handleNoteAuthorChange() {
@@ -446,17 +469,12 @@ async function submitPanelNote() {
   const p = state.projects.find(x => x.id === state.detailProjectId);
   if (!p) return;
 
-  const newNote = { date: today(), text, author };
-  try {
-    const noteId = await dbInsertNote(p.id, newNote);
-    if (noteId) newNote.id = noteId;
-    p.notes.push(newNote);
-  } catch(e) {
-    console.error('submitPanelNote error:', e);
-    alert('Error saving note. Please try again.');
-    return;
-  }
+  // Optimistic insert: render immediately with a temp id, persist in background
+  const tempId  = '_pending_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+  const newNote = { id: tempId, date: today(), text, author, _pending: true };
+  p.notes.push(newNote);
 
+  // Reset input fields immediately so the next note can be typed
   document.getElementById('dp-note-text').value = '';
   document.getElementById('dp-note-author').value = '';
   document.getElementById('dp-note-author-new').style.display = 'none';
@@ -465,7 +483,25 @@ async function submitPanelNote() {
   renderPanelNotes(p);
   renderTable();
   renderSummary();
-  showToast('Note added');
+
+  // Persist in background; reconcile id or roll back on failure
+  try {
+    const noteId = await dbInsertNote(p.id, newNote);
+    const stored = p.notes.find(n => n.id === tempId);
+    if (stored) {
+      if (noteId) stored.id = noteId;
+      delete stored._pending;
+    }
+    renderPanelNotes(p);
+    showToast('Note added');
+  } catch(e) {
+    console.error('submitPanelNote error:', e);
+    p.notes = p.notes.filter(n => n.id !== tempId);
+    renderPanelNotes(p);
+    renderTable();
+    renderSummary();
+    showToast('Error saving note — please try again', 'error');
+  }
 }
 
 function closeDetail() {

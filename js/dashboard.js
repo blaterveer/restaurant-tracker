@@ -319,6 +319,70 @@ function renderFilterDropdowns() {
 // ============================================================
 
 // ============================================================
+// KEYBOARD SHORTCUTS
+// ============================================================
+function isTypingTarget(target) {
+  if (!target) return false;
+  const tag = target.tagName;
+  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable;
+}
+
+function handleKeyboardShortcut(e) {
+  // Esc closes whatever is open (drawer first, then any modal-overlay)
+  if (e.key === 'Escape') {
+    const drawer = document.getElementById('detail-panel');
+    if (drawer && drawer.classList.contains('open')) {
+      closeDetail();
+      e.preventDefault();
+      return;
+    }
+    const openOverlay = document.querySelector('.modal-overlay.open');
+    if (openOverlay) {
+      const closeBtn = openOverlay.querySelector('.modal-close, [onclick*="close"]');
+      if (closeBtn) closeBtn.click();
+      e.preventDefault();
+      return;
+    }
+    const mobileNav = document.getElementById('mobile-nav-drawer');
+    if (mobileNav && mobileNav.classList.contains('open')) {
+      closeMobileNav();
+      e.preventDefault();
+      return;
+    }
+    return;
+  }
+
+  // Other shortcuts only fire when not typing in an input
+  if (isTypingTarget(e.target)) return;
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+  // '/' — focus search input
+  if (e.key === '/') {
+    const search = document.getElementById('search-input');
+    if (search && search.offsetParent !== null) {
+      e.preventDefault();
+      search.focus();
+      search.select();
+    }
+    return;
+  }
+
+  // 'n' — new task (admin only)
+  if (e.key === 'n' || e.key === 'N') {
+    const isAdmin = state.session && state.session.role === 'admin';
+    if (!isAdmin) return;
+    const btn = document.getElementById('btn-new-project');
+    if (btn && btn.offsetParent !== null) {
+      e.preventDefault();
+      handleNewTaskClick();
+    }
+    return;
+  }
+}
+
+document.addEventListener('keydown', handleKeyboardShortcut);
+
+// ============================================================
 // INIT
 // ============================================================
 async function init() {
