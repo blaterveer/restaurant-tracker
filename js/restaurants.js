@@ -271,7 +271,7 @@ function renderTable() {
     const latestNote = p.notes && p.notes.length > 0 ? p.notes[p.notes.length - 1].text : '';
     const colorIdx   = restaurantColorIndex(p.restaurant);
     const restaurantCell = showRestaurant
-      ? `<td style="padding-left:8px"><span class="restaurant-pill" style="background:var(--r${colorIdx})">${p.restaurant}</span></td>`
+      ? `<td style="padding-left:8px"><span class="restaurant-pill" data-r="${colorIdx}">${p.restaurant}</span></td>`
       : '';
     return `<tr onclick="openDetail('${p.id}')">
       <td onclick="event.stopPropagation()">
@@ -1039,7 +1039,7 @@ function renderRecentView() {
     out +=
       "<div style=\"margin-bottom:32px\">" +
         "<div style=\"display:flex;align-items:center;gap:12px;margin-bottom:12px\">" +
-          "<span class=\"restaurant-pill\" style=\"background:var(--r" + colorIdx + ")\">" + restaurant + "</span>" +
+          "<span class=\"restaurant-pill\" data-r=\"" + colorIdx + "\">" + restaurant + "</span>" +
           "<span style=\"" + monoFont + ";font-size:11px;color:var(--warm-gray);letter-spacing:0.1em\">" + projects.length + " project" + (projects.length !== 1 ? "s" : "") + "</span>" +
         "</div>" +
         "<table style=\"width:100%;border-collapse:collapse\">" +
